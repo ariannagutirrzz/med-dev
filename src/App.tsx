@@ -2,6 +2,7 @@ import draNinive from "./assets/dra-ninive.jpg"
 import AboutSection from "./components/AboutSection"
 import Footer from "./components/Footer"
 import NavBar from "./components/NavBar"
+import ServicesSection from "./components/ServicesSection"
 
 function App() {
 	return (
@@ -41,30 +42,7 @@ function App() {
 					</div>
 				</section>
 				<AboutSection />
-
-				<section id="services" className="py-8">
-					<div className="max-w-6xl mx-auto px-4 grid gap-4 grid-cols-1 md:grid-cols-3">
-						<div className="bg-white p-4 rounded-xl shadow">
-							<h3 className="font-semibold mb-2">
-								Personal Altamente Capacitado
-							</h3>
-							<p>
-								Equipo médico con amplia experiencia en enfermedades
-								respiratorias.
-							</p>
-						</div>
-						<div className="bg-white p-4 rounded-xl shadow">
-							<h3 className="font-semibold mb-2">Accesibilidad y Tiempos</h3>
-							<p>
-								Turnos ágiles y circuito de atención prioritaria para urgencias.
-							</p>
-						</div>
-						<div className="bg-white p-4 rounded-xl shadow">
-							<h3 className="font-semibold mb-2">Experiencia del Paciente</h3>
-							<p>Atención humana, seguimiento y soporte integral.</p>
-						</div>
-					</div>
-				</section>
+				<ServicesSection />
 			</main>
 
 			<Footer />
