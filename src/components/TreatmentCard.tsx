@@ -10,7 +10,7 @@ const TreatmentCard = ({
 	conditions,
 }: TreatmentCardProps) => {
 	return (
-		<div className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition-shadow">
+		<div className="bg-white rounded-xl shadow-md p-6 hover:shadow-[0_14px_30px_rgba(120,154,97,0.25)] transition-shadow duration-300 ease-in-out">
 			<h3 className="text-xl font-bold text-primary-dark mb-3">{title}</h3>
 			<p className="text-muted mb-4 leading-relaxed">{description}</p>
 			{conditions && conditions.length > 0 && (

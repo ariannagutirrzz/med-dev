@@ -10,7 +10,7 @@ const FAQItem = ({ question, answer }: FAQItemProps) => {
 	const [isOpen, setIsOpen] = useState(false)
 
 	return (
-		<div className="bg-white rounded-xl shadow hover:shadow-lg transition-shadow">
+		<div className="bg-white rounded-xl shadow-md hover:shadow-[0_14px_30px_rgba(120,154,97,0.25)] transition-shadow duration-300 ease-in-out">
 			<button
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}

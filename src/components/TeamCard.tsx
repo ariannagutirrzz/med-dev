@@ -16,9 +16,13 @@ const TeamCard = ({
 	image,
 }: TeamCardProps) => {
 	return (
-		<div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+		<div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-[0_18px_40px_rgba(120,154,97,0.35)] hover:scale-105 transition-all duration-300 ease-in-out">
 			<div className="h-64 bg-linear-to-br from-bg-light to-bg-card flex items-center justify-center overflow-hidden">
-				<img src={image} alt={name} className="w-full h-full object-cover" />
+				<img
+					src={image}
+					alt={name}
+					className="w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-110"
+				/>
 			</div>
 			<div className="p-6">
 				<h3 className="text-xl font-bold text-primary-dark mb-1">{name}</h3>

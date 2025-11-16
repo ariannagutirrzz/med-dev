@@ -26,7 +26,7 @@ function App() {
 
 							<div className="flex items-center gap-3">
 								<a
-									className="px-5 py-3 rounded-lg bg-primary text-white font-bold"
+									className="px-5 py-3 rounded-lg bg-primary text-white font-bold shadow-md hover:shadow-[0_12px_24px_rgba(120,154,97,0.4)] transition-shadow duration-300 ease-in-out"
 									href="#schedule"
 								>
 									Agenda Tu Cita Aquí

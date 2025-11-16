@@ -37,7 +37,7 @@ const NavBar = () => {
 					))}
 					<a
 						href="#login"
-						className="ml-4 px-3 py-2 rounded-md bg-primary font-semibold text-white"
+						className="ml-4 px-3 py-2 rounded-md bg-primary font-semibold text-white shadow-sm hover:shadow-[0_12px_24px_rgba(120,154,97,0.4)] transition-shadow duration-300 ease-in-out"
 					>
 						Iniciar Sesión
 					</a>

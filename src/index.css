@@ -1,17 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-	/* Colors */
-	--color-primary: #789a61;
-	--color-primary-dark: #23453a;
-	--color-secondary: #6aa6b8;
+	/* Primary theme colors (from your Coolors palette) */
+	--color-primary: #789a61; /* sage green */
+	--color-primary-dark: #35524a; /* dark slate grey */
+	--color-secondary: #a07178; /* dusty mauve */
+	--color-accent: #e6ccbe; /* almond silk */
+	--color-accent-soft: #ffe5d4; /* powder petal */
+
+	/* Neutrals / text */
 	--color-muted: #7b8b87;
 	--color-muted-light: #b8c5c2;
 	--color-text: #556b62;
+
+	/* Backgrounds */
 	--color-bg: #f6fbfb;
 	--color-bg-light: #e6f2f2;
 	--color-bg-card: #f5fafb;
-	
+
+	/* Simple brand gradient using primary + secondary */
+	--gradient-primary: linear-gradient(
+		135deg,
+		var(--color-primary),
+		var(--color-secondary)
+	);
+
 	/* Fonts */
 	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
