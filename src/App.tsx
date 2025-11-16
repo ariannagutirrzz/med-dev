@@ -3,6 +3,7 @@ import AboutSection from "./components/AboutSection"
 import Footer from "./components/Footer"
 import NavBar from "./components/NavBar"
 import ServicesSection from "./components/ServicesSection"
+import TeamSection from "./components/TeamSection"
 
 function App() {
 	return (
@@ -43,6 +44,7 @@ function App() {
 				</section>
 				<AboutSection />
 				<ServicesSection />
+				<TeamSection />
 			</main>
 
 			<Footer />
