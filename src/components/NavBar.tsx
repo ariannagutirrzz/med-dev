@@ -1,6 +1,21 @@
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
 
 const NavBar = () => {
+	const navItems = [
+		{
+			label: "Sobre Nosotros",
+			href: "#about",
+		},
+		{
+			label: "Ventajas",
+			href: "#services",
+		},
+		{
+			label: "Contáctanos",
+			href: "#contact",
+		},
+	]
+
 	return (
 		<header className="bg-transparent py-4">
 			<div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
@@ -11,27 +26,18 @@ const NavBar = () => {
 				</div>
 
 				<nav className="flex items-center">
+					{navItems.map((item) => (
+						<a
+							key={item.href}
+							href={item.href}
+							className="hidden md:inline-block ml-4 text-text font-semibold"
+						>
+							{item.label}
+						</a>
+					))}
 					<a
-						className="hidden md:inline-block ml-4 text-[#556b62] font-semibold"
-						href="#about"
-					>
-						Sobre Nosotros
-					</a>
-					<a
-						className="hidden md:inline-block ml-4 text-[#556b62] font-semibold"
-						href="#services"
-					>
-						Ventajas
-					</a>
-					<a
-						className="hidden md:inline-block ml-4 text-[#556b62] font-semibold"
-						href="#contact"
-					>
-						Contáctanos
-					</a>
-					<a
-						className="ml-4 px-3 py-2 rounded-md bg-[#789a61] border border-[rgba(0,0,0,0.06)] font-semibold text-white"
 						href="#login"
+						className="ml-4 px-3 py-2 rounded-md bg-primary font-semibold text-white"
 					>
 						Iniciar Sesión
 					</a>

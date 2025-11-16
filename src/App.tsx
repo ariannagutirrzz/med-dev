@@ -10,19 +10,19 @@ function App() {
 			<NavBar />
 
 			<main>
-				<section className="py-14 bg-linear-to-b from-[#e6f2f2] to-[#f6fbfb]">
+				<section className="py-14 bg-linear-to-b from-bg-light to-bg">
 					<div className="max-w-6xl mx-auto px-4 flex gap-8 items-center flex-col-reverse md:flex-row">
 						<div className="flex-1">
-							<h1 className="text-4xl md:text-5xl font-extrabold text-[#23453a] mb-2">
+							<h1 className="text-4xl md:text-5xl font-extrabold text-primary-dark mb-2">
 								Unidad de Pleura
 							</h1>
-							<p className="text-[#7b8b87] mb-5">
+							<p className="text-muted mb-5">
 								Atención especializada, tiempos ágiles y cuidado humano
 							</p>
 
 							<div className="flex items-center gap-3">
 								<a
-									className="px-5 py-3 rounded-lg bg-[#789a61] text-white font-bold"
+									className="px-5 py-3 rounded-lg bg-primary text-white font-bold"
 									href="#schedule"
 								>
 									Agenda Tu Cita Aquí
@@ -31,7 +31,7 @@ function App() {
 						</div>
 
 						<div className="flex-1 flex justify-center" aria-hidden="true">
-							<div className="w-80 h-66 bg-linear-to-br from-white to-[#f5fafb] rounded-xl overflow-hidden shadow-lg">
+							<div className="w-80 h-66 bg-linear-to-br from-white to-bg-card rounded-xl overflow-hidden shadow-lg">
 								<img
 									className="w-full h-full object-cover"
 									src={draNinive}

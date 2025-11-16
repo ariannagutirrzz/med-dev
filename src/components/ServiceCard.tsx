@@ -13,4 +13,3 @@ const ServiceCard = ({ title, description }: ServiceCardProps) => {
 }
 
 export default ServiceCard
-
