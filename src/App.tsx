@@ -5,6 +5,7 @@ import Footer from "./components/Footer"
 import NavBar from "./components/NavBar"
 import ServicesSection from "./components/ServicesSection"
 import TeamSection from "./components/TeamSection"
+import TestimonialsSection from "./components/TestimonialsSection"
 import TreatmentsSection from "./components/TreatmentsSection"
 
 function App() {
@@ -46,8 +47,9 @@ function App() {
 				</section>
 				<AboutSection />
 				<ServicesSection />
-				<TeamSection />
 				<TreatmentsSection />
+				<TeamSection />
+				{/* <TestimonialsSection /> */}
 				<FAQSection />
 			</main>
 
