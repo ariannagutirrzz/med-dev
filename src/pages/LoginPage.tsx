@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
+import { FaArrowLeft } from "react-icons/fa"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
 import SelectionButtons from "../components/auth/SelectionButtons"
 import LoginForm from "../components/auth/LoginForm"
@@ -26,7 +27,7 @@ const LoginPage = () => {
 	}) => {
 		try {
 			// TODO: Implement signup logic
-			console.log("Signing up:", { name, email, password })
+			console.log("Signing up:", { name, email, password, username })
 
 			navigate("/")
 		} catch (error) {
@@ -52,10 +53,10 @@ const LoginPage = () => {
 	}
 
 	return (
-		<div className="flex h-screen">
+		<div className="flex min-h-screen">
 			{/* Left Side - Form Section */}
-			<div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-white px-4">
-				<div className="text-center w-full max-w-md">
+			<div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-white px-4 py-8 md:py-12">
+				<div className="text-center w-full max-w-md relative">
 					<h1 className="text-5xl md:text-6xl font-semibold text-primary-dark mb-2">
 						Bienvenido
 					</h1>
@@ -72,21 +73,24 @@ const LoginPage = () => {
 					) : (
 						<SignupForm onSignUp={handleSignUp} />
 					)}
-				</div>
 
-				{/* Logo Below Form */}
-				<div className="mt-8">
-					<img
-						src={logoUnidadPleura}
-						alt="Unidad de Pleura Logo"
-						className="w-40 h-auto"
-					/>
+					{/* Logo Below Form - Clickable */}
+					<Link
+						to="/"
+						className="mt-8 inline-block hover:opacity-80 transition-opacity cursor-pointer"
+					>
+						<img
+							src={logoUnidadPleura}
+							alt="Unidad de Pleura Logo"
+							className="w-40 h-auto mx-auto"
+						/>
+					</Link>
 				</div>
 			</div>
 
 			{/* Right Side - Image Section (Hidden on mobile) */}
-			<div className="hidden md:block w-1/2 h-screen relative bg-linear-to-br from-primary/20 to-secondary/20">
-				<div className="absolute inset-0 flex items-center justify-center">
+			<div className="hidden md:block w-1/2 min-h-screen sticky top-0 bg-linear-to-br from-primary/20 to-secondary/20">
+				<div className="flex items-center justify-center h-full">
 					<div className="text-center px-8">
 						<h2 className="text-4xl font-bold text-primary-dark mb-4">
 							Unidad de Pleura
