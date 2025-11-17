@@ -3,7 +3,6 @@ import AboutSection from "./components/AboutSection"
 import FAQSection from "./components/FAQSection"
 import Footer from "./components/Footer"
 import NavBar from "./components/NavBar"
-import ServicesSection from "./components/ServicesSection"
 import TeamSection from "./components/TeamSection"
 import TestimonialsSection from "./components/TestimonialsSection"
 import TreatmentsSection from "./components/TreatmentsSection"
@@ -46,7 +45,6 @@ function App() {
 					</div>
 				</section>
 				<AboutSection />
-				<ServicesSection />
 				<TreatmentsSection />
 				<TeamSection />
 				{/* <TestimonialsSection /> */}
