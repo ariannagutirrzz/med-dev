@@ -1,23 +1,19 @@
-import {
-	CalendarIcon,
-	CogIcon,
-	HomeIcon,
-	InboxStackIcon,
-	ScissorsIcon,
-	UsersIcon,
-} from "@heroicons/react/24/outline"
 import { useState } from "react"
+import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
+import { GiMedicalDrip } from "react-icons/gi"
+import { MdOutlineInventory2 } from "react-icons/md"
 import Dashboard from "./Dashboard"
 import DashboardHeader from "./DashboardHeader"
+import MedicalRecords from "./MedicalRecords"
 
 // Componentes auxiliares para el contenido
 const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
 	title,
 	children,
 }) => (
-	<div className="bg-white rounded-2xl shadow-lg p-6">
+	<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
 		<h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
-		{children}
+		<div className="flex-1 flex items-center justify-center">{children}</div>
 	</div>
 )
 
@@ -47,32 +43,32 @@ const DashboardPage: React.FC = () => {
 		{
 			id: "home",
 			label: "Inicio",
-			icon: <HomeIcon className="w-5 h-5" />,
+			icon: <CiHome className="w-5 h-5" />,
 		},
 		{
 			id: "patients",
 			label: "Pacientes",
-			icon: <UsersIcon className="w-5 h-5" />,
+			icon: <CiUser className="w-5 h-5" />,
 		},
 		{
 			id: "appointments",
 			label: "Citas",
-			icon: <CalendarIcon className="w-5 h-5" />,
+			icon: <CiCalendar className="w-5 h-5" />,
 		},
 		{
 			id: "surgeryRoom",
 			label: "Sala de Cirugía",
-			icon: <ScissorsIcon className="w-5 h-5" />,
+			icon: <GiMedicalDrip className="w-5 h-5" />,
 		},
 		{
 			id: "inventory",
 			label: "Inventario",
-			icon: <InboxStackIcon className="w-5 h-5" />,
+			icon: <MdOutlineInventory2 className="w-5 h-5" />,
 		},
 		{
 			id: "settings",
 			label: "Configuración",
-			icon: <CogIcon className="w-5 h-5" />,
+			icon: <CiSettings className="w-5 h-5" />,
 		},
 	]
 
@@ -93,7 +89,7 @@ const DashboardPage: React.FC = () => {
 						<DashboardHeader />
 
 						<ContentGrid cols={3} className="grid-cols-1 lg:grid-cols-4 mt-6">
-							<div className="lg:col-span-2 mb-6">
+							<div className="lg:col-span-2 mb-6 w-150">
 								<h1 className="text-4xl font-bold text-gray-800">
 									Bienvenida, {userData.name}! <br /> con que te gustaría{" "}
 									<b className="text-primary">comenzar</b> hoy?
@@ -127,6 +123,14 @@ const DashboardPage: React.FC = () => {
 									<p className="text-gray-600 mt-2">Pacientes en tratamiento</p>
 								</div>
 							</ContentBlock>
+							<ContentBlock title="Próximas Cirugías">
+								<div className="text-center">
+									<p className="text-3xl font-bold text-orange-600">5</p>
+									<p className="text-gray-600 mt-2">
+										Programadas para esta semana
+									</p>
+								</div>
+							</ContentBlock>
 						</ContentGrid>
 					</div>
 				)
@@ -134,17 +138,15 @@ const DashboardPage: React.FC = () => {
 			case "patients":
 				return (
 					<div className="p-6">
-						<div className="mb-6">
-							<h1 className="text-3xl font-bold text-gray-800">
-								Gestión de Pacientes
-							</h1>
-							<p className="text-gray-600 mt-2">
-								Administra la información de los pacientes
-							</p>
+						<DashboardHeader />
+						<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
+							<h3 className="text-lg font-semibold text-gray-800 mb-4">
+								Historias Medicas
+							</h3>
+							<div className="flex-1">
+								<MedicalRecords />
+							</div>
 						</div>
-						<ContentBlock title="Lista de Pacientes">
-							<p>Contenido de pacientes...</p>
-						</ContentBlock>
 					</div>
 				)
 
