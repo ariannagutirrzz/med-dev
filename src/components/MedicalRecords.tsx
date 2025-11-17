@@ -1,4 +1,5 @@
-import { CiSquarePlus } from "react-icons/ci"
+import { CiCalendar, CiSquarePlus } from "react-icons/ci"
+import { LuPencilLine } from "react-icons/lu"
 
 export default function MedicalRecords() {
 	const records = [
@@ -52,7 +53,7 @@ export default function MedicalRecords() {
 			{records.map((record) => (
 				<div
 					key={record.id}
-					className="w-full h-full min-h-80 bg-gray-200 rounded-2xl shadow-md border-2 border-gray-400 p-6 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 cursor-pointer flex flex-col"
+					className="group w-full h-full min-h-80 bg-gray-100 rounded-2xl shadow-md border-2 border-gray-300 p-4 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 cursor-pointer flex flex-col"
 				>
 					<div className="flex justify-center items-start mb-3">
 						<h4 className="text-lg font-semibold text-gray-800">
@@ -60,23 +61,18 @@ export default function MedicalRecords() {
 						</h4>
 					</div>
 
-					<p className="text-sm text-gray-500 mb-4">
-						📅 {new Date(record.date).toLocaleDateString()}
-					</p>
-
 					<div className="rounded-lg p-3 flex-1">
 						<p className="text-gray-700 text-sm leading-relaxed">
 							{record.summary}
 						</p>
 					</div>
 
-					<div className="mt-4 flex justify-end">
-						<button
-							type="button"
-							className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-						>
-							Ver detalles →
-						</button>
+					<div className="mt-4 flex justify-between items-center">
+						<p className="text-sm text-gray-500 flex items-center">
+							<CiCalendar className="inline mr-1 text-primary w-5 h-5" />
+							{new Date(record.date).toLocaleDateString()}
+						</p>
+						<LuPencilLine className="h-7 w-7 text-gray-400 group-hover:scale-110 group-hover:text-primary transition-all duration-300" />
 					</div>
 				</div>
 			))}
