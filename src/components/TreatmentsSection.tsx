@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa"
+import { FaChevronRight } from "react-icons/fa"
 import TreatmentCard from "./TreatmentCard"
 
 const TreatmentsSection = () => {
@@ -75,9 +75,9 @@ const TreatmentsSection = () => {
 	// 	)
 	// }
 
-	// const goToTreatment = (index: number) => {
-	// 	setCurrentIndex(index)
-	// }
+	const goToTreatment = (index: number) => {
+		setCurrentIndex(index)
+	}
 
 	return (
 		<section id="treatments" className="py-16 bg-bg">
@@ -92,9 +92,10 @@ const TreatmentsSection = () => {
 					</p>
 				</div>
 
-				<div className="relative">
-					{/* Navigation Arrows */}
-					{/* <button
+				<div>
+					{/* Treatment Card Container with Navigation */}
+					<div className="relative">
+						{/* <button
 						type="button"
 						onClick={prevTreatment}
 						className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-primary text-white rounded-full p-3 hover:bg-primary-dark transition-colors shadow-lg"
@@ -102,40 +103,42 @@ const TreatmentsSection = () => {
 					>
 						<FaChevronLeft className="w-5 h-5" />
 					</button> */}
-					<button
-						type="button"
-						onClick={nextTreatment}
-						className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-primary text-white rounded-full p-3 hover:bg-primary-dark transition-colors shadow-lg"
-						aria-label="Siguiente tratamiento"
-					>
-						<FaChevronRight className="w-5 h-5" />
-					</button>
+						{/* Navigation Arrows */}
+						<button
+							type="button"
+							onClick={nextTreatment}
+							className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-primary text-white rounded-full p-3 hover:bg-primary-dark hover:shadow-[0_14px_30px_rgba(120,154,97,0.25)] transition-all duration-300 shadow-lg"
+							aria-label="Siguiente tratamiento"
+						>
+							<FaChevronRight className="w-5 h-5" />
+						</button>
 
-					{/* Treatment Card */}
-					<div className="transition-all duration-300 ease-in-out">
-						<TreatmentCard
-							title={treatments[currentIndex].title}
-							description={treatments[currentIndex].description}
-							conditions={treatments[currentIndex].conditions}
-						/>
+						{/* Treatment Card */}
+						<div className="transition-all duration-300 ease-in-out">
+							<TreatmentCard
+								title={treatments[currentIndex].title}
+								description={treatments[currentIndex].description}
+								conditions={treatments[currentIndex].conditions}
+							/>
+						</div>
 					</div>
 
 					{/* Dots Indicator */}
-					{/* <div className="flex justify-center gap-2 mt-8">
+					<div className="flex justify-center items-center gap-2 mt-6">
 						{treatments.map((treatment, index) => (
 							<button
 								key={treatment.title}
 								type="button"
 								onClick={() => goToTreatment(index)}
-								className={`w-3 h-3 rounded-full transition-all ${
+								className={`h-3 rounded-full transition-all duration-300 ${
 									index === currentIndex
 										? "bg-primary w-8"
-										: "bg-muted hover:bg-primary"
+										: "bg-muted w-3 hover:bg-primary/70"
 								}`}
 								aria-label={`Ir al tratamiento ${index + 1}`}
 							/>
 						))}
-					</div> */}
+					</div>
 
 					{/* Treatment Counter */}
 					{/* <div className="text-center mt-4 text-sm text-muted">
