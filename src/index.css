@@ -4,10 +4,10 @@
 	/* Primary theme colors (from your Coolors palette) */
 	--color-primary: #789a61; /* sage green */
 	--color-primary-dark: #35524a; /* dark slate grey */
-	--color-secondary: #a07178; /* dusty mauve */
-	--color-accent: #e6ccbe; /* almond silk */
-	--color-accent-soft: #ffe5d4; /* powder petal */
-
+	--color-secondary: #522a27; /* lavender purple */
+	--color-accent: #9b5de5; /* espresso */
+	--color-accent-soft: #d8dbe2; /* alabaster grey */
+	
 	/* Neutrals / text */
 	--color-muted: #7b8b87;
 	--color-muted-light: #b8c5c2;
@@ -16,7 +16,7 @@
 	/* Backgrounds */
 	--color-bg: #f6fbfb;
 	--color-bg-light: #e6f2f2;
-	--color-bg-card: #f5fafb;
+	--color-bg-card: #d8dbe2;
 
 	/* Simple brand gradient using primary + secondary */
 	--gradient-primary: linear-gradient(
