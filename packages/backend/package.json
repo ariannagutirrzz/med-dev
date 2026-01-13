@@ -7,8 +7,10 @@
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc",
 		"start": "node dist/index.js",
-		"create-user": "node scripts/create-user.js",
-		"seed-medicos": "node scripts/seed-medicos.js"
+		"seed-medicos": "node scripts/seed-medicos.js",
+		"setup-render-db": "node scripts/setup-render-db.js",
+		"verify-tables": "node scripts/verify-tables.js",
+		"show-schema": "node scripts/show-schema.js"
 	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",
