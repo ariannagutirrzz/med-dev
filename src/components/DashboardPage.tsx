@@ -6,6 +6,7 @@ import Calendar, { type Surgery } from "./Calendar"
 import CalendarLegend from "./CalendarLegend"
 import Dashboard from "./Dashboard"
 import DashboardHeader from "./DashboardHeader"
+import { useAuth } from "../contexts/AuthContext"
 
 // Componentes auxiliares para el contenido
 const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
@@ -31,6 +32,7 @@ const ContentGrid: React.FC<{
 )
 
 const DashboardPage: React.FC = () => {
+	const { user, logout } = useAuth()
 	const [currentDate] = useState(new Date())
 	const surgeries: Surgery[] = [
 		{ day: 15, type: "Cirugía Mayor" },
@@ -64,8 +66,8 @@ const DashboardPage: React.FC = () => {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
 	const userData = {
-		name: "Dra. Ninive Azuaje",
-		role: "Médico Especialista - Unidad de Pleura",
+		name: user?.name || "Usuario",
+		role: user?.role || "Médico Especialista - Unidad de Pleura",
 	}
 
 	const menuItems = [
@@ -265,6 +267,11 @@ const DashboardPage: React.FC = () => {
 		}
 	}
 
+	const handleLogout = () => {
+		logout()
+		window.location.href = "/login"
+	}
+
 	return (
 		<Dashboard
 			user={userData}
@@ -273,6 +280,7 @@ const DashboardPage: React.FC = () => {
 			activeMenuItem={activeMenuItem}
 			onMenuItemClick={handleMenuItemClick}
 			onToggleSidebar={handleToggleSidebar}
+			onLogout={handleLogout}
 		>
 			{renderContent()}
 		</Dashboard>

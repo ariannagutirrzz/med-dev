@@ -1,14 +1,27 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { FaArrowLeft } from "react-icons/fa"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
 import SelectionButtons from "../components/auth/SelectionButtons"
 import LoginForm from "../components/auth/LoginForm"
 import SignupForm from "../components/auth/SignupForm"
+import { useAuth } from "../contexts/AuthContext"
 
 const LoginPage = () => {
 	const navigate = useNavigate()
+	const { login, isAuthenticated, loading } = useAuth()
 	const [isLogin, setIsLogin] = useState(true)
+
+	// Redirect if already authenticated
+	useEffect(() => {
+		if (!loading && isAuthenticated) {
+			navigate("/dashboard", { replace: true })
+		}
+	}, [isAuthenticated, loading, navigate])
+
+	// Show loading or nothing while checking auth
+	if (loading || isAuthenticated) {
+		return null
+	}
 
 	const handleAuthToggle = (isLoginMode: boolean) => {
 		setIsLogin(isLoginMode)
@@ -18,7 +31,6 @@ const LoginPage = () => {
 		name,
 		email,
 		password,
-		username,
 	}: {
 		name: string
 		email: string
@@ -26,12 +38,23 @@ const LoginPage = () => {
 		username?: string
 	}) => {
 		try {
-			// TODO: Implement signup logic
-			console.log("Signing up:", { name, email, password, username })
+			const response = await fetch("http://localhost:3001/api/auth/signup", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ name, email, password }),
+			})
 
-			navigate("/")
+			if (!response.ok) {
+				const error = await response.json()
+				throw new Error(error.error || "Signup failed")
+			}
+
+			// Auto-login after successful signup
+			await login(email, password)
+			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error signing up", error)
+			alert(error instanceof Error ? error.message : "Error al registrarse")
 		}
 	}
 
@@ -43,12 +66,11 @@ const LoginPage = () => {
 		password: string
 	}) => {
 		try {
-			// TODO: Implement login logic
-			console.log("Logging in:", { email, password })
-
-			navigate("/")
+			await login(email, password)
+			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error logging in", error)
+			alert(error instanceof Error ? error.message : "Error al iniciar sesión")
 		}
 	}
 
