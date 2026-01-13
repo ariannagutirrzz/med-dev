@@ -5,12 +5,12 @@ import { comparePassword, hashPassword } from "../utils/auth";
 export class AuthController {
   static createAccount = async (req: Request, res: Response) => {
     try {
-      const { email, password, name } = req.body;
+      const { email, password, name, role } = req.body;
 
-      if (!email || !password || !name) {
+      if (!email || !password || !name || !role) {
         return res
           .status(400)
-          .json({ error: "Email, password, and name are required" });
+          .json({ error: "Email, password, name and role are required" });
       }
 
       // Check if user already exists
@@ -30,8 +30,8 @@ export class AuthController {
 
       // Create user
       const result = await query(
-        "INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, role",
-        [email.toLowerCase(), hashedPassword, name]
+        "INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role",
+        [email.toLowerCase(), hashedPassword, name, role]
       );
 
       const newUser = result.rows[0];
@@ -42,7 +42,7 @@ export class AuthController {
           id: newUser.id,
           name: newUser.name,
           email: newUser.email,
-          role: newUser.role || "Médico",
+          role: newUser.role,
         },
       });
     } catch (error) {
