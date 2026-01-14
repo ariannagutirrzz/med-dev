@@ -1,16 +1,17 @@
 import type { Request, Response } from "express";
 import { query } from "../db";
 import { comparePassword, hashPassword } from "../utils/auth";
+import { generateJWT } from "../utils/jwt";
 
 export class AuthController {
   static createAccount = async (req: Request, res: Response) => {
     try {
-      const { email, password, name, role } = req.body;
+      const { email, password, name, document_id } = req.body;
 
-      if (!email || !password || !name || !role) {
-        return res
-          .status(400)
-          .json({ error: "Email, password, name and role are required" });
+      if (!email || !password || !name || !document_id) {
+        return res.status(400).json({
+          error: "Email, password, name and document_id are required",
+        });
       }
 
       if (password.length < 8) {
@@ -36,8 +37,8 @@ export class AuthController {
 
       // Create user
       const result = await query(
-        "INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role",
-        [email.toLowerCase(), hashedPassword, name, role]
+        "INSERT INTO users (email, password, name, role, document_id) VALUES ($1, $2, $3, 'Paciente', $4) RETURNING id, email, name, role",
+        [email.toLowerCase(), hashedPassword, name, document_id]
       );
 
       const newUser = result.rows[0];
@@ -46,6 +47,7 @@ export class AuthController {
         success: true,
         user: {
           id: newUser.id,
+          document_id: newUser.document_id,
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
@@ -68,7 +70,7 @@ export class AuthController {
 
       // Find user by email
       const result = await query(
-        "SELECT id, email, password, name, role FROM users WHERE email = $1",
+        "SELECT id, email, password, name, role, document_id FROM users WHERE email = $1",
         [email.toLowerCase()]
       );
 
@@ -85,6 +87,8 @@ export class AuthController {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
+      const token = generateJWT({ id: user.document_id });
+
       // Return user data (without password)
       res.json({
         success: true,
@@ -94,6 +98,7 @@ export class AuthController {
           email: user.email,
           role: user.role || "Médico",
         },
+        token: token,
       });
     } catch (error) {
       console.error("Login error:", error);
