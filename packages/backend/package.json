@@ -1,0 +1,33 @@
+{
+	"name": "backend",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"seed-medicos": "node scripts/seed-medicos.js",
+		"setup-render-db": "node scripts/setup-render-db.js",
+		"verify-tables": "node scripts/verify-tables.js",
+		"show-schema": "node scripts/show-schema.js"
+	},
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"cors": "^2.8.5",
+		"dotenv": "^16.4.7",
+		"express": "^4.21.2",
+		"pg": "^8.13.1",
+		"zod": "^3.24.1"
+	},
+	"devDependencies": {
+		"@types/bcryptjs": "^2.4.6",
+		"@types/cors": "^2.8.17",
+		"@types/express": "^5.0.0",
+		"@types/node": "^24.10.0",
+		"@types/pg": "^8.11.10",
+		"concurrently": "^9.2.1",
+		"tsx": "^4.19.2",
+		"typescript": "~5.9.3"
+	}
+}

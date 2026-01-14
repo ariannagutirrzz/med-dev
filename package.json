@@ -4,12 +4,21 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
+		"dev": "concurrently \"pnpm dev:frontend\" \"pnpm dev:backend\"",
+		"dev:frontend": "vite",
+		"dev:backend": "pnpm --filter backend dev",
+		"build": "pnpm build:frontend && pnpm build:backend",
+		"build:frontend": "vite build",
+		"build:backend": "pnpm --filter backend build",
 		"start": "vite",
-		"dev": "vite",
-		"build": "vite build",
 		"preview": "vite preview",
 		"lint": "biome check",
 		"lint-format": "biome check --write"
+	},
+	"pnpm": {
+		"workspaces": [
+			"packages/*"
+		]
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.1.17",
@@ -28,6 +37,7 @@
 		"@types/react-dom": "^19.2.2",
 		"@vitejs/plugin-react-swc": "^4.2.1",
 		"autoprefixer": "^10.4.14",
+		"concurrently": "^9.1.2",
 		"eslint": "^9.39.1",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"eslint-plugin-react-refresh": "^0.4.24",

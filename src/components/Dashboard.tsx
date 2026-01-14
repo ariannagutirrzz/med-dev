@@ -19,6 +19,7 @@ interface DashboardProps {
 	activeMenuItem?: string
 	onMenuItemClick: (itemId: string) => void
 	onToggleSidebar: () => void
+	onLogout?: () => void
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -29,6 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 	activeMenuItem,
 	onMenuItemClick,
 	onToggleSidebar,
+	onLogout,
 }) => {
 	return (
 		<div className="flex h-screen bg-gray-100">
@@ -39,6 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 				activeMenuItem={activeMenuItem}
 				onMenuItemClick={onMenuItemClick}
 				onToggleSidebar={onToggleSidebar}
+				onLogout={onLogout}
 			/>
 
 			{/* Contenido principal */}

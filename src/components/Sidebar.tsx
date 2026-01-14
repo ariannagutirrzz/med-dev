@@ -15,6 +15,7 @@ interface SidebarProps {
 	activeMenuItem?: string
 	onMenuItemClick: (itemId: string) => void
 	onToggleSidebar: () => void
+	onLogout?: () => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -23,6 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 	isSidebarOpen,
 	activeMenuItem,
 	onMenuItemClick,
+	onLogout,
 }) => {
 	return (
 		<aside
@@ -104,6 +106,27 @@ const Sidebar: React.FC<SidebarProps> = ({
 					})}
 				</ul>
 			</nav>
+
+			{/* Logout button */}
+			{onLogout && (
+				<div className="p-4 border-t border-gray-700">
+					<button
+						type="button"
+						onClick={onLogout}
+						className={`
+							w-full flex items-center gap-3 px-3 py-3 rounded-lg
+							transition-all duration-200 ease-in-out cursor-pointer
+							text-red-500 hover:bg-red-50 hover:text-red-700
+							${isSidebarOpen ? "justify-start" : "justify-center"}
+						`}
+						title={!isSidebarOpen ? "Cerrar sesión" : undefined}
+					>
+						<span className={`font-medium ${isSidebarOpen ? "block" : "hidden"}`}>
+							Cerrar sesión
+						</span>
+					</button>
+				</div>
+			)}
 		</aside>
 	)
 }

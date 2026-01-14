@@ -2,9 +2,11 @@ import { useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
+import Calendar, { type Surgery } from "./Calendar"
+import CalendarLegend from "./CalendarLegend"
 import Dashboard from "./Dashboard"
 import DashboardHeader from "./DashboardHeader"
-import MedicalRecords from "./MedicalRecords"
+import { useAuth } from "../contexts/AuthContext"
 
 // Componentes auxiliares para el contenido
 const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
@@ -30,13 +32,42 @@ const ContentGrid: React.FC<{
 )
 
 const DashboardPage: React.FC = () => {
+	const { user, logout } = useAuth()
+	const [currentDate] = useState(new Date())
+	const surgeries: Surgery[] = [
+		{ day: 15, type: "Cirugía Mayor" },
+		{ day: 18, type: "Cirugía Menor" },
+		{ day: 22, type: "Cirugía Programada" },
+		{ day: 25, type: "Cirugía Mayor" },
+	]
+	const currencies = [
+		{
+			currency: "EUR",
+			value: 274.84230343,
+		},
+		{
+			currency: "CNY",
+			value: 33.31033851,
+		},
+		{
+			currency: "TRY",
+			value: 5.58626986,
+		},
+		{
+			currency: "RUB",
+			value: 2.92621114,
+		},
+		{
+			currency: "USD",
+			value: 236.4601,
+		},
+	]
 	const [activeMenuItem, setActiveMenuItem] = useState("home")
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-	// Estado para la búsqueda
 
 	const userData = {
-		name: "Dra. Ninive Azuaje",
-		role: "Médico Especialista - Unidad de Pleura",
+		name: user?.name || "Usuario",
+		role: user?.role || "Médico Especialista - Unidad de Pleura",
 	}
 
 	const menuItems = [
@@ -89,12 +120,12 @@ const DashboardPage: React.FC = () => {
 						<DashboardHeader />
 
 						<ContentGrid cols={3} className="grid-cols-1 lg:grid-cols-4 mt-6">
-							<div className="lg:col-span-2 mb-6 w-150">
-								<h1 className="text-4xl font-bold text-gray-800">
-									Bienvenida, {userData.name}! <br /> con que te gustaría{" "}
+							<div className="lg:col-span-2 mb-6">
+								<h1 className="text-5xl font-bold text-gray-800">
+									Bienvenida, {userData.name}! con que te gustaría{" "}
 									<b className="text-primary">comenzar</b> hoy?
 								</h1>
-								<p className="mt-2 text-gray-400 font-semibold">
+								<p className="mt-4 text-lg text-gray-400 font-semibold">
 									Despliega y familiarizate con cada una de las siguientes
 									opciones, te ayudaremos a gestionar de manera más eficiente,
 									fácil y rápida.
@@ -108,30 +139,63 @@ const DashboardPage: React.FC = () => {
 								</div>
 							</ContentBlock>
 
-							<ContentBlock title="Eficiencia">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-purple-600">94%</p>
-									<p className="text-gray-600 mt-2">Tasa de éxito</p>
+							<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
+								<div className="flex flex-row justify-between">
+									<h3 className="text-lg font-semibold text-gray-800 mb-4">
+										Sistema Cambiario
+									</h3>
+									<img
+										src="/src/assets/logo.png"
+										alt="Logo del banco central de venezuela"
+										className="h-9 w-9"
+									/>
 								</div>
-							</ContentBlock>
+
+								<div className="flex-1 flex flex-col">
+									{currencies.map((currency) => (
+										<div
+											className="flex-1 flex flex-row justify-between mx-6 font-semibold text-gray-400"
+											key={currency.currency}
+										>
+											<span>{currency.currency}</span>
+											<span>{currency.value}</span>
+										</div>
+									))}
+								</div>
+							</div>
 						</ContentGrid>
 
-						<ContentGrid cols={2} className="mt-6">
-							<ContentBlock title="Pacientes Activos">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-blue-600">142</p>
-									<p className="text-gray-600 mt-2">Pacientes en tratamiento</p>
+						{/* Contenedor para el grid de 2 columnas */}
+						<div className="mt-6">
+							<ContentGrid cols={2}>
+								<ContentBlock title="Pacientes Activos">
+									<div className="text-center">
+										<p className="text-3xl font-bold text-blue-600">142</p>
+										<p className="text-gray-600 mt-2">
+											Pacientes en tratamiento
+										</p>
+									</div>
+								</ContentBlock>
+								<div>
+									<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
+										<div className="flex-1 flex items-center justify-center">
+											<Calendar surgeries={surgeries} showLegend={false} />
+										</div>
+									</div>
 								</div>
-							</ContentBlock>
-							<ContentBlock title="Próximas Cirugías">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-orange-600">5</p>
-									<p className="text-gray-600 mt-2">
-										Programadas para esta semana
-									</p>
+							</ContentGrid>
+						</div>
+						<div className="mt-6">
+							<ContentGrid cols={2}>
+								<div></div>
+								<div className="mt-4 flex justify-center">
+									<CalendarLegend
+										surgeries={surgeries}
+										currentMonth={currentDate.getMonth()}
+									/>
 								</div>
-							</ContentBlock>
-						</ContentGrid>
+							</ContentGrid>
+						</div>
 					</div>
 				)
 
@@ -143,9 +207,7 @@ const DashboardPage: React.FC = () => {
 							<h3 className="text-lg font-semibold text-gray-800 mb-4">
 								Historias Medicas
 							</h3>
-							<div className="flex-1">
-								<MedicalRecords />
-							</div>
+							<div className="flex-1"></div>
 						</div>
 					</div>
 				)
@@ -193,7 +255,7 @@ const DashboardPage: React.FC = () => {
 								</div>
 							</ContentBlock>
 
-							<ContentBlock title="Eficiencia">
+							<ContentBlock title="Sistema Cambiario">
 								<div className="text-center">
 									<p className="text-3xl font-bold text-purple-600">94%</p>
 									<p className="text-gray-600 mt-2">Tasa de éxito</p>
@@ -205,6 +267,11 @@ const DashboardPage: React.FC = () => {
 		}
 	}
 
+	const handleLogout = () => {
+		logout()
+		window.location.href = "/login"
+	}
+
 	return (
 		<Dashboard
 			user={userData}
@@ -213,6 +280,7 @@ const DashboardPage: React.FC = () => {
 			activeMenuItem={activeMenuItem}
 			onMenuItemClick={handleMenuItemClick}
 			onToggleSidebar={handleToggleSidebar}
+			onLogout={handleLogout}
 		>
 			{renderContent()}
 		</Dashboard>
