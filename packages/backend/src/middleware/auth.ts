@@ -31,7 +31,7 @@ export const authenticate = async (
       const result = await query(`SELECT email, name, document_id 
                     FROM users
                     WHERE document_id = '${decoded.id}'`);
-      const user = result.rows[0];
+      const user: User = result.rows[0];
       if (user) {
         req.user = user;
         next();
