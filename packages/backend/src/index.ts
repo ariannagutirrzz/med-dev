@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { query } from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 
 dotenv.config();
 
@@ -17,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 // Start server
 app.listen(PORT, () => {

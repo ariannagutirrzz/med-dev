@@ -28,7 +28,7 @@ export const authenticate = async (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
 
     if (typeof decoded === "object" && decoded.id) {
-      const result = await query(`SELECT email, name, document_id 
+      const result = await query(`SELECT email, name, role, document_id 
                     FROM users
                     WHERE document_id = '${decoded.id}'`);
       const user: User = result.rows[0];
