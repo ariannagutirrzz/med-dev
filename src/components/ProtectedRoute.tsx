@@ -24,5 +24,3 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 }
 
 export default ProtectedRoute
-
-

@@ -121,7 +121,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 						`}
 						title={!isSidebarOpen ? "Cerrar sesión" : undefined}
 					>
-						<span className={`font-medium ${isSidebarOpen ? "block" : "hidden"}`}>
+						<span
+							className={`font-medium ${isSidebarOpen ? "block" : "hidden"}`}
+						>
 							Cerrar sesión
 						</span>
 					</button>

@@ -33,4 +33,3 @@ const SelectionButtons = ({ isLogin, onAuthToggle }: SelectionButtonsProps) => {
 }
 
 export default SelectionButtons
-

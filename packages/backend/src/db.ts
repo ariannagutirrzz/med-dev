@@ -1,9 +1,9 @@
-import pg from "pg";
-import dotenv from "dotenv";
+import dotenv from "dotenv"
+import pg from "pg"
 
-dotenv.config();
+dotenv.config()
 
-const { Pool } = pg;
+const { Pool } = pg
 
 export const pool = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -14,18 +14,17 @@ export const pool = new Pool({
 	ssl: process.env.DATABASE_URL?.includes("render.com")
 		? { rejectUnauthorized: false }
 		: undefined,
-});
+})
 
 pool.on("connect", () => {
-	console.log("Database connected");
-});
+	console.log("Database connected")
+})
 
 pool.on("error", (err: Error) => {
-	console.error("Database connection error:", err);
-	process.exit(-1);
-});
+	console.error("Database connection error:", err)
+	process.exit(-1)
+})
 
 export async function query(text: string, params?: unknown[]) {
-	return await pool.query(text, params);
+	return await pool.query(text, params)
 }
-

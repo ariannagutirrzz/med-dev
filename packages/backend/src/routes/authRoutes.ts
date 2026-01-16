@@ -1,9 +1,9 @@
-import { AuthController } from "./../controllers/AuthController";
-import { Router } from "express";
+import { Router } from "express"
+import { createAccount, login } from "../controllers/AuthController"
 
-const authRoutes: Router = Router();
+const authRoutes: Router = Router()
 
 // Signup endpoint
-authRoutes.post("/signup", AuthController.createAccount);
-authRoutes.post("/login", AuthController.login);
-export default authRoutes;
+authRoutes.post("/signup", createAccount)
+authRoutes.post("/login", login)
+export default authRoutes

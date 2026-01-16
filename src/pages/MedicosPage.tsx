@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import TeamCard from "../components/TeamCard"
 
 interface Medico {
@@ -72,5 +72,3 @@ const MedicosPage = () => {
 }
 
 export default MedicosPage
-
-
