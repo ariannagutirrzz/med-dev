@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
 
-export const getAllUsers = async (res: Response) => {
+export const getAllUsers = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
 			`SELECT name, email, document_id, title, credentials, experience, description, image 

@@ -3,6 +3,8 @@ import dotenv from "dotenv"
 import express from "express"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
+import patientsRoutes from "./routes/patientsRoutes.js"
 import surgeryRoutes from "./routes/surgeryRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 
@@ -20,6 +22,8 @@ app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/appointments", appointmentRoutes)
 app.use("/api/surgeries", surgeryRoutes)
+app.use("/api/patients", patientsRoutes)
+app.use("/api/medicalRecords", medicalRecordsRoutes)
 
 // Start server
 app.listen(PORT, () => {

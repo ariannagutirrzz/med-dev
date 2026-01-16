@@ -3,7 +3,6 @@ import type { NextFunction, Request, Response } from "express"
 export const isMedic = (req: Request, res: Response, next: NextFunction) => {
 	// Access the user object attached by your 'authenticate' middleware
 	const user = req.user
-	console.log(user)
 
 	// 1. Check if user exists (Safety check)
 	if (!user) {
