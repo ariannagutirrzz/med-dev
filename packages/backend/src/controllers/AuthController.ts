@@ -5,11 +5,30 @@ import { generateJWT } from "../utils/jwt"
 
 export const createAccount = async (req: Request, res: Response) => {
 	try {
-		const { email, password, name, document_id } = req.body
+		const {
+			email,
+			password,
+			name,
+			phone,
+			date_of_birth,
+			gender,
+			address,
+			document_id,
+		} = req.body
 
-		if (!email || !password || !name || !document_id) {
+		if (
+			!email ||
+			!password ||
+			!name ||
+			!document_id ||
+			!phone ||
+			!date_of_birth ||
+			!gender ||
+			!address
+		) {
 			return res.status(400).json({
-				error: "Email, password, name and document_id are required",
+				error:
+					"Email, password, name, document_id, phone, date of birth, gender and address are required",
 			})
 		}
 
@@ -35,8 +54,17 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		// Create user
 		const result = await query(
-			"INSERT INTO users (email, password, name, role, document_id) VALUES ($1, $2, $3, 'Paciente', $4) RETURNING id, email, name, role",
-			[email.toLowerCase(), hashedPassword, name, document_id],
+			"INSERT INTO users (email, password, name, role, document_id, phone, date_of_birth, gender, address) VALUES ($1, $2, $3, 'Paciente', $4, $5, $6, $7, $8) RETURNING id, email, name, role",
+			[
+				email.toLowerCase(),
+				hashedPassword,
+				name,
+				document_id,
+				phone,
+				date_of_birth,
+				gender,
+				address,
+			],
 		)
 
 		const newUser = result.rows[0]
