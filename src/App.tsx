@@ -6,23 +6,23 @@ import DashboardPage from "./components/DashboardPage"
 import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
-	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path="/" element={<HomePage />} />
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/medicos" element={<MedicosPage />} />
-				<Route
-					path="/dashboard"
-					element={
-						<ProtectedRoute>
-							<DashboardPage />
-						</ProtectedRoute>
-					}
-				/>
-			</Routes>
-		</BrowserRouter>
-	)
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/medicos" element={<MedicosPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
