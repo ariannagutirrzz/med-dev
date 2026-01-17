@@ -1,20 +1,22 @@
-import { Router } from "express";
-import { AppointmentController } from "../controllers/AppointmentController";
-import { authenticate } from "../middleware/auth";
-import { isMedic } from "../middleware/roleAuth";
+import { Router } from "express"
+import {
+	createAppointment,
+	deleteAppointment,
+	getAllAppointments,
+	getAppointmentById,
+	updateAppointment,
+} from "../controllers/AppointmentController"
+import { authenticate } from "../middleware/auth"
+import { isMedic } from "../middleware/roleAuth"
 
-const appointmentRoutes: Router = Router();
+const appointmentRoutes: Router = Router()
 
-appointmentRoutes.use(authenticate);
+appointmentRoutes.use(authenticate)
 
-appointmentRoutes.post("/", AppointmentController.createAppointment);
-appointmentRoutes.get("/", AppointmentController.getAllAppointments);
-appointmentRoutes.get("/:id", AppointmentController.getAppointmentById);
-appointmentRoutes.patch("/:id", AppointmentController.updateAppointment);
-appointmentRoutes.delete(
-  "/:id",
-  isMedic,
-  AppointmentController.deleteAppointment
-);
+appointmentRoutes.post("/", createAppointment)
+appointmentRoutes.get("/", getAllAppointments)
+appointmentRoutes.get("/:id", getAppointmentById)
+appointmentRoutes.patch("/:id", updateAppointment)
+appointmentRoutes.delete("/:id", isMedic, deleteAppointment)
 
-export default appointmentRoutes;
+export default appointmentRoutes

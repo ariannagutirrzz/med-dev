@@ -1,6 +1,6 @@
 import { useState } from "react"
-import InputField from "../common/InputField"
 import Button from "../common/Button"
+import InputField from "../common/InputField"
 
 interface SignupFormProps {
 	onSignUp: (data: {
@@ -73,4 +73,3 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 }
 
 export default SignupForm
-

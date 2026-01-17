@@ -43,9 +43,7 @@ const InputField = ({
 			<div className="relative flex items-center">
 				{/* Icon (Optional) */}
 				{showIcon && icon && (
-					<div className="absolute left-6 top-5 text-text z-10">
-						{icon}
-					</div>
+					<div className="absolute left-6 top-5 text-text z-10">{icon}</div>
 				)}
 
 				{/* Separator Line (Optional) */}
@@ -70,13 +68,11 @@ const InputField = ({
 						type="button"
 						className="absolute right-4 top-5 text-text hover:text-primary transition-colors"
 						onClick={toggleVisibility}
-						aria-label={isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
+						aria-label={
+							isPasswordVisible ? "Ocultar contraseña" : "Mostrar contraseña"
+						}
 					>
-						{isPasswordVisible ? (
-							<FaEyeSlash size={20} />
-						) : (
-							<FaEye size={20} />
-						)}
+						{isPasswordVisible ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
 					</button>
 				)}
 			</div>
@@ -85,4 +81,3 @@ const InputField = ({
 }
 
 export default InputField
-

@@ -1,0 +1,136 @@
+import type { Request, Response } from "express"
+import { query } from "../db"
+
+// 1. Create Surgery (Reservation)
+export const createSurgery = async (req: Request, res: Response) => {
+	const { patient_id, surgery_date, status, notes, surgery_type } = req.body
+
+	// Logic: doctor_id is extracted from the logged-in user's data
+	const doctor_id = req.user?.document_id
+
+	if (!patient_id || !surgery_date || !doctor_id) {
+		return res.status(400).json({
+			error: "Patient ID, Surgery Date, and Doctor ID are required.",
+		})
+	}
+
+	try {
+		const result = await query(
+			`INSERT INTO surgeries (patient_id, doctor_id, surgery_date, status, notes, surgery_type)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+			[
+				patient_id,
+				doctor_id,
+				surgery_date,
+				status || "Scheduled",
+				notes,
+				surgery_type,
+			],
+		)
+
+		res.status(201).json({
+			message: "Surgery reservation created successfully.",
+			surgery: result.rows[0],
+		})
+	} catch (error) {
+		console.error("Error creating surgery:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+// 2. Get All Surgeries
+export const getAllSurgeries = async (_req: Request, res: Response) => {
+	try {
+		// Joining with patients and users to show names instead of just IDs
+		const result = await query(
+			`SELECT s.*, 
+                    p.first_name as patient_first_name, p.last_name as patient_last_name,
+                    u.name as doctor_name
+             FROM surgeries s
+             JOIN patients p ON s.patient_id = p.document_id
+             JOIN users u ON s.doctor_id = u.document_id
+             ORDER BY s.surgery_date ASC`,
+			[],
+		)
+		res.json({ surgeries: result.rows })
+	} catch (error) {
+		console.error("Error fetching surgeries:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+// 3. Get Surgery By ID
+export const getSurgeryById = async (req: Request, res: Response) => {
+	const { id } = req.params
+	try {
+		const result = await query(`SELECT * FROM surgeries WHERE id = $1`, [id])
+
+		if (result.rowCount === 0) {
+			return res.status(404).json({ error: "Surgery record not found." })
+		}
+
+		res.json(result.rows[0])
+	} catch (error) {
+		console.error("Error fetching surgery:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+// 4. Update Surgery (PATCH)
+export const updateSurgery = async (req: Request, res: Response) => {
+	const { id } = req.params
+	const updates = req.body
+
+	const allowedFields = ["surgery_date", "status", "notes", "patient_id"]
+	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
+
+	if (keys.length === 0) {
+		return res
+			.status(400)
+			.json({ error: "No valid fields provided for update." })
+	}
+
+	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
+	const values = keys.map((key) => updates[key])
+	values.push(id)
+
+	try {
+		const result = await query(
+			`UPDATE surgeries 
+             SET ${setClause}, updated_at = NOW()
+             WHERE id = $${values.length}
+             RETURNING *`,
+			values,
+		)
+
+		if (result.rowCount === 0) {
+			return res.status(404).json({ error: "Surgery record not found." })
+		}
+
+		res.json({
+			message: "Surgery updated successfully",
+			surgery: result.rows[0],
+		})
+	} catch (error) {
+		console.error("Error updating surgery:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+// 5. Delete Surgery
+export const deleteSurgery = async (req: Request, res: Response) => {
+	const { id } = req.params
+	try {
+		const result = await query(`DELETE FROM surgeries WHERE id = $1`, [id])
+
+		if (result.rowCount === 0) {
+			return res.status(404).json({ error: "Surgery record not found." })
+		}
+
+		res.json({ message: "Surgery reservation deleted successfully." })
+	} catch (error) {
+		console.error("Error deleting surgery:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}

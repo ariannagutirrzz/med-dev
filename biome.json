@@ -7,12 +7,11 @@
 		"defaultBranch": "main"
 	},
 	"files": {
-		"includes": ["**", "!!**/dist"],
-		"ignore": ["**/*.css"]
+		"includes": ["**", "!!**/dist"]
 	},
 	"overrides": [
 		{
-			"include": ["*.css"],
+			"includes": ["*.css"],
 			"linter": {
 				"enabled": false
 			}

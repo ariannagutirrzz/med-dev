@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { FaEnvelope, FaLock } from "react-icons/fa"
-import InputField from "../common/InputField"
 import Button from "../common/Button"
+import InputField from "../common/InputField"
 
 interface LoginFormProps {
 	onLogin: (data: { email: string; password: string }) => void
@@ -76,4 +76,3 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 }
 
 export default LoginForm
-

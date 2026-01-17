@@ -7,7 +7,12 @@ interface FeatureCardProps {
 	color: "primary" | "secondary"
 }
 
-const FeatureCard = ({ icon: Icon, title, description, color }: FeatureCardProps) => {
+const FeatureCard = ({
+	icon: Icon,
+	title,
+	description,
+	color,
+}: FeatureCardProps) => {
 	const colorClasses = {
 		primary: {
 			border: "border-primary",
@@ -41,4 +46,3 @@ const FeatureCard = ({ icon: Icon, title, description, color }: FeatureCardProps
 }
 
 export default FeatureCard
-

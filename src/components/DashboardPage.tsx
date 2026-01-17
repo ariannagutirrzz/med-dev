@@ -2,11 +2,11 @@ import { useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
+import { useAuth } from "../contexts/AuthContext"
 import Calendar, { type Surgery } from "./Calendar"
 import CalendarLegend from "./CalendarLegend"
 import Dashboard from "./Dashboard"
 import DashboardHeader from "./DashboardHeader"
-import { useAuth } from "../contexts/AuthContext"
 
 // Componentes auxiliares para el contenido
 const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
