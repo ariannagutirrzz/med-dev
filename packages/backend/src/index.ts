@@ -1,12 +1,14 @@
 import cors from "cors"
 import dotenv from "dotenv"
 import express from "express"
+import swaggerUI from "swagger-ui-express"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
 import surgeryRoutes from "./routes/surgeryRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
+import swaggerSpec from "./utils/swagger.js"
 
 dotenv.config()
 
@@ -24,6 +26,9 @@ app.use("/api/appointments", appointmentRoutes)
 app.use("/api/surgeries", surgeryRoutes)
 app.use("/api/patients", patientsRoutes)
 app.use("/api/medicalRecords", medicalRecordsRoutes)
+
+// Docs
+app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 
 // Start server
 app.listen(PORT, () => {
