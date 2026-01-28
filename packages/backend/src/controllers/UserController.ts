@@ -4,7 +4,7 @@ import { query } from "../db"
 export const getAllUsers = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
-			`SELECT name, email, document_id, title, credentials, experience, description, image 
+			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
                     FROM users
                     ORDER BY name`,
 		)
@@ -29,7 +29,7 @@ export const getUserByDocumentId = async (req: Request, res: Response) => {
 
 	try {
 		const result = await query(
-			`SELECT name, title, credentials, experience, description, image 
+			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
              FROM users 
              WHERE document_id = $1`,
 			[id], // The driver handles VARCHAR mapping automatically
@@ -58,7 +58,7 @@ export const getUserByDocumentId = async (req: Request, res: Response) => {
 export const getAllDoctors = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
-			`SELECT name, title, credentials, experience, description, image 
+			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
              FROM users 
              WHERE role ILIKE 'Médico'`,
 		)
