@@ -30,6 +30,10 @@ const options: Options = {
 				description:
 					"Operaciones de la API relacionadas a las historias médicas",
 			},
+			{
+				name: "Medical_Supplies",
+				description: "Operaciones de la API relacionadas a los insumos médicos",
+			},
 		],
 		info: {
 			title: "Documentacion API MedDev",
