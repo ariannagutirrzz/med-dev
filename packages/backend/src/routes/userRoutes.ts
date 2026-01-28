@@ -15,6 +15,11 @@ import { authenticate } from "../middleware/auth"
  *     summary: Obtener todos los usuarios
  *     tags:
  *     - Users
+ * /api/users/medicos:
+ *   get:
+ *     summary: Obtener todos los medicos
+ *     tags:
+ *     - Users
  * /api/users/{id}:
  *   get:
  *    summary: Obtener un usuario por su document_id (Cedula)
