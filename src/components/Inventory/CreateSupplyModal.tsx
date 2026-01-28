@@ -32,15 +32,14 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 		"w-full pl-10 pr-4 py-2 border border-muted-light rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-text"
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-dark/40 backdrop-blur-sm">
-			<div className="bg-bg w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
+			<div className="bg-gray-100 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
 				{/* Header del Modal */}
-				<div className="bg-primary p-6 text-white flex justify-between items-center">
+				<div className="p-6 flex justify-between items-center">
 					<div>
-						<h2 className="text-xl font-bold">Nuevo Insumo Médico</h2>
-						<p className="text-primary-dark/20 text-xs font-medium uppercase tracking-wider">
-							Registro de Inventario
-						</p>
+						<h2 className="text-xl text-shadow-primary-dark font-bold">
+							Nuevo Insumo Médico
+						</h2>
 					</div>
 					<button
 						type="button"
@@ -53,12 +52,12 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 
 				{/* Formulario */}
 				<form onSubmit={handleSubmit} className="p-6 space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-3xl shadow-lg">
 						{/* ID / Código */}
 						<div className="md:col-span-2 relative">
 							<label
 								htmlFor="id"
-								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
+								className="text-xs text-primary-dark font-bold mb-1 block ml-1"
 							>
 								Código Identificador (ID)
 							</label>
@@ -190,13 +189,13 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 						<button
 							type="button"
 							onClick={onClose}
-							className="flex-1 py-3 border-2 border-muted-light text-muted font-bold rounded-2xl hover:bg-muted-light/10 transition-colors"
+							className="flex-1 py-3 border-2 cursor-pointer border-muted-light text-muted font-bold rounded-2xl hover:bg-muted-light/30 transition-colors"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							className="flex-1 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+							className="flex-1 py-3 cursor-pointer bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
 						>
 							<FaSave /> Guardar Insumo
 						</button>
