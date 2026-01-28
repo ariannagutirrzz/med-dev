@@ -55,6 +55,32 @@ export const getUserByDocumentId = async (req: Request, res: Response) => {
 	}
 }
 
+export const getAllDoctors = async (_req: Request, res: Response) => {
+	try {
+		const result = await query(
+			`SELECT name, title, credentials, experience, description, image 
+             FROM users 
+             WHERE role ILIKE 'Médico'`,
+		)
+
+		// Si no hay filas, el array estará vacío
+		if (result.rows.length === 0) {
+			return res.status(404).json({
+				message: "No se encontraron médicos registrados",
+			})
+		}
+
+		// Devolvemos el array completo (rows), no solo el índice [0]
+		res.json({
+			doctors: result.rows,
+			message: `${result.rows.length} médicos encontrados con éxito`,
+		})
+	} catch (error) {
+		console.error("Error fetching doctors:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
 export const updateUser = async (req: Request, res: Response) => {
 	const { id } = req.params
 	const updates = req.body // e.g., { name: "New Name", description: "New Bio" }

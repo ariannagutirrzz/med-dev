@@ -1,6 +1,7 @@
 import { Router } from "express"
 import {
 	deleteUser,
+	getAllDoctors,
 	getAllUsers,
 	getUserByDocumentId,
 	updateUser,
@@ -77,6 +78,7 @@ const userRoutes: Router = Router()
 userRoutes.use(authenticate)
 
 userRoutes.get("/", getAllUsers)
+userRoutes.get("/medicos", getAllDoctors)
 userRoutes.get("/:id", getUserByDocumentId)
 userRoutes.patch("/:id", updateUser)
 userRoutes.delete("/:id", deleteUser)
