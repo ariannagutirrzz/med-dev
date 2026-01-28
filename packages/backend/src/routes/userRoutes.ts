@@ -53,7 +53,7 @@ import { authenticate } from "../middleware/auth"
  *               phone:
  *                 type: string
  *                 example: "04149704265"
- *               date_of_birth:
+ *               birthdate:
  *                 type: string
  *                 example: "2003-05-24"
  *               gender:
