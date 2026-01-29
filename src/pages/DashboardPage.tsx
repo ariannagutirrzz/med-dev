@@ -9,6 +9,7 @@ import Dashboard from "../components/Dashboard"
 import DashboardHeader from "../components/DashboardHeader"
 import CreateSupplyModal from "../components/Inventory/CreateSupplyModal"
 import Inventory from "../components/Inventory/Inventory"
+import MedicalRecords from "../components/Patients/MedicalRecords"
 import { useAuth } from "../contexts/AuthContext"
 
 // Componentes auxiliares para el contenido
@@ -209,10 +210,9 @@ const DashboardPage: React.FC = () => {
 					<div className="p-6">
 						<DashboardHeader />
 						<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
-							<h3 className="text-lg font-semibold text-gray-800 mb-4">
-								Historias Medicas
-							</h3>
-							<div className="flex-1"></div>
+							<div className="flex-1">
+								<MedicalRecords />
+							</div>
 						</div>
 					</div>
 				)
