@@ -110,7 +110,7 @@ const ClinicalEvolutionDetailModal = ({
 					<button
 						type="button"
 						onClick={onClose}
-						className="hover:bg-gray-200 p-2 rounded-full text-gray-400"
+						className="hover:bg-gray-200 p-2 rounded-full text-gray-400 cursor-pointer transition-colors"
 					>
 						<FaTimes />
 					</button>
@@ -253,7 +253,7 @@ const ClinicalEvolutionDetailModal = ({
 								<label className={fileInputClass}>
 									<FaFileImage className="text-gray-300 text-3xl mb-2" />
 									<span className="text-xs text-gray-500 font-medium">
-										{getFileName(formData.rx_torax)}
+										{getFileName(formData.tomografia)}
 									</span>
 									<input
 										type="file"
@@ -272,13 +272,13 @@ const ClinicalEvolutionDetailModal = ({
 						<button
 							type="button"
 							onClick={onClose}
-							className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all"
+							className="px-6 py-3 cursor-pointer bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							className="px-8 py-3 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2"
+							className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2"
 						>
 							<FaSave /> Guardar Registro
 						</button>
