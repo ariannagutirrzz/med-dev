@@ -38,10 +38,10 @@ export const createAppointment = async (req: Request, res: Response) => {
 				.json({ error: "doctor_id is required for patients." })
 	}
 
-	if (!appointment_date || !status) {
+	if (!appointment_date || !status || !notes) {
 		return res.status(400).json({
 			error:
-				"Missing required fields: appointment_date and status are mandatory.",
+				"Missing required fields: appointment_date, status, and notes (caso/motivo) are mandatory.",
 		})
 	}
 
@@ -98,13 +98,22 @@ export const createAppointment = async (req: Request, res: Response) => {
 				year: "numeric",
 				month: "long",
 				day: "numeric",
+			})
+			const formattedTime = appointmentDate.toLocaleTimeString("es-ES", {
 				hour: "2-digit",
 				minute: "2-digit",
 			})
 
 			// Send WhatsApp to patient
 			if (patient?.phone) {
-				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} para el ${formattedDate}${doctor ? ` con el Dr./Dra. ${doctor.name}` : ""}.${notes ? ` Notas: ${notes}` : ""}`
+				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👨‍⚕️ Médico: ${doctor ? doctor.name : "No especificado"}
+${notes ? `📝 Caso/Motivo: ${notes}` : ""}
+
+Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
 				await sendWhatsApp({
 					to: patient.phone,
 					message: patientMessage,
@@ -113,7 +122,14 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 			// Send WhatsApp to doctor
 			if (doctor?.phone) {
-				const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"} para el ${formattedDate}${patient ? ` con el paciente ${patient.name}` : ""}.${notes ? ` Notas: ${notes}` : ""}`
+				const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"}
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👤 Paciente: ${patient ? patient.name : "No especificado"}
+${notes ? `📝 Caso/Motivo: ${notes}` : ""}
+
+Por favor, confirma tu disponibilidad.`
 				await sendWhatsApp({
 					to: doctor.phone,
 					message: doctorMessage,

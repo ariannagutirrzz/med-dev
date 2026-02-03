@@ -121,6 +121,7 @@ export const login = async (req: Request, res: Response) => {
 				name: user.name,
 				email: user.email,
 				role: user.role || "Médico",
+				document_id: user.document_id,
 			},
 			token: token,
 		})

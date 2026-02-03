@@ -83,9 +83,12 @@ const userRoutes: Router = Router()
 
 userRoutes.use(authenticate)
 
-userRoutes.get("/", getAllUsers)
-userRoutes.get("/medicos", getAllDoctors)
+// Rutas compartidas (disponibles para todos los usuarios autenticados)
 userRoutes.get("/me", getCurrentUser)
+userRoutes.get("/medicos", getAllDoctors) // Disponible para todos para que pacientes puedan ver médicos
+
+// Rutas que requieren permisos específicos
+userRoutes.get("/", getAllUsers) // Solo para administradores o médicos (si es necesario)
 userRoutes.get("/:id", getUserById)
 userRoutes.patch("/:id", updateUser)
 userRoutes.delete("/:id", deleteUser)
