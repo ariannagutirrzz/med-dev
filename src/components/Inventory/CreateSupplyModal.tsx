@@ -1,32 +1,77 @@
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FaBox, FaHashtag, FaLayerGroup, FaSave, FaTimes } from "react-icons/fa"
+import { toast } from "react-toastify"
+import { createSupply, updateSupplyById } from "../../services/SuppliesAPI"
+import type { Supply } from "../../types"
 
 interface CreateSupplyModalProps {
 	isOpen: boolean
 	onClose: () => void
+	onSuccess: () => void
+	editingSupply?: Supply | null
 }
 
-const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
-	// Estado inicial coincidiendo exactamente con tu backend
-	const [formData, setFormData] = useState({
+const CreateSupplyModal = ({
+	isOpen,
+	onClose,
+	onSuccess,
+	editingSupply,
+}: CreateSupplyModalProps) => {
+	const [loading, setLoading] = useState(false)
+
+	const initialValues: Supply = {
 		id: "",
 		name: "",
-		category: "Material", // Valor por defecto
+		category: "Descartable",
 		quantity: 0,
 		min_stock: 5,
 		unit: "Unidades",
-		status: "Disponible",
-	})
+		status: "available",
+	}
+	// Estado inicial coincidiendo exactamente con tu backend
+	const [formData, setFormData] = useState<Supply>(initialValues)
+
+	// Efecto para cargar datos si es edición
+	useEffect(() => {
+		if (editingSupply) {
+			setFormData(editingSupply)
+		} else {
+			setFormData(initialValues)
+		}
+	}, [editingSupply])
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
+		setLoading(true)
+		try {
+			if (editingSupply) {
+				// --- MODO EDICIÓN ---
+
+				// 1. Desestructuramos para separar el 'id' del resto de los datos
+				// Usamos el nombre 'id' para extraerlo y 'updateData' para el resto
+				const { id, ...updateData } = formData
+
+				// 2. Enviamos solo 'updateData' al backend
+				// El ID se pasa como primer argumento para la URL, pero no en el body
+				await updateSupplyById(editingSupply.id, updateData as Supply)
+
+				toast.success("Insumo actualizado con éxito")
+			} else {
+				// MODO CREACIÓN
+				await createSupply(formData)
+				toast.success("Insumo creado correctamente")
+			}
+			onSuccess()
+			onClose()
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Error al procesar")
+		} finally {
+			setLoading(false)
+		}
+	}
 
 	if (!isOpen) return null
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
-		console.log("Enviando al backend:", formData)
-		// Aquí irá tu llamada: await axios.post('/api/supplies', formData)
-		onClose()
-	}
 
 	const inputClass =
 		"w-full pl-10 pr-4 py-2 border border-muted-light rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-text"
@@ -38,13 +83,15 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 				<div className="p-6 flex justify-between items-center">
 					<div>
 						<h2 className="text-xl text-shadow-primary-dark font-bold">
-							Nuevo Insumo Médico
+							{editingSupply
+								? `Editando: ${editingSupply.name}`
+								: "Nuevo Insumo Médico"}
 						</h2>
 					</div>
 					<button
 						type="button"
 						onClick={onClose}
-						className="hover:bg-white/20 p-2 rounded-full transition-colors"
+						className="hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
 					>
 						<FaTimes size={20} />
 					</button>
@@ -65,8 +112,10 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<input
 								id="id"
 								type="text"
+								value={formData.id}
+								disabled={!!editingSupply} // No se puede editar el ID si es edición
 								required
-								className={inputClass}
+								className={`${inputClass} ${editingSupply ? "bg-gray-100" : ""}`}
 								placeholder="Ej: GASA-001"
 								onChange={(e) =>
 									setFormData({ ...formData, id: e.target.value })
@@ -86,6 +135,7 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<input
 								id="name"
 								type="text"
+								value={formData.name}
 								required
 								className={inputClass}
 								placeholder="Ej: Gasa Estéril"
@@ -106,15 +156,50 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<FaLayerGroup className="absolute left-3 bottom-3 text-muted" />
 							<select
 								id="category"
+								value={formData.category}
 								className={inputClass}
 								onChange={(e) =>
 									setFormData({ ...formData, category: e.target.value })
 								}
 							>
-								<option value="Material">Material</option>
-								<option value="Protección">Protección</option>
-								<option value="Insumos">Insumos</option>
-								<option value="Medicamentos">Medicamentos</option>
+								<option value="Descartable">Descartable</option>
+								<option value="No Descartable">No descartable</option>
+							</select>
+						</div>
+
+						{/* Estado - NUEVO CAMPO */}
+						<div className="relative">
+							<label
+								htmlFor="status"
+								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
+							>
+								Estado del Insumo
+							</label>
+							<div className="absolute left-4 bottom-4 text-muted">
+								<div
+									className={`w-2 h-2 rounded-full ${
+										formData.status === "available"
+											? "bg-green-500"
+											: formData.status === "low stock"
+												? "bg-orange-500"
+												: "bg-red-500"
+									}`}
+								/>
+							</div>
+							<select
+								id="status"
+								className={inputClass}
+								value={formData.status}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										status: e.target.value as Supply["status"],
+									})
+								}
+							>
+								<option value="available">Disponible</option>
+								<option value="low stock">Stock Bajo</option>
+								<option value="out of stock">Agotado</option>
 							</select>
 						</div>
 
@@ -129,6 +214,7 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<input
 								id="unit"
 								type="text"
+								value={formData.unit}
 								className={inputClass}
 								placeholder="Ej: Cajas, Paquetes"
 								onChange={(e) =>
@@ -148,6 +234,7 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<input
 								id="quantity"
 								type="number"
+								value={formData.quantity}
 								required
 								min="0"
 								className={inputClass}
@@ -171,6 +258,7 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 							<input
 								id="min_stock"
 								type="number"
+								value={formData.min_stock}
 								required
 								min="1"
 								className={inputClass}
@@ -195,9 +283,16 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 						</button>
 						<button
 							type="submit"
+							disabled={loading}
 							className="flex-1 py-3 cursor-pointer bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
 						>
-							<FaSave /> Guardar Insumo
+							{loading ? (
+								"Guardando..."
+							) : (
+								<>
+									<FaSave /> Guardar Insumo
+								</>
+							)}
 						</button>
 					</div>
 				</form>

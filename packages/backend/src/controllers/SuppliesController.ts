@@ -146,7 +146,7 @@ export const updateSupply = async (req: Request, res: Response) => {
 	try {
 		const result = await query(
 			`UPDATE medical_supplies 
-             SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
+             SET ${setClause}
              WHERE id = $${values.length} 
              RETURNING *`,
 			values,
