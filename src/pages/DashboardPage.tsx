@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
-import { GiMedicalDrip } from "react-icons/gi"
+import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import Calendar, { type Surgery } from "../components/Calendar"
 import CalendarLegend from "../components/CalendarLegend"
 import Dashboard from "../components/Dashboard"
 import DashboardHeader from "../components/DashboardHeader"
+import GenerateAI from "../components/GenerateAI"
 import Inventory from "../components/Inventory/Inventory"
 import MedicalRecords from "../components/Patients/MedicalRecords"
 import { useAuth } from "../contexts/AuthContext"
@@ -97,6 +98,11 @@ const DashboardPage: React.FC = () => {
 			id: "inventory",
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
+		},
+		{
+			id: "AI",
+			label: "Inteligencia Artificial",
+			icon: <GiArtificialIntelligence className="w-5 h-5" />,
 		},
 		{
 			id: "settings",
@@ -243,6 +249,13 @@ const DashboardPage: React.FC = () => {
 					</div>
 				)
 
+			case "AI":
+				return (
+					<>
+						{/* Renderizar Componente IA */}
+						<GenerateAI />
+					</>
+				)
 			default:
 				return (
 					<div className="p-6">
