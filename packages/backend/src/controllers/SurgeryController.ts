@@ -82,7 +82,7 @@ export const updateSurgery = async (req: Request, res: Response) => {
 	const { id } = req.params
 	const updates = req.body
 
-	const allowedFields = ["surgery_date", "status", "notes", "patient_id"]
+	const allowedFields = ["surgery_date", "status", "notes", "patient_id", "surgery_type"]
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
 	if (keys.length === 0) {

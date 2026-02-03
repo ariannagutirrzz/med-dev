@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { FaCalendarCheck, FaClock, FaUserMd } from "react-icons/fa"
 import { GiMedicalDrip } from "react-icons/gi"
@@ -12,6 +12,7 @@ import CalendarLegend from "../components/CalendarLegend"
 import Dashboard from "../components/Dashboard"
 import DashboardHeader from "../components/DashboardHeader"
 import Settings from "../components/Settings/Settings"
+import SurgeriesSection from "../components/Surgeries/SurgeriesSection"
 
 // Componentes auxiliares para el contenido
 const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
@@ -100,44 +101,65 @@ const DashboardPage: React.FC = () => {
 	const activeMenuItem =
 		routeToMenuItemId[location.pathname] || "home"
 
-	const menuItems = [
+	// Definir todos los items del menú con sus roles permitidos
+	const allMenuItems = [
 		{
 			id: "home",
 			label: "Inicio",
 			icon: <CiHome className="w-5 h-5" />,
 			path: "/dashboard/home",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 		{
 			id: "patients",
 			label: "Pacientes",
 			icon: <CiUser className="w-5 h-5" />,
 			path: "/dashboard/pacientes",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "appointments",
 			label: "Citas",
 			icon: <CiCalendar className="w-5 h-5" />,
 			path: "/dashboard/citas",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 		{
 			id: "surgeryRoom",
 			label: "Sala de Cirugía",
 			icon: <GiMedicalDrip className="w-5 h-5" />,
 			path: "/dashboard/sala-de-cirugia",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "inventory",
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
 			path: "/dashboard/inventario",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "settings",
 			label: "Configuración",
 			icon: <CiSettings className="w-5 h-5" />,
 			path: "/dashboard/configuracion",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 	]
+
+	// Verificar si el usuario tiene acceso a una ruta específica
+	const hasAccessToRoute = useCallback((path: string): boolean => {
+		const menuItem = allMenuItems.find((item) => item.path === path)
+		if (!menuItem) return false
+		const userRole = user?.role || ""
+		return menuItem.allowedRoles.includes(userRole)
+	}, [user?.role])
+
+	// Filtrar items del menú basado en el rol del usuario
+	const menuItems = allMenuItems.filter((item) => {
+		const userRole = user?.role || ""
+		return item.allowedRoles.includes(userRole)
+	})
 
 	const handleMenuItemClick = (itemId: string) => {
 		const route = menuItemIdToRoute[itemId]
@@ -146,12 +168,19 @@ const DashboardPage: React.FC = () => {
 		}
 	}
 
-	// Redirigir a /dashboard/home si está en /dashboard
+	// Redirigir a /dashboard/home si está en /dashboard o si no tiene acceso a la ruta actual
 	useEffect(() => {
 		if (location.pathname === "/dashboard") {
 			navigate("/dashboard/home", { replace: true })
+			return
 		}
-	}, [location.pathname, navigate])
+
+		// Verificar acceso a la ruta actual
+		if (!hasAccessToRoute(location.pathname)) {
+			// Redirigir a home si no tiene acceso
+			navigate("/dashboard/home", { replace: true })
+		}
+	}, [location.pathname, navigate, hasAccessToRoute])
 
 	const handleToggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen)
@@ -160,6 +189,13 @@ const DashboardPage: React.FC = () => {
 	// Renderizar contenido según la ruta actual
 	const renderContent = () => {
 		const currentPath = location.pathname
+		
+		// Verificar acceso a la ruta actual
+		if (!hasAccessToRoute(currentPath)) {
+			// Redirigir a home si no tiene acceso
+			navigate("/dashboard/home", { replace: true })
+			return null
+		}
 		
 		// Determinar qué sección mostrar basado en la ruta
 		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
@@ -267,167 +303,7 @@ const DashboardPage: React.FC = () => {
 		}
 		
 		if (currentPath === "/dashboard/sala-de-cirugia") {
-				return (
-					<div className="p-6">
-						<div className="mb-6 flex justify-between items-center">
-							<div>
-								<h1 className="text-3xl font-bold text-gray-800">
-									Reserva de Sala de Cirugía
-								</h1>
-								<p className="text-gray-600 mt-2">Gestiona las reservas de las salas quirúrgicas</p>
-							</div>
-							<button type="button" className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors">
-								<MdAddCircleOutline className="w-5 h-5" />
-								<span>Nueva Reserva</span>
-							</button>
-						</div>
-
-						{/* Estadísticas rápidas */}
-						<ContentGrid cols={4} className="mb-6">
-							<ContentBlock title="Salas Disponibles">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-green-600">3</p>
-									<p className="text-gray-600 mt-2 text-sm">Disponibles hoy</p>
-								</div>
-							</ContentBlock>
-							<ContentBlock title="Reservas Hoy">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-blue-600">5</p>
-									<p className="text-gray-600 mt-2 text-sm">Programadas</p>
-								</div>
-							</ContentBlock>
-							<ContentBlock title="En Uso">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-orange-600">2</p>
-									<p className="text-gray-600 mt-2 text-sm">Actualmente</p>
-								</div>
-							</ContentBlock>
-							<ContentBlock title="Total Salas">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-purple-600">5</p>
-									<p className="text-gray-600 mt-2 text-sm">Salas activas</p>
-								</div>
-							</ContentBlock>
-						</ContentGrid>
-
-						{/* Calendario de reservas */}
-						<div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-							<div className="flex justify-between items-center mb-4">
-								<h3 className="text-lg font-semibold text-gray-800">Calendario de Reservas</h3>
-								<div className="flex gap-2">
-									<button type="button" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-										Hoy
-									</button>
-									<button type="button" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-										Semana
-									</button>
-									<button type="button" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-										Mes
-									</button>
-								</div>
-							</div>
-							<div className="grid grid-cols-7 gap-2">
-								{["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((day) => (
-									<div key={day} className="text-center font-semibold text-gray-600 py-2">
-										{day}
-									</div>
-								))}
-								{Array.from({ length: 28 }).map((_, i) => (
-									<div
-										key={`calendar-day-${i}`}
-										className={`border border-gray-200 rounded-lg p-2 min-h-[80px] ${
-											i === 14 ? "bg-primary/10 border-primary" : ""
-										}`}
-									>
-										<div className="text-sm font-medium text-gray-700">{i + 1}</div>
-										{i === 14 && (
-											<div className="mt-1 text-xs bg-primary text-white rounded px-1 py-0.5">
-												Cirugía Mayor
-											</div>
-										)}
-									</div>
-								))}
-							</div>
-						</div>
-
-						{/* Lista de reservas */}
-						<div className="bg-white rounded-2xl shadow-lg p-6">
-							<h3 className="text-lg font-semibold text-gray-800 mb-4">Reservas Activas</h3>
-							<div className="space-y-4">
-								{/* Reserva ejemplo 1 */}
-								<div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-									<div className="flex justify-between items-start">
-										<div className="flex gap-4">
-											<div className="bg-red-100 p-3 rounded-lg">
-												<HiOutlineOfficeBuilding className="w-6 h-6 text-red-600" />
-											</div>
-											<div>
-												<h4 className="font-semibold text-gray-800">Sala de Cirugía 1</h4>
-												<p className="text-gray-600 text-sm">Cirugía Mayor - Toracoscopia</p>
-												<div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-													<span className="flex items-center gap-1">
-														<HiOutlineClock className="w-4 h-4" />
-														08:00 - 12:00
-													</span>
-													<span>Dr. María González</span>
-												</div>
-											</div>
-										</div>
-										<span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-											En Uso
-										</span>
-									</div>
-								</div>
-
-								{/* Reserva ejemplo 2 */}
-								<div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-									<div className="flex justify-between items-start">
-										<div className="flex gap-4">
-											<div className="bg-blue-100 p-3 rounded-lg">
-												<HiOutlineOfficeBuilding className="w-6 h-6 text-blue-600" />
-											</div>
-											<div>
-												<h4 className="font-semibold text-gray-800">Sala de Cirugía 2</h4>
-												<p className="text-gray-600 text-sm">Cirugía Menor - Biopsia</p>
-												<div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-													<span className="flex items-center gap-1">
-														<HiOutlineClock className="w-4 h-4" />
-														14:00 - 15:30
-													</span>
-													<span>Dr. Carlos Rodríguez</span>
-												</div>
-											</div>
-										</div>
-										<span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-											Reservada
-										</span>
-									</div>
-								</div>
-
-								{/* Reserva ejemplo 3 */}
-								<div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-									<div className="flex justify-between items-start">
-										<div className="flex gap-4">
-											<div className="bg-green-100 p-3 rounded-lg">
-												<HiOutlineOfficeBuilding className="w-6 h-6 text-green-600" />
-											</div>
-											<div>
-												<h4 className="font-semibold text-gray-800">Sala de Cirugía 3</h4>
-												<p className="text-gray-600 text-sm">Disponible</p>
-												<div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-													<span>Sin reservas programadas</span>
-												</div>
-											</div>
-										</div>
-										<span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-											Disponible
-										</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				)
+			return <SurgeriesSection />
 		}
 		
 		if (currentPath === "/dashboard/inventario") {
