@@ -1,77 +1,179 @@
-import { useState } from "react"
-// Importamos de react-icons (Fa = Font Awesome, Md = Material Design)
+import { useCallback, useEffect, useState } from "react"
 import { FaBoxOpen } from "react-icons/fa"
+import { toast } from "react-toastify"
+import { deleteSupplyById, getSupplies } from "../../services/SuppliesAPI" // Ajusta la ruta
 import type { Supply } from "../../types"
+import ConfirmModal from "../ConfirmModal"
+import CreateSupplyModal from "./CreateSupplyModal" // Asegúrate de importarlo
 import InventoryHeader from "./InventoryHeader"
 import InventoryRow from "./InventoryRow"
 
 const Inventory = () => {
 	const [supplies, setSupplies] = useState<Supply[]>([])
+	const [isLoading, setIsLoading] = useState(true)
+	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [searchTerm, setSearchTerm] = useState("")
 	const [categoryFilter, setCategoryFilter] = useState("all")
-
-	const filteredSupplies = supplies.filter(
-		(item) =>
-			item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			item.id.includes(searchTerm),
+	const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+	const [supplyToDelete, setSupplyToDelete] = useState<Supply["id"] | null>(
+		null,
 	)
+	const [supplyToEdit, setSupplyToEdit] = useState<Supply | null>(null)
+
+	const openEditModal = (supply: Supply) => {
+		setSupplyToEdit(supply)
+		setIsModalOpen(true)
+	}
+
+	const handleCloseModal = () => {
+		setIsModalOpen(false)
+		setSupplyToEdit(null) // Limpiar selección al cerrar
+	}
+
+	const fetchSupplies = useCallback(async () => {
+		try {
+			setIsLoading(true)
+			const data = await getSupplies()
+			setSupplies(data.supplies)
+		} catch (error) {
+			console.log(error)
+			toast.error("Error al obtener el inventario")
+		} finally {
+			setIsLoading(false)
+		}
+	}, [])
+
+	useEffect(() => {
+		fetchSupplies()
+	}, [fetchSupplies])
+
+	// Modificamos el handleDelete original para que solo abra el modal
+	const openDeleteConfirm = (id: Supply["id"]) => {
+		setSupplyToDelete(id)
+		setIsConfirmModalOpen(true)
+	}
+
+	const handleConfirmDelete = async () => {
+		if (!supplyToDelete) return
+
+		try {
+			await deleteSupplyById(supplyToDelete)
+			toast.success("Insumo eliminado con éxito")
+			await fetchSupplies() // Recargar la lista
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Error al eliminar")
+		} finally {
+			setIsConfirmModalOpen(false)
+			setSupplyToDelete(null)
+		}
+	}
+
+	const filteredSupplies = supplies.filter((item) => {
+		const matchesSearch =
+			item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			item.id.toLowerCase().includes(searchTerm.toLowerCase())
+		const matchesCategory =
+			categoryFilter === "all" || item.category === categoryFilter
+
+		return matchesSearch && matchesCategory
+	})
 
 	return (
 		<div className="p-4 space-y-6">
-			{/* Header del Inventario */}
-			<div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
-				<div className="flex-1 flex items-center justify-center">
-					<InventoryHeader
-						setSearchTerm={setSearchTerm}
-						setCategoryFilter={setCategoryFilter}
-						categoryFilter={categoryFilter}
-					/>
+			<div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-4 items-center">
+				<InventoryHeader
+					setSearchTerm={setSearchTerm}
+					setCategoryFilter={setCategoryFilter}
+					categoryFilter={categoryFilter}
+				/>
+				<button
+					type="button"
+					onClick={() => setIsModalOpen(true)}
+					className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md whitespace-nowrap cursor-pointer"
+				>
+					+ Nuevo Insumo
+				</button>
+			</div>
+
+			<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+				<div className="overflow-x-auto">
+					{isLoading ? (
+						<div className="p-20 text-center text-gray-400 font-bold animate-pulse">
+							CARGANDO INVENTARIO...
+						</div>
+					) : (
+						<table className="w-full text-left">
+							<thead className="bg-gray-50 border-b border-gray-100">
+								<tr>
+									<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
+										Insumo
+									</th>
+									<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
+										Categoría
+									</th>
+									<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
+										Stock
+									</th>
+									<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">
+										Estado
+									</th>
+									<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">
+										Acciones
+									</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-gray-50">
+								{filteredSupplies.length > 0 ? (
+									filteredSupplies.map((item) => (
+										<InventoryRow
+											key={item.id}
+											item={item}
+											onDelete={openDeleteConfirm}
+											onEdit={() => openEditModal(item)}
+										/>
+									))
+								) : (
+									<tr>
+										<td
+											colSpan={5}
+											className="px-6 py-10 text-center text-gray-400"
+										>
+											<FaBoxOpen
+												className="mx-auto mb-2 opacity-20"
+												size={48}
+											/>
+											<p>No se encontraron insumos médicos.</p>
+										</td>
+									</tr>
+								)}
+							</tbody>
+						</table>
+					)}
 				</div>
 			</div>
 
-			{/* Tabla de Resultados */}
-			<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-				<div className="overflow-x-auto">
-					<table className="w-full text-left">
-						<thead className="bg-gray-50 border-b border-gray-100">
-							<tr>
-								<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-									Insumo
-								</th>
-								<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-									Categoría
-								</th>
-								<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-									Stock
-								</th>
-								<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-									Estado
-								</th>
-								<th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
-									Acciones
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-gray-50">
-							{filteredSupplies.length > 0 ? (
-								filteredSupplies.map((item) => (
-									<InventoryRow key={item.id} item={item} />
-								))
-							) : (
-								<tr>
-									<td
-										colSpan={5}
-										className="px-6 py-10 text-center text-gray-400"
-									>
-										<FaBoxOpen className="mx-auto mb-2 opacity-20" size={48} />
-										<p>No se encontraron insumos médicos.</p>
-									</td>
-								</tr>
-							)}
-						</tbody>
-					</table>
-				</div>
-			</div>
+			<ConfirmModal
+				isOpen={isConfirmModalOpen}
+				onClose={() => setIsConfirmModalOpen(false)}
+				onConfirm={handleConfirmDelete}
+				title="¿Eliminar Insumo Médico?"
+				message={
+					<p>
+						Esta acción no se puede deshacer. ¿Estás seguro de que deseas
+						eliminar este insumo médico?
+					</p>
+				}
+				confirmText="Sí, eliminar definitivamente"
+				cancelText="No, volver atrás"
+				variant="danger"
+			/>
+
+			<CreateSupplyModal
+				isOpen={isModalOpen}
+				onClose={handleCloseModal}
+				onSuccess={fetchSupplies}
+				editingSupply={supplyToEdit}
+			/>
 		</div>
 	)
 }

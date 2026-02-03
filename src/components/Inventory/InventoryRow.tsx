@@ -2,7 +2,15 @@ import { FaEdit, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa"
 import { MdOutlineMedicalServices } from "react-icons/md"
 import type { Supply } from "../../types"
 
-const InventoryRow = ({ item }: { item: Supply }) => {
+const InventoryRow = ({
+	item,
+	onDelete,
+	onEdit,
+}: {
+	item: Supply
+	onDelete: (id: Supply["id"]) => void
+	onEdit: () => void
+}) => {
 	const isLowStock = item.quantity <= item.min_stock
 	const isOutOfStock = item.quantity === 0
 
@@ -38,7 +46,7 @@ const InventoryRow = ({ item }: { item: Supply }) => {
 			</td>
 			<td className="px-6 py-4">
 				{isOutOfStock ? (
-					<span className="flex items-center gap-1.5 text-red-700 bg-red-100 px-2.5 py-1 rounded-full text-[10px] font-black uppercase">
+					<span className="flex items-center gap-1.5 text-red-700 bg-red-100 px-2.5 py-1 rounded-full text-[10px] font-black uppercase w-fit">
 						<FaExclamationTriangle size={10} /> Agotado
 					</span>
 				) : isLowStock ? (
@@ -55,14 +63,16 @@ const InventoryRow = ({ item }: { item: Supply }) => {
 				<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 					<button
 						type="button"
-						className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
+						onClick={onEdit}
+						className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all cursor-pointer"
 						title="Editar"
 					>
 						<FaEdit size={16} />
 					</button>
 					<button
 						type="button"
-						className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-all"
+						onClick={() => onDelete(item.id)}
+						className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-all cursor-pointer"
 						title="Eliminar"
 					>
 						<FaTrashAlt size={14} />
