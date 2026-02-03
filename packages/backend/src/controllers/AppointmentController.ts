@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
+import { sendWhatsApp } from "../utils/twilio"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
@@ -73,8 +74,58 @@ export const createAppointment = async (req: Request, res: Response) => {
 			],
 		)
 
+		const appointment = result.rows[0]
+
+		// Fetch patient and doctor information for WhatsApp notifications
+		try {
+			const [patientResult, doctorResult] = await Promise.all([
+				query(
+					`SELECT name, phone FROM users WHERE document_id = $1`,
+					[patient_id],
+				),
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					doctor_id,
+				]),
+			])
+
+			const patient = patientResult.rows[0]
+			const doctor = doctorResult.rows[0]
+
+			// Format appointment date for WhatsApp
+			const appointmentDate = new Date(appointment_date)
+			const formattedDate = appointmentDate.toLocaleDateString("es-ES", {
+				weekday: "long",
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+				hour: "2-digit",
+				minute: "2-digit",
+			})
+
+			// Send WhatsApp to patient
+			if (patient?.phone) {
+				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} para el ${formattedDate}${doctor ? ` con el Dr./Dra. ${doctor.name}` : ""}.${notes ? ` Notas: ${notes}` : ""}`
+				await sendWhatsApp({
+					to: patient.phone,
+					message: patientMessage,
+				})
+			}
+
+			// Send WhatsApp to doctor
+			if (doctor?.phone) {
+				const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"} para el ${formattedDate}${patient ? ` con el paciente ${patient.name}` : ""}.${notes ? ` Notas: ${notes}` : ""}`
+				await sendWhatsApp({
+					to: doctor.phone,
+					message: doctorMessage,
+				})
+			}
+		} catch (whatsappError) {
+			// Log WhatsApp error but don't fail the appointment creation
+			console.error("Error sending WhatsApp notifications:", whatsappError)
+		}
+
 		res.status(201).json({
-			appointment: result.rows[0],
+			appointment: appointment,
 			message: "Appointment created successfully",
 		})
 	} catch (error) {
