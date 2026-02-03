@@ -12,13 +12,15 @@ import {
 	FaUserPlus,
 	FaVenusMars,
 } from "react-icons/fa"
-import type { Patient } from "../../types"
+import { toast } from "react-toastify"
+import { createPatient, updatePatientById } from "../../services/PatientsAPI"
+import type { Patient, PatientFormData } from "../../types"
 
 interface PatientModalFormProps {
 	isOpen: boolean
 	onClose: () => void
 	patient: Patient | null // Si es null, estamos creando uno nuevo
-	onSave: (patient: Patient) => void
+	onSave: () => void // Callback para refrescar la lista en el componente padre
 }
 
 const PatientModalForm = ({
@@ -27,21 +29,23 @@ const PatientModalForm = ({
 	patient,
 	onSave,
 }: PatientModalFormProps) => {
-	const [formData, setFormData] = useState<Patient | null>(null)
+	const [formData, setFormData] = useState<PatientFormData | null>(null)
+	const [loading, setLoading] = useState(false)
 
-	// Inicializar o limpiar el formulario
+	// Inicializar o limpiar el formulario cada vez que cambie el "patient" prop
 	useEffect(() => {
 		if (patient) {
-			setFormData({ ...patient })
-		} else {
-			// Valores por defecto para un nuevo paciente
 			setFormData({
-				id: Math.floor(Math.random() * 10000), // Temporal si no viene de DB
+				...patient,
+				birthdate: patient.birthdate.toISOString().split("T")[0],
+			})
+		} else {
+			setFormData({
 				first_name: "",
 				last_name: "",
 				email: "",
 				phone: "",
-				birthdate: new Date(),
+				birthdate: new Date().toISOString().split("T")[0],
 				gender: "M",
 				address: "",
 				document_id: "",
@@ -59,23 +63,45 @@ const PatientModalForm = ({
 		const { name, value } = e.target
 		setFormData((prev) => {
 			if (!prev) return null
-			if (name === "birthdate") {
-				return { ...prev, birthdate: new Date(value) }
-			}
+			// Eliminamos el if (name === "birthdate") porque ahora
+			// tanto el input como el estado aceptan string.
 			return { ...prev, [name]: value }
 		})
 	}
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		onSave(formData)
-		onClose()
+		setLoading(true)
+
+		try {
+			if (patient) {
+				// Escenario: Actualizar paciente existente
+				// Usamos document_id como identificador según tu esquema de API
+				await updatePatientById(formData)
+				toast.success("Información actualizada correctamente")
+			} else {
+				// Escenario: Crear paciente nuevo
+				await createPatient(formData)
+				toast.success("Paciente registrado exitosamente")
+			}
+
+			onSave() // Ejecuta el refresco de la tabla en el padre
+			onClose() // Cierra el modal
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: "Error al procesar la solicitud"
+			toast.error(message)
+		} finally {
+			setLoading(false)
+		}
 	}
 
 	const labelClass =
 		"text-xs font-black text-primary uppercase tracking-wider mb-2 flex items-center gap-2"
 	const inputBaseClass =
-		"w-full bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+		"w-full bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none disabled:opacity-60"
 
 	return (
 		<div className="fixed inset-0 z-70 flex items-center justify-center p-4 w-full bg-black/80 backdrop-blur-sm">
@@ -91,7 +117,9 @@ const PatientModalForm = ({
 								{patient ? "Editar Paciente" : "Nuevo Registro de Paciente"}
 							</h2>
 							<p className="text-xs font-bold text-gray-400 uppercase">
-								{patient ? `ID: ${patient.id}` : "Información Personal"}
+								{patient
+									? `Expediente: ${patient.document_id}`
+									: "Información Personal"}
 							</p>
 						</div>
 					</div>
@@ -106,7 +134,7 @@ const PatientModalForm = ({
 
 				<form onSubmit={handleSubmit}>
 					<div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-						{/* 1. Identificación y Nombres */}
+						{/* 1. Nombres y Apellidos */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="flex flex-col">
 								<label htmlFor="first_name" className={labelClass}>
@@ -116,6 +144,7 @@ const PatientModalForm = ({
 									type="text"
 									name="first_name"
 									required
+									disabled={loading}
 									className={inputBaseClass}
 									value={formData.first_name}
 									onChange={handleInputChange}
@@ -129,6 +158,7 @@ const PatientModalForm = ({
 									type="text"
 									name="last_name"
 									required
+									disabled={loading}
 									className={inputBaseClass}
 									value={formData.last_name}
 									onChange={handleInputChange}
@@ -136,6 +166,7 @@ const PatientModalForm = ({
 							</div>
 						</div>
 
+						{/* 2. Documento y Género */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="flex flex-col">
 								<label htmlFor="document_id" className={labelClass}>
@@ -145,6 +176,7 @@ const PatientModalForm = ({
 									type="text"
 									name="document_id"
 									required
+									disabled={loading || !!patient} // Bloqueado si se está editando
 									placeholder="Ej: V-12.345.678"
 									className={inputBaseClass}
 									value={formData.document_id}
@@ -157,6 +189,7 @@ const PatientModalForm = ({
 								</label>
 								<select
 									name="gender"
+									disabled={loading}
 									className={inputBaseClass}
 									value={formData.gender}
 									onChange={handleInputChange}
@@ -168,7 +201,7 @@ const PatientModalForm = ({
 							</div>
 						</div>
 
-						{/* 2. Contacto */}
+						{/* 3. Contacto */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="flex flex-col">
 								<label htmlFor="email" className={labelClass}>
@@ -178,6 +211,7 @@ const PatientModalForm = ({
 									type="email"
 									name="email"
 									required
+									disabled={loading}
 									className={inputBaseClass}
 									value={formData.email}
 									onChange={handleInputChange}
@@ -191,6 +225,7 @@ const PatientModalForm = ({
 									type="tel"
 									name="phone"
 									required
+									disabled={loading}
 									className={inputBaseClass}
 									value={formData.phone}
 									onChange={handleInputChange}
@@ -198,7 +233,7 @@ const PatientModalForm = ({
 							</div>
 						</div>
 
-						{/* 3. Datos Personales */}
+						{/* 4. Fecha de Nacimiento */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div className="flex flex-col">
 								<label htmlFor="birthdate" className={labelClass}>
@@ -208,13 +243,15 @@ const PatientModalForm = ({
 									type="date"
 									name="birthdate"
 									required
+									disabled={loading}
 									className={inputBaseClass}
-									value={formData.birthdate.toISOString().split("T")[0]}
+									value={formData.birthdate}
 									onChange={handleInputChange}
 								/>
 							</div>
 						</div>
 
+						{/* 5. Dirección */}
 						<div className="flex flex-col">
 							<label htmlFor="address" className={labelClass}>
 								<FaMapMarkerAlt /> Dirección de Habitación
@@ -222,6 +259,7 @@ const PatientModalForm = ({
 							<textarea
 								name="address"
 								rows={2}
+								disabled={loading}
 								className={inputBaseClass}
 								value={formData.address}
 								onChange={handleInputChange}
@@ -230,20 +268,26 @@ const PatientModalForm = ({
 						</div>
 					</div>
 
-					{/* Footer */}
+					{/* Footer con acciones */}
 					<div className="p-6 bg-gray-50 flex justify-end gap-3">
 						<button
 							type="button"
 							onClick={onClose}
-							className="px-6 py-3 cursor-pointer bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all"
+							disabled={loading}
+							className="px-6 py-3 cursor-pointer bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all disabled:opacity-50"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2"
+							disabled={loading}
+							className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2 disabled:bg-primary/50 disabled:cursor-wait"
 						>
-							<FaSave />{" "}
+							{loading ? (
+								<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+							) : (
+								<FaSave />
+							)}
 							{patient ? "Actualizar Paciente" : "Registrar Paciente"}
 						</button>
 					</div>

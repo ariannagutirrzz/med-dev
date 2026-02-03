@@ -9,19 +9,22 @@ export type Supply = {
 }
 
 export type Patient = {
-	id: number
 	first_name: string
 	last_name: string
 	email: string
 	phone: string
-	birthdate: Date
+	birthdate: Date // Objeto Date para manejo interno en el calendario/estado
 	gender: string
 	address: string
 	document_id: string
 }
 
+// PatientFormData hereda todo de Patient EXCEPTO birthdate, que lo definimos como string
+export type PatientFormData = Omit<Patient, "birthdate"> & {
+	birthdate: string // Formato YYYY-MM-DD para compatibilidad con la DB
+}
+
 export type MedicalHistory = {
-	id: number
 	patient_id: string
 	doctor_id: string
 	record_date: Date
