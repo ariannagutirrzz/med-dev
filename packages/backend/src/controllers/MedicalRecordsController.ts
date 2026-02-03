@@ -3,7 +3,16 @@ import { query } from "../db"
 
 // 1. Create Medical Record
 export const createMedicalRecord = async (req: Request, res: Response) => {
-	const { patient_id, record_date, diagnosis, treatment, notes } = req.body
+	const {
+		patient_id,
+		record_date,
+		diagnosis,
+		treatment,
+		notes,
+		reason,
+		background,
+		physical_exam,
+	} = req.body
 
 	// doctor_id comes from the logged-in user (staff/medic)
 	const doctor_id = req.user?.document_id
@@ -16,8 +25,8 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
 
 	try {
 		const result = await query(
-			`INSERT INTO medical_records (patient_id, doctor_id, record_date, diagnosis, treatment, notes)
-             VALUES ($1, $2, $3, $4, $5, $6)
+			`INSERT INTO medical_records (patient_id, doctor_id, record_date, diagnosis, treatment, notes, reason, background, physical_exam)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
              RETURNING *`,
 			[
 				patient_id,
@@ -26,6 +35,9 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
 				diagnosis,
 				treatment,
 				notes,
+				reason,
+				background,
+				physical_exam,
 			],
 		)
 
@@ -87,7 +99,15 @@ export const updateMedicalRecord = async (req: Request, res: Response) => {
 	const { id } = req.params
 	const updates = req.body
 
-	const allowedFields = ["diagnosis", "treatment", "notes", "record_date"]
+	const allowedFields = [
+		"diagnosis",
+		"treatment",
+		"notes",
+		"record_date",
+		"reason",
+		"background",
+		"physical_exam",
+	]
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
 	if (keys.length === 0)
