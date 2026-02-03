@@ -10,6 +10,8 @@ const LoginPage = () => {
 	const navigate = useNavigate()
 	const { login, isAuthenticated, loading } = useAuth()
 	const [isLogin, setIsLogin] = useState(true)
+	const [signupError, setSignupError] = useState<string | null>(null)
+	const [loginError, setLoginError] = useState<string | null>(null)
 
 	// Redirect if already authenticated
 	useEffect(() => {
@@ -25,37 +27,42 @@ const LoginPage = () => {
 
 	const handleAuthToggle = (isLoginMode: boolean) => {
 		setIsLogin(isLoginMode)
+		// Clear errors when switching modes
+		setSignupError(null)
+		setLoginError(null)
 	}
 
-	const handleSignUp = async ({
-		name,
-		email,
-		password,
-	}: {
+	const handleSignUp = async (formData: {
 		name: string
 		email: string
 		password: string
-		username?: string
+		document_id: string
+		phone: string
+		birthdate: string
+		gender: string
+		address: string
 	}) => {
+		setSignupError(null)
 		try {
 			const response = await fetch("http://localhost:3001/api/auth/signup", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ name, email, password }),
+				body: JSON.stringify(formData),
 			})
-			console.log(response)
 
 			if (!response.ok) {
 				const error = await response.json()
-				throw new Error(error.error || "Signup failed")
+				throw new Error(error.error || "Error al registrarse")
 			}
 
 			// Auto-login after successful signup
-			await login(email, password)
+			await login(formData.email, formData.password)
 			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error signing up", error)
-			alert(error instanceof Error ? error.message : "Error al registrarse")
+			setSignupError(
+				error instanceof Error ? error.message : "Error al registrarse",
+			)
 		}
 	}
 
@@ -66,62 +73,75 @@ const LoginPage = () => {
 		email: string
 		password: string
 	}) => {
+		setLoginError(null)
 		try {
 			await login(email, password)
 			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error logging in", error)
-			alert(error instanceof Error ? error.message : "Error al iniciar sesión")
+			setLoginError(
+				error instanceof Error ? error.message : "Error al iniciar sesión",
+			)
 		}
 	}
 
 	return (
-		<div className="flex min-h-screen">
-			{/* Left Side - Form Section */}
-			<div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-white px-4 py-8 md:py-12">
-				<div className="text-center w-full max-w-md relative">
-					<h1 className="text-5xl md:text-6xl font-semibold text-primary-dark mb-2">
+		<div className="min-h-screen bg-white flex items-center justify-center px-4 py-8">
+			<div className="w-full max-w-5xl">
+				<div className="text-center mb-8">
+					<h1 className="text-4xl md:text-5xl font-semibold text-primary-dark mb-2">
 						Bienvenido
 					</h1>
-					<p className="text-xl font-semibold text-secondary mb-6">
+					<p className="text-lg md:text-xl font-semibold text-secondary mb-6">
 						Elige una opción
 					</p>
 
 					{/* Selection Buttons */}
-					<SelectionButtons isLogin={isLogin} onAuthToggle={handleAuthToggle} />
+					<div className="flex justify-center mb-6">
+						<SelectionButtons isLogin={isLogin} onAuthToggle={handleAuthToggle} />
+					</div>
+				</div>
 
+				{/* Error Messages */}
+				{signupError && (
+					<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg max-w-3xl mx-auto">
+						<p className="text-red-700 text-sm flex items-center gap-2">
+							<span className="text-red-500 font-bold">⚠</span>
+							{signupError}
+						</p>
+					</div>
+				)}
+				{loginError && (
+					<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg max-w-3xl mx-auto">
+						<p className="text-red-700 text-sm flex items-center gap-2">
+							<span className="text-red-500 font-bold">⚠</span>
+							{loginError}
+						</p>
+					</div>
+				)}
+
+				{/* Form Container */}
+				<div className="max-w-3xl mx-auto">
 					{/* Conditional Rendering for Login or Signup Form */}
 					{isLogin ? (
 						<LoginForm onLogin={handleLogin} />
 					) : (
 						<SignupForm onSignUp={handleSignUp} />
 					)}
+				</div>
 
-					{/* Logo Below Form - Clickable */}
+				{/* Logo Below Form - Clickable */}
+				<div className="text-center mt-8">
 					<Link
 						to="/"
-						className="mt-8 inline-block hover:opacity-80 transition-opacity cursor-pointer"
+						className="inline-block hover:opacity-80 transition-opacity cursor-pointer"
 					>
 						<img
 							src={logoUnidadPleura}
 							alt="Unidad de Pleura Logo"
-							className="w-40 h-auto mx-auto"
+							className="w-32 md:w-40 h-auto mx-auto"
 						/>
 					</Link>
-				</div>
-			</div>
-
-			{/* Right Side - Image Section (Hidden on mobile) */}
-			<div className="hidden md:block w-1/2 min-h-screen sticky top-0 bg-linear-to-br from-primary/20 to-secondary/20">
-				<div className="flex items-center justify-center h-full">
-					<div className="text-center px-8">
-						<h2 className="text-4xl font-bold text-primary-dark mb-4">
-							Unidad de Pleura
-						</h2>
-						<p className="text-lg text-muted">
-							Atención especializada en enfermedades respiratorias
-						</p>
-					</div>
 				</div>
 			</div>
 		</div>

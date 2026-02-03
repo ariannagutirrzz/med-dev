@@ -16,12 +16,13 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 		setRememberDevice(!rememberDevice)
 	}
 
-	const handleSubmit = () => {
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault()
 		onLogin({ email, password })
 	}
 
 	return (
-		<div className="py-6">
+		<form onSubmit={handleSubmit} className="py-6">
 			{/* Email Field */}
 			<InputField
 				type="email"
@@ -62,7 +63,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 					</label>
 				</div>
 				<a
-					href="#"
+					href="/"
 					className="text-primary hover:text-primary-dark text-sm transition-colors"
 				>
 					¿Olvidaste tu contraseña?
@@ -70,8 +71,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 			</div>
 
 			{/* Login Button */}
-			<Button text="Acceder" onClick={handleSubmit} />
-		</div>
+			<Button text="Acceder" onClick={() => {}} type="submit" />
+		</form>
 	)
 }
 

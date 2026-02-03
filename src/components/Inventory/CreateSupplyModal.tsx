@@ -23,8 +23,8 @@ const CreateSupplyModal = ({ isOpen, onClose }: CreateSupplyModalProps) => {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		console.log("Enviando al backend:", formData)
-		// Aquí irá tu llamada: await axios.post('/api/supplies', formData)
+		// TODO: Implement API call to create supply
+		// await axios.post('/api/supplies', formData)
 		onClose()
 	}
 
