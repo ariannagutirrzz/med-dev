@@ -38,7 +38,7 @@ const ConfirmModal = ({
 				<button
 					type="button"
 					onClick={onClose}
-					className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+					className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
 				>
 					<FaTimes />
 				</button>

@@ -1,13 +1,11 @@
 import { useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
-import { FaPlus } from "react-icons/fa"
 import { GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import Calendar, { type Surgery } from "../components/Calendar"
 import CalendarLegend from "../components/CalendarLegend"
 import Dashboard from "../components/Dashboard"
 import DashboardHeader from "../components/DashboardHeader"
-import CreateSupplyModal from "../components/Inventory/CreateSupplyModal"
 import Inventory from "../components/Inventory/Inventory"
 import MedicalRecords from "../components/Patients/MedicalRecords"
 import { useAuth } from "../contexts/AuthContext"
@@ -114,8 +112,6 @@ const DashboardPage: React.FC = () => {
 	const handleToggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen)
 	}
-
-	const [isModalOpen, setIsModalOpen] = useState(false)
 
 	// Renderizar contenido según el ítem activo
 	const renderContent = () => {
@@ -241,26 +237,9 @@ const DashboardPage: React.FC = () => {
 									Gestiona el inventario de suministros médicos
 								</p>
 							</div>
-
-							<div>
-								<button
-									type="button"
-									onClick={() => setIsModalOpen(true)} // <-- Activa el modal
-									className="flex items-center justify-center gap-2 cursor-pointer bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
-								>
-									<FaPlus size={14} />
-									Nuevo Insumo
-								</button>
-							</div>
 						</div>
 
 						<Inventory />
-
-						{/* Inyectamos el Modal aquí */}
-						<CreateSupplyModal
-							isOpen={isModalOpen}
-							onClose={() => setIsModalOpen(false)}
-						/>
 					</div>
 				)
 

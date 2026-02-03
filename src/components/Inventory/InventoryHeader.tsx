@@ -40,10 +40,8 @@ const InventoryHeader = ({
 						className="pl-9 pr-8 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 text-sm font-medium rounded-xl appearance-none outline-none cursor-pointer transition-colors border border-transparent"
 					>
 						<option value="all">Todas las Categorías</option>
-						<option value="Material">Material</option>
-						<option value="Protección">Protección</option>
-						<option value="Insumos">Insumos</option>
-						<option value="Medicamentos">Medicamentos</option>
+						<option value="Descartable">Descartable</option>
+						<option value="No Descartable">No descartable</option>
 					</select>
 					{/* Flecha personalizada para el select */}
 					<div className="absolute right-5 pointer-events-none w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-[5px] border-t-gray-400"></div>
