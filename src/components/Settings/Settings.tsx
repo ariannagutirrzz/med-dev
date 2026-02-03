@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
+import { jwtDecode } from "jwt-decode"
 import { getSettings, updateSettings as updateUserSettings, type UpdateSettingsInput, type UserSettings } from "../../services/SettingsAPI"
 import { api } from "../../config/axios"
+import type { MyTokenPayload } from "../../types"
 
 /**
  * Settings Component
@@ -42,6 +44,11 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 
 	const loadSettings = useCallback(async () => {
 		try {
+			const token = localStorage.getItem("AUTH_TOKEN")
+			if (!token) {
+				setLoading(false)
+				return
+			}
 			setLoading(true)
 			const userSettings = await getSettings()
 			setSettings(userSettings)
@@ -54,7 +61,29 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 
 	const loadUserData = useCallback(async () => {
 		try {
-			// Get current user data from stored user or API
+			const token = localStorage.getItem("AUTH_TOKEN")
+			if (!token) {
+				const storedUser = localStorage.getItem("user")
+				if (storedUser) {
+					const user = JSON.parse(storedUser)
+					setProfileData((prev) => ({
+						...prev,
+						email: user.email || "",
+					}))
+				}
+				return
+			}
+
+			const response = await api.get("/users/me")
+			if (response.data?.user) {
+				const user = response.data.user
+				setProfileData((prev) => ({
+					...prev,
+					email: user.email || "",
+					phone: user.phone || "",
+				}))
+			}
+		} catch {
 			const storedUser = localStorage.getItem("user")
 			if (storedUser) {
 				const user = JSON.parse(storedUser)
@@ -63,12 +92,6 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 					email: user.email || "",
 				}))
 			}
-
-			// Try to get full user data from API if we have document_id
-			// For now, we'll use the email from stored user
-			// TODO: Add endpoint to get current user data or decode JWT to get document_id
-		} catch (err) {
-			console.error("Failed to load user data:", err)
 		}
 	}, [])
 
@@ -106,13 +129,15 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 				throw new Error("Not authenticated")
 			}
 
-			// Get user document_id from token (simplified)
-			const user = JSON.parse(localStorage.getItem("user") || "{}")
-			if (!user.email) {
-				throw new Error("User data not found")
+			// Get user id from JWT token (now uses incremental id)
+			const decoded = jwtDecode<MyTokenPayload>(token)
+			const userId = decoded.id
+
+			if (!userId) {
+				throw new Error("User ID not found in token")
 			}
 
-			await api.patch(`/users/${user.email}`, {
+			await api.patch(`/users/${userId}`, {
 				name: profileData.name,
 				phone: profileData.phone,
 			})

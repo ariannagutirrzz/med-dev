@@ -3,7 +3,8 @@ import {
 	deleteUser,
 	getAllDoctors,
 	getAllUsers,
-	getUserByDocumentId,
+	getCurrentUser,
+	getUserById,
 	updateUser,
 } from "../controllers/UserController"
 import { authenticate } from "../middleware/auth"
@@ -84,7 +85,8 @@ userRoutes.use(authenticate)
 
 userRoutes.get("/", getAllUsers)
 userRoutes.get("/medicos", getAllDoctors)
-userRoutes.get("/:id", getUserByDocumentId)
+userRoutes.get("/me", getCurrentUser)
+userRoutes.get("/:id", getUserById)
 userRoutes.patch("/:id", updateUser)
 userRoutes.delete("/:id", deleteUser)
 

@@ -1,5 +1,6 @@
 import { Router } from "express"
-import { createAccount, login } from "../controllers/AuthController"
+import { changePassword, createAccount, login } from "../controllers/AuthController"
+import { authenticate } from "../middleware/auth"
 
 const authRoutes: Router = Router()
 
@@ -64,4 +65,9 @@ const authRoutes: Router = Router()
 // Signup endpoint
 authRoutes.post("/signup", createAccount)
 authRoutes.post("/login", login)
+
+// Protected routes
+authRoutes.use(authenticate)
+authRoutes.patch("/change-password", changePassword)
+
 export default authRoutes

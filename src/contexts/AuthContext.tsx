@@ -24,8 +24,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	// Check for existing session on mount
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user")
-		if (storedUser) {
+		const storedToken = localStorage.getItem("AUTH_TOKEN")
+		
+		// Only set user if both user data and token exist
+		if (storedUser && storedToken) {
 			setUser(JSON.parse(storedUser))
+		} else {
+			// Clear invalid session
+			if (storedUser && !storedToken) {
+				localStorage.removeItem("user")
+			}
 		}
 		setLoading(false)
 	}, [])
