@@ -49,12 +49,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			role: data.user?.role || "Paciente",
 		}
 		setUser(userData)
+		localStorage.setItem("AUTH_TOKEN", data.token)
 		localStorage.setItem("user", JSON.stringify(userData))
 	}
 
 	const logout = () => {
 		setUser(null)
 		localStorage.removeItem("user")
+		localStorage.removeItem("AUTH_TOKEN")
 	}
 
 	return (
