@@ -5,6 +5,7 @@ export interface User {
 	name: string
 	email: string
 	role?: string
+	document_id?: string
 }
 
 interface AuthContextType {
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			name: data.user?.name || email.split("@")[0],
 			email: data.user?.email || email,
 			role: data.user?.role || "Paciente",
+			document_id: data.user?.document_id,
 		}
 		setUser(userData)
 		localStorage.setItem("AUTH_TOKEN", data.token)

@@ -19,8 +19,9 @@ export async function getPatients() {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
+			throw new Error(error.response.data.error || "Error al obtener pacientes")
 		}
+		throw new Error("Error al conectar con el servidor")
 	}
 }
 
