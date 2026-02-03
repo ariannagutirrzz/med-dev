@@ -17,8 +17,7 @@ interface SettingsProps {
 	}
 }
 
-type SettingsSection = "profile" | "notifications" | "security" | "preferences"
-
+type SettingsSection = "profile" | "notifications" | "security"  
 const Settings: React.FC<SettingsProps> = ({ userData }) => {
 	const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
 	const [settings, setSettings] = useState<UserSettings | null>(null)
@@ -223,7 +222,7 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 								{ id: "profile", label: "Perfil" },
 								{ id: "notifications", label: "Notificaciones" },
 								{ id: "security", label: "Seguridad" },
-								{ id: "preferences", label: "Preferencias" },
+								// { id: "preferences", label: "Preferencias" },
 							].map((section) => (
 								<button
 									key={section.id}
@@ -487,7 +486,7 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 					)}
 
 					{/* Preferences Section */}
-					{activeSection === "preferences" && settings && (
+					{/* {activeSection === "preferences" && settings && (
 						<div className="bg-white rounded-2xl shadow-lg p-6">
 							<h3 className="text-lg font-semibold text-gray-800 mb-4">
 								Preferencias Generales
@@ -539,7 +538,7 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 								</div>
 							</div>
 						</div>
-					)}
+					)} */}
 				</div>
 			</div>
 		</div>
