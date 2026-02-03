@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { ToastContainer } from "react-toastify"
 import ProtectedRoute from "./components/ProtectedRoute"
 import DashboardPage from "./pages/DashboardPage"
 import HomePage from "./pages/HomePage"
@@ -21,6 +22,7 @@ function App() {
 					}
 				/>
 			</Routes>
+			<ToastContainer />
 		</BrowserRouter>
 	)
 }

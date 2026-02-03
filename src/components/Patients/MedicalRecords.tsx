@@ -1,67 +1,43 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
+// 1. Importamos el service
+import { getPatients } from "../../services/PatientsAPI"
 import type { Patient } from "../../types"
 import { calcularEdad } from "../utils"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 
 export default function MedicalRecords() {
-	// 1. ESTADOS
+	// 2. ESTADOS (Iniciamos records vacío)
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
 	const [view, setView] = useState<"list" | "details">("list")
 	const [newEvolution, setNewEvolution] = useState<boolean>(false)
 	const [isPatientModalOpen, setIsPatientModalOpen] = useState(false)
 	const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null)
+	const [records, setRecords] = useState<Patient[]>([])
 
-	const [records, setRecords] = useState<Patient[]>([
-		{
-			id: 1,
-			first_name: "Juan",
-			last_name: "Perez",
-			email: "correo@ejemplo.com",
-			phone: "0412-1234567",
-			birthdate: new Date("1998-01-31"),
-			gender: "M",
-			address: "Calle Principal, Caracas",
-			document_id: "V-12345678",
-		},
-		{
-			id: 2,
-			first_name: "Maria",
-			last_name: "Perez",
-			email: "maria@ejemplo.com",
-			phone: "0412-7654321",
-			birthdate: new Date("1995-05-15"),
-			gender: "F",
-			address: "Av. Bolivar, Valencia",
-			document_id: "V-87654321",
-		},
-		{
-			id: 3,
-			first_name: "Maria",
-			last_name: "Perez",
-			email: "maria@ejemplo.com",
-			phone: "0412-7654321",
-			birthdate: new Date("1995-05-15"),
-			gender: "F",
-			address: "Av. Bolivar, Valencia",
-			document_id: "V-87654321",
-		},
-		{
-			id: 3,
-			first_name: "Maria",
-			last_name: "Perez",
-			email: "maria@ejemplo.com",
-			phone: "0412-7654321",
-			birthdate: new Date("1995-05-15"),
-			gender: "F",
-			address: "Av. Bolivar, Valencia",
-			document_id: "V-87654321",
-		},
-	])
+	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
+	const loadPatients = useCallback(async () => {
+		try {
+			const data = await getPatients()
+			// Transformamos birthdate de string a Date para que calcularEdad no falle
+			const formattedData = data.patients.map((p: Patient) => ({
+				...p,
+				birthdate: new Date(p.birthdate),
+			}))
+			setRecords(formattedData)
+		} catch (error) {
+			console.error("Error al cargar pacientes:", error)
+		}
+	}, [])
 
-	// 2. HANDLERS
+	// 4. EFECTO DE CARGA INICIAL
+	useEffect(() => {
+		loadPatients()
+	}, [loadPatients])
+
+	// 5. HANDLERS
 	const handleBack = () => {
 		setSelectedPatient(null)
 		setView("list")
@@ -78,18 +54,13 @@ export default function MedicalRecords() {
 		setIsPatientModalOpen(true)
 	}
 
-	const handleSavePatient = (patientData: Patient) => {
-		if (patientToEdit) {
-			setRecords(
-				records.map((r) => (r.id === patientData.id ? patientData : r)),
-			)
-		} else {
-			setRecords([...records, { ...patientData, id: Date.now() }])
-		}
+	// Modificamos este handler para que refresque desde la API
+	const handleSavePatient = () => {
+		loadPatients() // Recarga los datos frescos del servidor
 		setIsPatientModalOpen(false)
 	}
 
-	// 3. VISTA DETALLE
+	// 6. VISTA DETALLE
 	if (view === "details" && selectedPatient) {
 		return (
 			<div className="animate-in fade-in duration-300">
@@ -130,16 +101,14 @@ export default function MedicalRecords() {
 		)
 	}
 
-	// 4. VISTA LISTADO
+	// 7. VISTA LISTADO
 	return (
 		<>
 			<h3 className="text-xl font-bold text-gray-800 mb-6 px-2">
 				Historias Médicas
 			</h3>
 
-			{/* Ajuste de Grid: Se redujo el número de columnas máximas para que cada card sea más ancha */}
 			<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-2">
-				{/* Botón: Nuevo Registro */}
 				<button
 					type="button"
 					onClick={handleCreatePatient}
@@ -151,9 +120,8 @@ export default function MedicalRecords() {
 					</span>
 				</button>
 
-				{/* Grid de Pacientes */}
 				{records.map((record) => (
-					<div key={record.id} className="relative group">
+					<div key={record.document_id} className="relative group">
 						<button
 							type="button"
 							onClick={() => {
@@ -224,7 +192,6 @@ export default function MedicalRecords() {
 							</div>
 						</button>
 
-						{/* Botón de Edición (Independiente) */}
 						<button
 							type="button"
 							onClick={(e) => handleEditPatient(e, record)}

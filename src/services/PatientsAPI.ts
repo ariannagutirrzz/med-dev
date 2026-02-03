@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios"
 import { api } from "../config/axios"
-import type { PatientFormData } from "../types"
+import type { Patient, PatientFormData } from "../types"
 
 export async function createPatient(formData: PatientFormData) {
 	try {
@@ -30,6 +30,17 @@ export async function updatePatientById(formData: PatientFormData) {
 			`/patients/${formData.document_id}`,
 			formData,
 		)
+		return data
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			throw new Error(error.response.data.error)
+		}
+	}
+}
+
+export async function deletePatientById(id: Patient["document_id"]) {
+	try {
+		const { data } = await api.delete(`/patients/${id}`)
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
