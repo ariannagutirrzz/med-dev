@@ -25,6 +25,7 @@ export type PatientFormData = Omit<Patient, "birthdate"> & {
 }
 
 export type MedicalHistory = {
+	id: number
 	patient_id: string
 	doctor_id: string
 	record_date: Date
@@ -38,4 +39,15 @@ export type MedicalHistory = {
 	tomografia?: string | File
 	created_at: Date
 	updated_at: Date
+}
+
+export type MedicalHistoryFormData = Omit<
+	MedicalHistory,
+	"created_at" | "updated_at" | "id"
+>
+
+export type MyTokenPayload = {
+	id: string
+	exp: number
+	iat: number
 }
