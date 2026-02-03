@@ -16,7 +16,7 @@ const LoginPage = () => {
 	// Redirect if already authenticated
 	useEffect(() => {
 		if (!loading && isAuthenticated) {
-			navigate("/dashboard", { replace: true })
+			navigate("/dashboard/home", { replace: true })
 		}
 	}, [isAuthenticated, loading, navigate])
 

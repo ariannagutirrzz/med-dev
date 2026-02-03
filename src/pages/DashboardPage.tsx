@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { FaCalendarCheck, FaClock, FaUserMd } from "react-icons/fa"
 import { GiMedicalDrip } from "react-icons/gi"
 import { HiOutlineOfficeBuilding, HiOutlineClock } from "react-icons/hi"
 import { MdOutlineInventory2, MdAddCircleOutline, MdSearch, MdFilterList } from "react-icons/md"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import AppointmentsSection from "../components/Appointments/AppointmentsSection"
 import Calendar, { type Surgery } from "../components/Calendar"
@@ -66,7 +67,8 @@ const DashboardPage: React.FC = () => {
 			value: 236.4601,
 		},
 	]
-	const [activeMenuItem, setActiveMenuItem] = useState("home")
+	const navigate = useNavigate()
+	const location = useLocation()
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
 	const userData = {
@@ -74,51 +76,93 @@ const DashboardPage: React.FC = () => {
 		role: user?.role || "Médico Especialista - Unidad de Pleura",
 	}
 
+	// Mapeo de rutas a IDs de menú
+	const routeToMenuItemId: Record<string, string> = {
+		"/dashboard/home": "home",
+		"/dashboard/pacientes": "patients",
+		"/dashboard/citas": "appointments",
+		"/dashboard/sala-de-cirugia": "surgeryRoom",
+		"/dashboard/inventario": "inventory",
+		"/dashboard/configuracion": "settings",
+	}
+
+	// Mapeo de IDs de menú a rutas
+	const menuItemIdToRoute: Record<string, string> = {
+		home: "/dashboard/home",
+		patients: "/dashboard/pacientes",
+		appointments: "/dashboard/citas",
+		surgeryRoom: "/dashboard/sala-de-cirugia",
+		inventory: "/dashboard/inventario",
+		settings: "/dashboard/configuracion",
+	}
+
+	// Obtener el item activo basado en la URL actual
+	const activeMenuItem =
+		routeToMenuItemId[location.pathname] || "home"
+
 	const menuItems = [
 		{
 			id: "home",
 			label: "Inicio",
 			icon: <CiHome className="w-5 h-5" />,
+			path: "/dashboard/home",
 		},
 		{
 			id: "patients",
 			label: "Pacientes",
 			icon: <CiUser className="w-5 h-5" />,
+			path: "/dashboard/pacientes",
 		},
 		{
 			id: "appointments",
 			label: "Citas",
 			icon: <CiCalendar className="w-5 h-5" />,
+			path: "/dashboard/citas",
 		},
 		{
 			id: "surgeryRoom",
 			label: "Sala de Cirugía",
 			icon: <GiMedicalDrip className="w-5 h-5" />,
+			path: "/dashboard/sala-de-cirugia",
 		},
 		{
 			id: "inventory",
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
+			path: "/dashboard/inventario",
 		},
 		{
 			id: "settings",
 			label: "Configuración",
 			icon: <CiSettings className="w-5 h-5" />,
+			path: "/dashboard/configuracion",
 		},
 	]
 
 	const handleMenuItemClick = (itemId: string) => {
-		setActiveMenuItem(itemId)
+		const route = menuItemIdToRoute[itemId]
+		if (route) {
+			navigate(route)
+		}
 	}
+
+	// Redirigir a /dashboard/home si está en /dashboard
+	useEffect(() => {
+		if (location.pathname === "/dashboard") {
+			navigate("/dashboard/home", { replace: true })
+		}
+	}, [location.pathname, navigate])
 
 	const handleToggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen)
 	}
 
-	// Renderizar contenido según el ítem activo
+	// Renderizar contenido según la ruta actual
 	const renderContent = () => {
-		switch (activeMenuItem) {
-			case "home":
+		const currentPath = location.pathname
+		
+		// Determinar qué sección mostrar basado en la ruta
+		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
 				return (
 					<div className="p-6">
 						<DashboardHeader />
@@ -202,9 +246,10 @@ const DashboardPage: React.FC = () => {
 						</div>
 					</div>
 				)
-
-			case "patients":
-				return (
+		}
+		
+		if (currentPath === "/dashboard/pacientes") {
+			return (
 					<div className="p-6">
 						<DashboardHeader />
 						<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
@@ -215,11 +260,13 @@ const DashboardPage: React.FC = () => {
 						</div>
 					</div>
 				)
-
-			case "appointments":
-				return <AppointmentsSection />
-
-			case "surgeryRoom":
+		}
+		
+		if (currentPath === "/dashboard/citas") {
+			return <AppointmentsSection />
+		}
+		
+		if (currentPath === "/dashboard/sala-de-cirugia") {
 				return (
 					<div className="p-6">
 						<div className="mb-6 flex justify-between items-center">
@@ -381,9 +428,10 @@ const DashboardPage: React.FC = () => {
 						</div>
 					</div>
 				)
-
-			case "inventory":
-				return (
+		}
+		
+		if (currentPath === "/dashboard/inventario") {
+			return (
 					<div className="p-6">
 						<div className="mb-6 flex justify-between items-center">
 							<div>
@@ -554,48 +602,15 @@ const DashboardPage: React.FC = () => {
 						</div>
 					</div>
 				)
-
-			case "settings":
-				return <Settings userData={userData} />
-
-			default:
-				return (
-					<div className="p-6">
-						<div className="mb-6">
-							<h1 className="text-3xl font-bold text-gray-800">
-								Bienvenido, {userData.name}!
-							</h1>
-							<p className="text-gray-600 mt-2">
-								con que te gustaría <b className="text-green-600">comenzar</b>{" "}
-								hoy?
-							</p>
-						</div>
-
-						<ContentGrid cols={3}>
-							<ContentBlock title="Pacientes Activos">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-blue-600">142</p>
-									<p className="text-gray-600 mt-2">Pacientes en tratamiento</p>
-								</div>
-							</ContentBlock>
-
-							<ContentBlock title="Citas Hoy">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-green-600">12</p>
-									<p className="text-gray-600 mt-2">Citas programadas</p>
-								</div>
-							</ContentBlock>
-
-							<ContentBlock title="Sistema Cambiario">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-purple-600">94%</p>
-									<p className="text-gray-600 mt-2">Tasa de éxito</p>
-								</div>
-							</ContentBlock>
-						</ContentGrid>
-					</div>
-				)
 		}
+		
+		if (currentPath === "/dashboard/configuracion") {
+			return <Settings userData={userData} />
+		}
+		
+		// Default: redirigir a home si la ruta no coincide
+		navigate("/dashboard/home", { replace: true })
+		return null
 	}
 
 	const handleLogout = () => {
