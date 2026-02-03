@@ -49,7 +49,7 @@ export const createPatient = async (req: Request, res: Response) => {
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
              RETURNING id, name, email, role, document_id, 
              TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
-			 TO_CHAR(date_of_birth, 'DD/MM/YYYY') as date_of_birth`,
+			 TO_CHAR(birthdate, 'DD/MM/YYYY') as birthdate`,
 			[
 				fullName,
 				email.toLowerCase(),
