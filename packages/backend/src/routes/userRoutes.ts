@@ -1,6 +1,7 @@
 import { Router } from "express"
 import {
 	deleteUser,
+	getAllDoctors,
 	getAllUsers,
 	getUserByDocumentId,
 	updateUser,
@@ -12,6 +13,11 @@ import { authenticate } from "../middleware/auth"
  * /api/users:
  *   get:
  *     summary: Obtener todos los usuarios
+ *     tags:
+ *     - Users
+ * /api/users/medicos:
+ *   get:
+ *     summary: Obtener todos los medicos
  *     tags:
  *     - Users
  * /api/users/{id}:
@@ -47,7 +53,7 @@ import { authenticate } from "../middleware/auth"
  *               phone:
  *                 type: string
  *                 example: "04149704265"
- *               date_of_birth:
+ *               birthdate:
  *                 type: string
  *                 example: "2003-05-24"
  *               gender:
@@ -77,6 +83,7 @@ const userRoutes: Router = Router()
 userRoutes.use(authenticate)
 
 userRoutes.get("/", getAllUsers)
+userRoutes.get("/medicos", getAllDoctors)
 userRoutes.get("/:id", getUserByDocumentId)
 userRoutes.patch("/:id", updateUser)
 userRoutes.delete("/:id", deleteUser)

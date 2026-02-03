@@ -10,7 +10,7 @@ export const createPatient = async (req: Request, res: Response) => {
 		email,
 		document_id,
 		phone,
-		date_of_birth,
+		birthdate,
 		gender,
 		address,
 	} = req.body
@@ -22,13 +22,13 @@ export const createPatient = async (req: Request, res: Response) => {
 		!email ||
 		!document_id ||
 		!phone ||
-		!date_of_birth ||
+		!birthdate ||
 		!gender ||
 		!address
 	) {
 		return res.status(400).json({
 			error:
-				"Missing required fields: first_name, last_name, email, document_id, phone, date of birth, gender and address are mandatory.",
+				"Missing required fields: first_name, last_name, email, document_id, phone, birthdate, gender and address are mandatory.",
 		})
 	}
 
@@ -45,7 +45,7 @@ export const createPatient = async (req: Request, res: Response) => {
 		// The Trigger 'trg_create_patient_on_signup' will automatically
 		// create the record in the 'patients' table after this query.
 		const result = await query(
-			`INSERT INTO users (name, email, password, role, document_id, phone, date_of_birth, gender, address) 
+			`INSERT INTO users (name, email, password, role, document_id, phone, birthdate, gender, address) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
              RETURNING id, name, email, role, document_id, 
              TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
@@ -57,7 +57,7 @@ export const createPatient = async (req: Request, res: Response) => {
 				"Paciente",
 				document_id,
 				phone,
-				date_of_birth,
+				birthdate,
 				gender,
 				address,
 			],
@@ -122,7 +122,7 @@ export const updatePatient = async (req: Request, res: Response) => {
 		"last_name",
 		"email",
 		"phone",
-		"date_of_birth",
+		"birthdate",
 		"gender",
 		"address",
 	]

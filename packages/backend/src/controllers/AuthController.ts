@@ -10,7 +10,7 @@ export const createAccount = async (req: Request, res: Response) => {
 			password,
 			name,
 			phone,
-			date_of_birth,
+			birthdate,
 			gender,
 			address,
 			document_id,
@@ -22,13 +22,13 @@ export const createAccount = async (req: Request, res: Response) => {
 			!name ||
 			!document_id ||
 			!phone ||
-			!date_of_birth ||
+			!birthdate ||
 			!gender ||
 			!address
 		) {
 			return res.status(400).json({
 				error:
-					"Email, password, name, document_id, phone, date of birth, gender and address are required",
+					"Email, password, name, document_id, phone, birthdate, gender and address are required",
 			})
 		}
 
@@ -54,14 +54,14 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		// Create user
 		const result = await query(
-			"INSERT INTO users (email, password, name, role, document_id, phone, date_of_birth, gender, address) VALUES ($1, $2, $3, 'Paciente', $4, $5, $6, $7, $8) RETURNING id, email, name, role",
+			"INSERT INTO users (email, password, name, role, document_id, phone, birthdate, gender, address) VALUES ($1, $2, $3, 'Paciente', $4, $5, $6, $7, $8) RETURNING id, email, name, role",
 			[
 				email.toLowerCase(),
 				hashedPassword,
 				name,
 				document_id,
 				phone,
-				date_of_birth,
+				birthdate,
 				gender,
 				address,
 			],

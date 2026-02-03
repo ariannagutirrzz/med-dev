@@ -6,6 +6,7 @@ import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
+import suppliesRoutes from "./routes/suppliesRoutes.js"
 import surgeryRoutes from "./routes/surgeryRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 import swaggerSpec from "./utils/swagger.js"
@@ -26,6 +27,7 @@ app.use("/api/appointments", appointmentRoutes)
 app.use("/api/surgeries", surgeryRoutes)
 app.use("/api/patients", patientsRoutes)
 app.use("/api/medicalRecords", medicalRecordsRoutes)
+app.use("/api/supplies", suppliesRoutes)
 
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
