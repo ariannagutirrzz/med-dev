@@ -1,6 +1,15 @@
 import type React from "react"
 import { useEffect, useState } from "react"
-import { FaBox, FaHashtag, FaLayerGroup, FaSave, FaTimes } from "react-icons/fa"
+import {
+	FaBox,
+	FaExclamationTriangle,
+	FaHashtag,
+	FaLayerGroup,
+	FaRuler,
+	FaSave,
+	FaTimes,
+	FaWarehouse,
+} from "react-icons/fa"
 import { toast } from "react-toastify"
 import { createSupply, updateSupplyById } from "../../services/SuppliesAPI"
 import type { Supply } from "../../types"
@@ -50,7 +59,7 @@ const CreateSupplyModal = ({
 
 				// 1. Desestructuramos para separar el 'id' del resto de los datos
 				// Usamos el nombre 'id' para extraerlo y 'updateData' para el resto
-				const { id, ...updateData } = formData
+				const { id: _id, ...updateData } = formData
 
 				// 2. Enviamos solo 'updateData' al backend
 				// El ID se pasa como primer argumento para la URL, pero no en el body
@@ -108,7 +117,9 @@ const CreateSupplyModal = ({
 							>
 								Código Identificador (ID)
 							</label>
-							<FaHashtag className="absolute left-3 bottom-3 text-muted" />
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaHashtag className="text-muted" size={16} />
+							</div>
 							<input
 								id="id"
 								type="text"
@@ -131,7 +142,9 @@ const CreateSupplyModal = ({
 							>
 								Nombre del Insumo
 							</label>
-							<FaBox className="absolute left-3 bottom-3 text-muted" />
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaBox className="text-muted" size={16} />
+							</div>
 							<input
 								id="name"
 								type="text"
@@ -153,7 +166,9 @@ const CreateSupplyModal = ({
 							>
 								Categoría
 							</label>
-							<FaLayerGroup className="absolute left-3 bottom-3 text-muted" />
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaLayerGroup className="text-muted" size={16} />
+							</div>
 							<select
 								id="category"
 								value={formData.category}
@@ -175,9 +190,9 @@ const CreateSupplyModal = ({
 							>
 								Estado del Insumo
 							</label>
-							<div className="absolute left-4 bottom-4 text-muted">
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
 								<div
-									className={`w-2 h-2 rounded-full ${
+									className={`w-3 h-3 rounded-full ${
 										formData.status === "available"
 											? "bg-green-500"
 											: formData.status === "low stock"
@@ -204,13 +219,16 @@ const CreateSupplyModal = ({
 						</div>
 
 						{/* Unidad */}
-						<div>
+						<div className="relative">
 							<label
 								htmlFor="unit"
 								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
 							>
 								Unidad de Medida
 							</label>
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaRuler className="text-muted" size={16} />
+							</div>
 							<input
 								id="unit"
 								type="text"
@@ -224,13 +242,16 @@ const CreateSupplyModal = ({
 						</div>
 
 						{/* Cantidad Inicial */}
-						<div>
+						<div className="relative">
 							<label
 								htmlFor="quantity"
 								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
 							>
 								Stock Inicial
 							</label>
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaWarehouse className="text-muted" size={16} />
+							</div>
 							<input
 								id="quantity"
 								type="number"
@@ -248,13 +269,16 @@ const CreateSupplyModal = ({
 						</div>
 
 						{/* Stock Mínimo */}
-						<div>
+						<div className="relative">
 							<label
 								htmlFor="min_stock"
 								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
 							>
 								Alerta Stock Bajo
 							</label>
+							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
+								<FaExclamationTriangle className="text-muted" size={16} />
+							</div>
 							<input
 								id="min_stock"
 								type="number"
