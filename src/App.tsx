@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { ToastContainer } from "react-toastify"
 import ProtectedRoute from "./components/ProtectedRoute"
 import DashboardPage from "./pages/DashboardPage"
@@ -14,7 +14,7 @@ function App() {
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/medicos" element={<MedicosPage />} />
 				<Route
-					path="/dashboard"
+					path="/dashboard/*"
 					element={
 						<ProtectedRoute>
 							<DashboardPage />
