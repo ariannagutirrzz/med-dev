@@ -44,7 +44,7 @@ export default function ClinicalEvolution({
 			const data = await getMedicalRecord(patientId)
 			setEvolutions(data.history)
 		} catch (error) {
-			console.log(error)
+			console.error("Error loading clinical evolution:", error)
 			toast.error("Error al cargar el historial clínico")
 		} finally {
 			setIsLoading(false)

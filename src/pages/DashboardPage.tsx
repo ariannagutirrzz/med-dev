@@ -1,71 +1,22 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
-import Calendar, { type Surgery } from "../components/Calendar"
-import CalendarLegend from "../components/CalendarLegend"
+import { useLocation, useNavigate } from "react-router-dom"
+import AppointmentsSection from "../components/Appointments/AppointmentsSection"
 import Dashboard from "../components/Dashboard"
+import DashboardHome from "../components/Dashboard/DashboardHome"
 import DashboardHeader from "../components/DashboardHeader"
-import GenerateAI from "../components/GenerateAI"
 import Inventory from "../components/Inventory/Inventory"
 import MedicalRecords from "../components/Patients/MedicalRecords"
+import Settings from "../components/Settings/Settings"
+import SurgeriesSection from "../components/Surgeries/SurgeriesSection"
 import { useAuth } from "../contexts/AuthContext"
-
-// Componentes auxiliares para el contenido
-const ContentBlock: React.FC<{ title: string; children: React.ReactNode }> = ({
-	title,
-	children,
-}) => (
-	<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
-		<h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
-		<div className="flex-1 flex items-center justify-center">{children}</div>
-	</div>
-)
-
-const ContentGrid: React.FC<{
-	children: React.ReactNode
-	cols?: number
-	className?: string
-}> = ({ children, cols = 3, className = "" }) => (
-	<div
-		className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${cols} gap-6 ${className}`}
-	>
-		{children}
-	</div>
-)
 
 const DashboardPage: React.FC = () => {
 	const { user, logout } = useAuth()
-	const [currentDate] = useState(new Date())
-	const surgeries: Surgery[] = [
-		{ day: 15, type: "Cirugía Mayor" },
-		{ day: 18, type: "Cirugía Menor" },
-		{ day: 22, type: "Cirugía Programada" },
-		{ day: 25, type: "Cirugía Mayor" },
-	]
-	const currencies = [
-		{
-			currency: "EUR",
-			value: 274.84230343,
-		},
-		{
-			currency: "CNY",
-			value: 33.31033851,
-		},
-		{
-			currency: "TRY",
-			value: 5.58626986,
-		},
-		{
-			currency: "RUB",
-			value: 2.92621114,
-		},
-		{
-			currency: "USD",
-			value: 236.4601,
-		},
-	]
-	const [activeMenuItem, setActiveMenuItem] = useState("home")
+	const navigate = useNavigate()
+	const location = useLocation()
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
 	const userData = {
@@ -73,223 +24,166 @@ const DashboardPage: React.FC = () => {
 		role: user?.role || "Médico Especialista - Unidad de Pleura",
 	}
 
-	const menuItems = [
+	// Mapeo de rutas a IDs de menú
+	const routeToMenuItemId: Record<string, string> = {
+		"/dashboard/home": "home",
+		"/dashboard/pacientes": "patients",
+		"/dashboard/citas": "appointments",
+		"/dashboard/sala-de-cirugia": "surgeryRoom",
+		"/dashboard/inventario": "inventory",
+		"/dashboard/configuracion": "settings",
+	}
+
+	// Mapeo de IDs de menú a rutas
+	const menuItemIdToRoute: Record<string, string> = {
+		home: "/dashboard/home",
+		patients: "/dashboard/pacientes",
+		appointments: "/dashboard/citas",
+		surgeryRoom: "/dashboard/sala-de-cirugia",
+		inventory: "/dashboard/inventario",
+		settings: "/dashboard/configuracion",
+	}
+
+	// Obtener el item activo basado en la URL actual
+	const activeMenuItem = routeToMenuItemId[location.pathname] || "home"
+
+	// Definir todos los items del menú con sus roles permitidos
+	const allMenuItems = [
 		{
 			id: "home",
 			label: "Inicio",
 			icon: <CiHome className="w-5 h-5" />,
+			path: "/dashboard/home",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 		{
 			id: "patients",
 			label: "Pacientes",
 			icon: <CiUser className="w-5 h-5" />,
+			path: "/dashboard/pacientes",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "appointments",
 			label: "Citas",
 			icon: <CiCalendar className="w-5 h-5" />,
+			path: "/dashboard/citas",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 		{
 			id: "surgeryRoom",
 			label: "Sala de Cirugía",
 			icon: <GiMedicalDrip className="w-5 h-5" />,
+			path: "/dashboard/sala-de-cirugia",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "inventory",
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
-		},
-		{
-			id: "AI",
-			label: "Inteligencia Artificial",
-			icon: <GiArtificialIntelligence className="w-5 h-5" />,
+			path: "/dashboard/inventario",
+			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
 			id: "settings",
 			label: "Configuración",
 			icon: <CiSettings className="w-5 h-5" />,
+			path: "/dashboard/configuracion",
+			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
 		},
 	]
 
+	// Verificar si el usuario tiene acceso a una ruta específica
+	const hasAccessToRoute = useCallback(
+		(path: string): boolean => {
+			const menuItem = allMenuItems.find((item) => item.path === path)
+			if (!menuItem) return false
+			const userRole = user?.role || ""
+			return menuItem.allowedRoles.includes(userRole)
+		},
+		[user?.role],
+	)
+
+	// Filtrar items del menú basado en el rol del usuario
+	const menuItems = allMenuItems.filter((item) => {
+		const userRole = user?.role || ""
+		return item.allowedRoles.includes(userRole)
+	})
+
 	const handleMenuItemClick = (itemId: string) => {
-		setActiveMenuItem(itemId)
+		const route = menuItemIdToRoute[itemId]
+		if (route) {
+			navigate(route)
+		}
 	}
+
+	// Redirigir a /dashboard/home si está en /dashboard o si no tiene acceso a la ruta actual
+	useEffect(() => {
+		if (location.pathname === "/dashboard") {
+			navigate("/dashboard/home", { replace: true })
+			return
+		}
+
+		// Verificar acceso a la ruta actual
+		if (!hasAccessToRoute(location.pathname)) {
+			// Redirigir a home si no tiene acceso
+			navigate("/dashboard/home", { replace: true })
+		}
+	}, [location.pathname, navigate, hasAccessToRoute])
 
 	const handleToggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen)
 	}
 
-	// Renderizar contenido según el ítem activo
+	// Renderizar contenido según la ruta actual
 	const renderContent = () => {
-		switch (activeMenuItem) {
-			case "home":
-				return (
-					<div className="p-6">
-						<DashboardHeader />
+		const currentPath = location.pathname
 
-						<ContentGrid cols={3} className="grid-cols-1 lg:grid-cols-4 mt-6">
-							<div className="lg:col-span-2 mb-6">
-								<h1 className="text-5xl font-bold text-gray-800">
-									Bienvenida, {userData.name}! con que te gustaría{" "}
-									<b className="text-primary">comenzar</b> hoy?
-								</h1>
-								<p className="mt-4 text-lg text-gray-400 font-semibold">
-									Despliega y familiarizate con cada una de las siguientes
-									opciones, te ayudaremos a gestionar de manera más eficiente,
-									fácil y rápida.
-								</p>
-							</div>
-
-							<ContentBlock title="Citas Hoy">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-green-600">12</p>
-									<p className="text-gray-600 mt-2">Citas programadas</p>
-								</div>
-							</ContentBlock>
-
-							<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
-								<div className="flex flex-row justify-between">
-									<h3 className="text-lg font-semibold text-gray-800 mb-4">
-										Sistema Cambiario
-									</h3>
-									<img
-										src="/src/assets/logo.png"
-										alt="Logo del banco central de venezuela"
-										className="h-9 w-9"
-									/>
-								</div>
-
-								<div className="flex-1 flex flex-col">
-									{currencies.map((currency) => (
-										<div
-											className="flex-1 flex flex-row justify-between mx-6 font-semibold text-gray-400"
-											key={currency.currency}
-										>
-											<span>{currency.currency}</span>
-											<span>{currency.value}</span>
-										</div>
-									))}
-								</div>
-							</div>
-						</ContentGrid>
-
-						{/* Contenedor para el grid de 2 columnas */}
-						<div className="mt-6">
-							<ContentGrid cols={2}>
-								<ContentBlock title="Pacientes Activos">
-									<div className="text-center">
-										<p className="text-3xl font-bold text-blue-600">142</p>
-										<p className="text-gray-600 mt-2">
-											Pacientes en tratamiento
-										</p>
-									</div>
-								</ContentBlock>
-								<div>
-									<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
-										<div className="flex-1 flex items-center justify-center">
-											<Calendar surgeries={surgeries} showLegend={false} />
-										</div>
-									</div>
-								</div>
-							</ContentGrid>
-						</div>
-						<div className="mt-6">
-							<ContentGrid cols={2}>
-								<div></div>
-								<div className="mt-4 flex justify-center">
-									<CalendarLegend
-										surgeries={surgeries}
-										currentMonth={currentDate.getMonth()}
-									/>
-								</div>
-							</ContentGrid>
-						</div>
-					</div>
-				)
-
-			case "patients":
-				return (
-					<div className="p-6">
-						<DashboardHeader />
-						<div className="bg-white rounded-2xl shadow-lg p-6 min-h-60 flex flex-col">
-							<div className="flex-1">
-								<MedicalRecords />
-							</div>
-						</div>
-					</div>
-				)
-
-			case "appointments":
-				return (
-					<div className="p-6">
-						<div className="mb-6">
-							<h1 className="text-3xl font-bold text-gray-800">
-								Gestión de Citas
-							</h1>
-							<p className="text-gray-600 mt-2">Programa y administra citas</p>
-						</div>
-						<ContentBlock title="Calendario de Citas">
-							<p>Contenido de citas...</p>
-						</ContentBlock>
-					</div>
-				)
-			case "inventory":
-				return (
-					<div className="p-6">
-						<div className="flex mb-6 justify-between">
-							<div>
-								<h1 className="text-3xl font-bold text-gray-800">Inventario</h1>
-								<p className="text-gray-600 mt-2">
-									Gestiona el inventario de suministros médicos
-								</p>
-							</div>
-						</div>
-
-						<Inventory />
-					</div>
-				)
-
-			case "AI":
-				return <GenerateAI />
-
-			default:
-				return (
-					<div className="p-6">
-						<div className="mb-6">
-							<h1 className="text-3xl font-bold text-gray-800">
-								Bienvenido, {userData.name}!
-							</h1>
-							<p className="text-gray-600 mt-2">
-								con que te gustaría <b className="text-green-600">comenzar</b>{" "}
-								hoy?
-							</p>
-						</div>
-
-						<ContentGrid cols={3}>
-							<ContentBlock title="Pacientes Activos">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-blue-600">142</p>
-									<p className="text-gray-600 mt-2">Pacientes en tratamiento</p>
-								</div>
-							</ContentBlock>
-
-							<ContentBlock title="Citas Hoy">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-green-600">12</p>
-									<p className="text-gray-600 mt-2">Citas programadas</p>
-								</div>
-							</ContentBlock>
-
-							<ContentBlock title="Sistema Cambiario">
-								<div className="text-center">
-									<p className="text-3xl font-bold text-purple-600">94%</p>
-									<p className="text-gray-600 mt-2">Tasa de éxito</p>
-								</div>
-							</ContentBlock>
-						</ContentGrid>
-					</div>
-				)
+		// Verificar acceso a la ruta actual
+		if (!hasAccessToRoute(currentPath)) {
+			// Redirigir a home si no tiene acceso
+			navigate("/dashboard/home", { replace: true })
+			return null
 		}
+
+		// Determinar qué sección mostrar basado en la ruta
+		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
+			return <DashboardHome />
+		}
+
+		if (currentPath === "/dashboard/pacientes") {
+			return (
+				<div className="p-6">
+					<DashboardHeader />
+					<MedicalRecords />
+				</div>
+			)
+		}
+
+		if (currentPath === "/dashboard/citas") {
+			return <AppointmentsSection />
+		}
+
+		if (currentPath === "/dashboard/sala-de-cirugia") {
+			return <SurgeriesSection />
+		}
+
+		if (currentPath === "/dashboard/inventario") {
+			return (
+				<div className="p-6">
+					<DashboardHeader />
+					<Inventory />
+				</div>
+			)
+		}
+
+		if (currentPath === "/dashboard/configuracion") {
+			return <Settings userData={userData} />
+		}
+
+		// Default: redirigir a home si la ruta no coincide
+		navigate("/dashboard/home", { replace: true })
+		return null
 	}
 
 	const handleLogout = () => {

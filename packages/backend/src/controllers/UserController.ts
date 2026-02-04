@@ -1,6 +1,34 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
 
+export const getCurrentUser = async (req: Request, res: Response) => {
+	try {
+		const userId = req.user?.id
+		if (!userId) {
+			return res.status(401).json({ error: "User not authenticated" })
+		}
+
+		const result = await query(
+			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+             FROM users 
+             WHERE id = $1`,
+			[userId],
+		)
+
+		if (result.rows.length === 0) {
+			return res.status(404).json({ message: "User not found" })
+		}
+
+		res.json({
+			user: result.rows[0],
+			message: "User fetched successfully",
+		})
+	} catch (error) {
+		console.error("Error fetching current user:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
 export const getAllUsers = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
@@ -19,20 +47,20 @@ export const getAllUsers = async (_req: Request, res: Response) => {
 	}
 }
 
-export const getUserByDocumentId = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response) => {
 	// .trim() ensures no accidental leading/trailing spaces from the URL
 	const id = req.params.id?.trim()
 
 	if (!id) {
-		return res.status(400).json({ error: "Document ID is required" })
+		return res.status(400).json({ error: "User ID is required" })
 	}
 
 	try {
 		const result = await query(
-			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
              FROM users 
-             WHERE document_id = $1`,
-			[id], // The driver handles VARCHAR mapping automatically
+             WHERE id = $1`,
+			[parseInt(id)], // Parse to integer for ID lookup
 		)
 
 		// Check if a user was actually found
@@ -54,6 +82,9 @@ export const getUserByDocumentId = async (req: Request, res: Response) => {
 		res.status(500).json({ error: "Internal server error" })
 	}
 }
+
+// Keep old function for backward compatibility, but mark as deprecated
+export const getUserByDocumentId = getUserById
 
 export const getAllDoctors = async (_req: Request, res: Response) => {
 	try {
@@ -98,13 +129,13 @@ export const updateUser = async (req: Request, res: Response) => {
 		.join(", ")
 
 	const values = Object.values(updates)
-	values.push(id) // Add ID as the last parameter
+	values.push(parseInt(id)) // Add ID as the last parameter, parse to integer
 
 	try {
 		const result = await query(
 			`UPDATE users 
        SET ${setClause} 
-       WHERE document_id = $${values.length} 
+       WHERE id = $${values.length} 
        RETURNING *`,
 			values,
 		)
@@ -128,8 +159,8 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 	try {
 		const result = await query(
-			`DELETE FROM users WHERE document_id = $1 RETURNING name`,
-			[id],
+			`DELETE FROM users WHERE id = $1 RETURNING name`,
+			[parseInt(id)],
 		)
 
 		if (result.rowCount === 0) {

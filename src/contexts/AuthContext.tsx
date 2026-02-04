@@ -5,6 +5,7 @@ export interface User {
 	name: string
 	email: string
 	role?: string
+	document_id?: string
 }
 
 interface AuthContextType {
@@ -24,8 +25,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	// Check for existing session on mount
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user")
-		if (storedUser) {
+		const storedToken = localStorage.getItem("AUTH_TOKEN")
+		
+		// Only set user if both user data and token exist
+		if (storedUser && storedToken) {
 			setUser(JSON.parse(storedUser))
+		} else {
+			// Clear invalid session
+			if (storedUser && !storedToken) {
+				localStorage.removeItem("user")
+			}
 		}
 		setLoading(false)
 	}, [])
@@ -47,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			name: data.user?.name || email.split("@")[0],
 			email: data.user?.email || email,
 			role: data.user?.role || "Paciente",
+			document_id: data.user?.document_id,
 		}
 		setUser(userData)
 		localStorage.setItem("AUTH_TOKEN", data.token)

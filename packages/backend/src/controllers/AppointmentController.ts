@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
+import { sendWhatsApp } from "../utils/twilio"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
@@ -37,10 +38,10 @@ export const createAppointment = async (req: Request, res: Response) => {
 				.json({ error: "doctor_id is required for patients." })
 	}
 
-	if (!appointment_date || !status) {
+	if (!appointment_date || !status || !notes) {
 		return res.status(400).json({
 			error:
-				"Missing required fields: appointment_date and status are mandatory.",
+				"Missing required fields: appointment_date, status, and notes (caso/motivo) are mandatory.",
 		})
 	}
 
@@ -73,8 +74,74 @@ export const createAppointment = async (req: Request, res: Response) => {
 			],
 		)
 
+		const appointment = result.rows[0]
+
+		// Fetch patient and doctor information for WhatsApp notifications
+		try {
+			const [patientResult, doctorResult] = await Promise.all([
+				query(
+					`SELECT name, phone FROM users WHERE document_id = $1`,
+					[patient_id],
+				),
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					doctor_id,
+				]),
+			])
+
+			const patient = patientResult.rows[0]
+			const doctor = doctorResult.rows[0]
+
+			// Format appointment date for WhatsApp
+			const appointmentDate = new Date(appointment_date)
+			const formattedDate = appointmentDate.toLocaleDateString("es-ES", {
+				weekday: "long",
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+			const formattedTime = appointmentDate.toLocaleTimeString("es-ES", {
+				hour: "2-digit",
+				minute: "2-digit",
+			})
+
+			// Send WhatsApp to patient
+			if (patient?.phone) {
+				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👨‍⚕️ Médico: ${doctor ? doctor.name : "No especificado"}
+${notes ? `📝 Caso/Motivo: ${notes}` : ""}
+
+Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
+				await sendWhatsApp({
+					to: patient.phone,
+					message: patientMessage,
+				})
+			}
+
+			// Send WhatsApp to doctor
+			if (doctor?.phone) {
+				const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"}
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👤 Paciente: ${patient ? patient.name : "No especificado"}
+${notes ? `📝 Caso/Motivo: ${notes}` : ""}
+
+Por favor, confirma tu disponibilidad.`
+				await sendWhatsApp({
+					to: doctor.phone,
+					message: doctorMessage,
+				})
+			}
+		} catch (whatsappError) {
+			// Log WhatsApp error but don't fail the appointment creation
+			console.error("Error sending WhatsApp notifications:", whatsappError)
+		}
+
 		res.status(201).json({
-			appointment: result.rows[0],
+			appointment: appointment,
 			message: "Appointment created successfully",
 		})
 	} catch (error) {

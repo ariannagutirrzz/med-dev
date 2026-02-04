@@ -7,6 +7,22 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
 	const token = localStorage.getItem("AUTH_TOKEN")
-	config.headers.Authorization = `Bearer ${token}`
+	if (token) {
+		config.headers.Authorization = `Bearer ${token}`
+	}
 	return config
 })
+
+api.interceptors.response.use(
+	(response) => response,
+	(error) => {
+		if (error.response?.status === 401) {
+			// Token is invalid or expired
+			console.error("Unauthorized - token may be invalid or expired")
+			// Optionally clear token and redirect to login
+			localStorage.removeItem("AUTH_TOKEN")
+			localStorage.removeItem("user")
+		}
+		return Promise.reject(error)
+	}
+)

@@ -18,14 +18,15 @@ export const authenticate = async (
 ) => {
 	const bearer = req.headers.authorization
 	if (!bearer) {
-		const error = new Error("No Autorizado")
-		return res.status(401).json({ error: error.message })
+		return res.status(401).json({ error: "No Autorizado" })
 	}
 
 	const token = bearer.split(" ")[1]
+	if (!token) {
+		return res.status(401).json({ error: "Token no proporcionado" })
+	}
 
 	const secret = process.env.JWT_SECRET
-
 	if (!secret) {
 		throw new Error("JWT_SECRET is not defined in environment variables")
 	}
@@ -33,20 +34,52 @@ export const authenticate = async (
 	try {
 		const decoded = jwt.verify(token, secret)
 
-		if (typeof decoded === "object" && decoded.id) {
-			const result = await query(`SELECT email, name, role, document_id 
-                    FROM users
-                    WHERE document_id = '${decoded.id}'`)
-			const user: User = result.rows[0]
-			if (user) {
-				req.user = user
-				next()
-			} else {
-				res.status(500).json({ error: "Token no válido" })
+		if (typeof decoded !== "object" || !decoded || !("id" in decoded)) {
+			return res.status(401).json({ error: "Token no válido" })
+		}
+
+		const idValue = (decoded as { id: string | number }).id
+		if (!idValue) {
+			return res.status(401).json({ error: "Token no válido" })
+		}
+
+		const idString = String(idValue)
+		const parsedId = parseInt(idString, 10)
+		const isNumeric = !Number.isNaN(parsedId) && parsedId > 0 && String(parsedId) === idString
+		
+		let result: { rows: User[] }
+		if (isNumeric) {
+			result = await query(
+				`SELECT id, email, name, role, document_id 
+                FROM users
+                WHERE id = $1`,
+				[parsedId]
+			)
+		} else {
+			result = await query(
+				`SELECT id, email, name, role, document_id 
+                FROM users
+                WHERE document_id = $1`,
+				[idString]
+			)
+		}
+		
+		const user: User = result.rows[0]
+		if (user) {
+			req.user = user
+			next()
+		} else {
+			return res.status(401).json({ error: "Token no válido" })
+		}
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			if (error.name === "JsonWebTokenError") {
+				return res.status(401).json({ error: "Token no válido" })
+			}
+			if (error.name === "TokenExpiredError") {
+				return res.status(401).json({ error: "Token expirado" })
 			}
 		}
-	} catch (error) {
-		console.error(error)
-		return res.status(500).json({ error: "Token no válido" })
+		return res.status(401).json({ error: "Token no válido" })
 	}
 }

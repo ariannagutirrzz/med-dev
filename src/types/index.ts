@@ -51,3 +51,49 @@ export type MyTokenPayload = {
 	exp: number
 	iat: number
 }
+
+export type Appointment = {
+	id: number
+	patient_id: string
+	doctor_id: string
+	appointment_date: string // ISO string format
+	status: "pending" | "scheduled" | "cancelled" | "completed"
+	notes?: string | null
+	created_at?: string
+	updated_at?: string | null
+	// Campos adicionales que vienen del JOIN con users
+	patient_name?: string
+	doctor_name?: string
+}
+
+export type AppointmentFormData = {
+	patient_id?: string
+	doctor_id?: string
+	appointment_date: string // ISO string format: YYYY-MM-DDTHH:mm:ss
+	status: "pending" | "scheduled" | "cancelled" | "completed"
+	notes?: string | null
+}
+
+export type Surgery = {
+	id: number
+	patient_id: string
+	doctor_id: string
+	surgery_date: string // ISO string format
+	surgery_type: string
+	status: string
+	notes?: string | null
+	created_at?: string
+	updated_at?: string | null
+	// Campos adicionales que vienen del JOIN
+	patient_first_name?: string
+	patient_last_name?: string
+	doctor_name?: string
+}
+
+export type SurgeryFormData = {
+	patient_id: string
+	surgery_date: string // ISO string format: YYYY-MM-DDTHH:mm:ss
+	surgery_type: string
+	status?: string
+	notes?: string | null
+}
