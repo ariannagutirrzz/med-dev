@@ -2,22 +2,35 @@ import { useEffect, useRef, useState } from "react"
 import { FaMagic, FaPaperPlane, FaRobot } from "react-icons/fa"
 import { FaUserDoctor } from "react-icons/fa6"
 import { toast } from "react-toastify"
+import { generateAIResponse } from "../services/AiAPI.ts"
 
 interface Message {
-	role: "user" | "ai"
+	role: "user" | "assistant"
 	content: string
+	id: string
 }
 
 export default function GenerateAI() {
 	const [prompt, setPrompt] = useState("")
-	const [messages, setMessages] = useState<Message[]>([])
 	const [isLoading, setIsLoading] = useState(false)
 	const scrollRef = useRef<HTMLDivElement>(null)
 
-	// Auto-scroll al último mensaje
+	// 1. Inicializar el estado con lo que haya en localStorage
+	const [messages, setMessages] = useState<Message[]>(() => {
+		const savedMessages = localStorage.getItem("chat_history")
+		return savedMessages ? JSON.parse(savedMessages) : []
+	})
+
 	useEffect(() => {
-		scrollRef.current?.scrollIntoView({ behavior: "smooth" })
-	}, [])
+		localStorage.setItem("chat_history", JSON.stringify(messages))
+	}, [messages])
+
+	// Auto-scroll optimizado para streaming
+	useEffect(() => {
+		if (scrollRef.current) {
+			scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+		}
+	}, [messages, isLoading])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -25,124 +38,160 @@ export default function GenerateAI() {
 
 		const userMessage = prompt
 		setPrompt("")
-		setMessages((prev) => [...prev, { role: "user", content: userMessage }])
+
+		// 1. Crear y añadir mensaje del usuario
+		const userMsg: Message = {
+			role: "user",
+			content: userMessage,
+			id: crypto.randomUUID(),
+		}
+
+		// 2. Crear mensaje vacío para la IA que se llenará con el stream
+		const aiMsgId = crypto.randomUUID()
+		const aiMsg: Message = {
+			role: "assistant",
+			content: "",
+			id: aiMsgId,
+		}
+
+		setMessages((prev) => [...prev, userMsg, aiMsg])
 		setIsLoading(true)
 
 		try {
-			// Aquí iría tu llamada al backend/API de IA
-			// const response = await fetchAiResponse(userMessage);
+			// 3. Llamar al service que devuelve el stream
+			const textStream = await generateAIResponse(userMessage)
 
-			// Simulación de respuesta de IA
-			setTimeout(() => {
-				setMessages((prev) => [
-					...prev,
-					{
-						role: "ai",
-						content: `Analizando requerimientos para: ${userMessage}. Basado en el protocolo médico actual, recomiendo...`,
-					},
-				])
-				setIsLoading(false)
-			}, 1500)
+			// 4. Consumir el stream
+			for await (const textPart of textStream) {
+				setMessages((prev) =>
+					prev.map((msg) =>
+						msg.id === aiMsgId
+							? { ...msg, content: msg.content + textPart }
+							: msg,
+					),
+				)
+			}
 		} catch (error) {
-			toast.error("Error al conectar con la IA")
+			toast.error("Error al generar respuesta de IA")
+			console.error(error)
+			// Opcional: eliminar el mensaje vacío de la IA si falla
+			setMessages((prev) => prev.filter((m) => m.id !== aiMsgId))
+		} finally {
 			setIsLoading(false)
-			console.log(error)
 		}
 	}
 
 	return (
-		<div className="flex flex-col h-[calc(100vh-120px)] p-4 max-w-5xl mx-auto">
-			{/* Header con estilo del proyecto */}
-			<div className="flex items-center gap-4 mb-8">
-				<div className="p-4 bg-primary/10 rounded-3xl text-primary shadow-sm">
-					<FaMagic size={28} />
+		/* Layout principal corregido para ocupar todo el espacio y empujar el input al final */
+		<div className="flex flex-col h-full w-full mx-auto p-6">
+			{/* 1. Header Fijo */}
+			<div className="flex items-center gap-4 mb-4 shrink-0">
+				<div className="p-3 bg-primary/10 rounded-2xl text-primary shadow-sm">
+					<FaMagic size={22} />
 				</div>
 				<div>
-					<h1 className="text-3xl font-black text-gray-800 tracking-tight">
-						Asistente AI Médico
+					<h1 className="text-2xl font-black text-gray-800 tracking-tight">
+						Asistente Médico
 					</h1>
-					<p className="text-gray-500 font-medium">
-						Generación de recetas y protocolos inteligentes
+					<p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+						Protocolos Inteligentes
 					</p>
 				</div>
 			</div>
 
-			{/* Chat Container */}
-			<div className="flex-1 overflow-y-auto mb-6 space-y-6 pr-4 custom-scrollbar">
+			{/* 2. Área de Chat (Crece y tiene scroll) */}
+			<div
+				ref={scrollRef}
+				className="flex-1 overflow-y-auto mb-4 space-y-6 pr-2 custom-scrollbar scroll-smooth"
+			>
 				{messages.length === 0 && (
-					<div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-						<FaRobot size={60} className="mb-4 text-primary" />
-						<p className="text-xl font-bold">¿En qué puedo ayudarte hoy?</p>
-						<p className="text-sm italic">
-							"Genera una receta para un paciente con hipertensión..."
+					<div className="h-full flex flex-col items-center justify-center text-center opacity-30">
+						<FaRobot size={50} className="mb-4 text-primary" />
+						<p className="text-lg font-bold">
+							¿Qué protocolo médico generamos?
 						</p>
 					</div>
 				)}
 
-				{messages.map((msg, index) => (
-					<div
-						key={msg.content}
-						className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-					>
+				{messages.map((msg) =>
+					// Ocultamos el mensaje de la IA si está vacío y no está cargando (limpieza visual)
+					msg.role === "assistant" &&
+					msg.content === "" &&
+					!isLoading ? null : (
 						<div
-							className={`flex gap-3 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+							key={msg.id}
+							className={`flex ${msg.role === "user" ? "justify-end" : "justify-start animate-in slide-in-from-left-2"}`}
 						>
 							<div
-								className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-									msg.role === "user"
-										? "bg-primary text-white"
-										: "bg-white text-primary border border-gray-100"
-								}`}
+								className={`flex gap-3 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}
 							>
-								{msg.role === "user" ? <FaUserDoctor /> : <FaRobot />}
-							</div>
-							<div
-								className={`p-4 rounded-4xl shadow-sm text-sm leading-relaxed ${
-									msg.role === "user"
-										? "bg-primary text-white rounded-tr-none"
-										: "bg-white text-gray-700 rounded-tl-none border border-gray-50"
-								}`}
-							>
-								{msg.content}
+								<div
+									className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+										msg.role === "user"
+											? "bg-primary text-white"
+											: "bg-white text-primary border border-gray-100"
+									}`}
+								>
+									{msg.role === "user" ? (
+										<FaUserDoctor size={14} />
+									) : (
+										<FaRobot size={14} />
+									)}
+								</div>
+								<div
+									className={`p-4 rounded-3xl shadow-sm text-sm leading-relaxed whitespace-pre-wrap ${
+										msg.role === "user"
+											? "bg-primary text-white rounded-tr-none"
+											: "bg-white text-gray-700 rounded-tl-none border border-gray-100"
+									}`}
+								>
+									{msg.content}
+									{/* Cursor parpadeante mientras escribe */}
+									{isLoading &&
+										msg.role === "assistant" &&
+										msg.content === "" && (
+											<span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1" />
+										)}
+								</div>
 							</div>
 						</div>
-					</div>
-				))}
-				{isLoading && (
-					<div className="flex justify-start animate-pulse">
-						<div className="bg-gray-200 h-10 w-24 rounded-full ml-13"></div>
-					</div>
+					),
 				)}
-				<div ref={scrollRef} />
 			</div>
 
-			{/* Input Form - Estilo Gemini */}
-			<form onSubmit={handleSubmit} className="relative group">
-				<div className="absolute inset-0 bg-primary/5 blur-xl rounded-[3rem] group-focus-within:bg-primary/10 transition-all"></div>
-				<div className="relative flex items-center bg-white border border-gray-100 shadow-xl rounded-[2.5rem] p-2 transition-all focus-within:border-primary/30">
-					<input
-						type="text"
-						value={prompt}
-						onChange={(e) => setPrompt(e.target.value)}
-						placeholder="Escribe tu consulta médica aquí..."
-						className="flex-1 bg-transparent px-6 py-4 outline-none text-gray-700 font-medium placeholder:text-gray-400"
-					/>
-					<button
-						type="submit"
-						disabled={!prompt.trim() || isLoading}
-						className={`p-4 rounded-full transition-all flex items-center justify-center ${
-							prompt.trim()
-								? "bg-primary text-white shadow-lg shadow-primary/30 hover:scale-105 cursor-pointer"
-								: "bg-gray-100 text-gray-400 cursor-not-allowed"
-						}`}
-					>
-						<FaPaperPlane
-							size={18}
-							className={isLoading ? "animate-ping" : ""}
+			{/* 3. Input Form - Anclado al final */}
+			<div className="shrink-0 pt-2 bg-transparent">
+				<form onSubmit={handleSubmit} className="relative group">
+					<div className="absolute inset-0 bg-primary/5 blur-xl rounded-[3rem] group-focus-within:bg-primary/10 transition-all"></div>
+					<div className="relative flex items-center bg-white border border-gray-200 shadow-2xl rounded-4xl p-1.5 transition-all focus-within:border-primary/40">
+						<input
+							type="text"
+							value={prompt}
+							onChange={(e) => setPrompt(e.target.value)}
+							placeholder="Ej: Dieta para paciente diabético tipo 2..."
+							className="flex-1 bg-transparent px-5 py-3 outline-none text-gray-700 text-sm font-medium"
+							disabled={isLoading}
 						/>
-					</button>
-				</div>
-			</form>
+						<button
+							type="submit"
+							disabled={!prompt.trim() || isLoading}
+							className={`p-3.5 rounded-2xl transition-all flex items-center justify-center ${
+								prompt.trim() && !isLoading
+									? "bg-primary text-white shadow-lg hover:scale-105 cursor-pointer"
+									: "bg-gray-100 text-gray-400 cursor-not-allowed"
+							}`}
+						>
+							<FaPaperPlane
+								size={16}
+								className={isLoading ? "animate-pulse" : ""}
+							/>
+						</button>
+					</div>
+				</form>
+				<p className="text-[10px] text-center text-gray-400 mt-3 uppercase tracking-widest font-bold">
+					Potenciado por Gemma 3 & OpenRouter AI
+				</p>
+			</div>
 		</div>
 	)
 }

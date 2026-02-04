@@ -250,12 +250,8 @@ const DashboardPage: React.FC = () => {
 				)
 
 			case "AI":
-				return (
-					<>
-						{/* Renderizar Componente IA */}
-						<GenerateAI />
-					</>
-				)
+				return <GenerateAI />
+
 			default:
 				return (
 					<div className="p-6">

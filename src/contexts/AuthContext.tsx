@@ -57,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		setUser(null)
 		localStorage.removeItem("user")
 		localStorage.removeItem("AUTH_TOKEN")
+		localStorage.removeItem("chat_history")
 	}
 
 	return (
