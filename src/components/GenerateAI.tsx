@@ -107,9 +107,7 @@ export default function GenerateAI() {
 				{messages.length === 0 && (
 					<div className="h-full flex flex-col items-center justify-center text-center opacity-30">
 						<FaRobot size={50} className="mb-4 text-primary" />
-						<p className="text-lg font-bold">
-							¿Qué protocolo médico generamos?
-						</p>
+						<p className="text-lg font-bold">¿En que puedo ayudarte hoy?</p>
 					</div>
 				)}
 
