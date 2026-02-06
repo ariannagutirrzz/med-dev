@@ -3,15 +3,14 @@ import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useAuth } from "../contexts/AuthContext"
 import AppointmentsSection from "../components/Appointments/AppointmentsSection"
 import Dashboard from "../components/Dashboard"
-import DashboardHeader from "../components/DashboardHeader"
 import DashboardHome from "../components/Dashboard/DashboardHome"
 import Inventory from "../components/Inventory/Inventory"
 import MedicalRecords from "../components/Patients/MedicalRecords"
 import Settings from "../components/Settings/Settings"
 import SurgeriesSection from "../components/Surgeries/SurgeriesSection"
+import { useAuth } from "../contexts/AuthContext"
 
 const DashboardPage: React.FC = () => {
 	const { user, logout } = useAuth()
@@ -45,8 +44,7 @@ const DashboardPage: React.FC = () => {
 	}
 
 	// Obtener el item activo basado en la URL actual
-	const activeMenuItem =
-		routeToMenuItemId[location.pathname] || "home"
+	const activeMenuItem = routeToMenuItemId[location.pathname] || "home"
 
 	// Definir todos los items del menú con sus roles permitidos
 	const allMenuItems = [
@@ -95,12 +93,15 @@ const DashboardPage: React.FC = () => {
 	]
 
 	// Verificar si el usuario tiene acceso a una ruta específica
-	const hasAccessToRoute = useCallback((path: string): boolean => {
-		const menuItem = allMenuItems.find((item) => item.path === path)
-		if (!menuItem) return false
-		const userRole = user?.role || ""
-		return menuItem.allowedRoles.includes(userRole)
-	}, [user?.role])
+	const hasAccessToRoute = useCallback(
+		(path: string): boolean => {
+			const menuItem = allMenuItems.find((item) => item.path === path)
+			if (!menuItem) return false
+			const userRole = user?.role || ""
+			return menuItem.allowedRoles.includes(userRole)
+		},
+		[user?.role],
+	)
 
 	// Filtrar items del menú basado en el rol del usuario
 	const menuItems = allMenuItems.filter((item) => {
@@ -136,49 +137,39 @@ const DashboardPage: React.FC = () => {
 	// Renderizar contenido según la ruta actual
 	const renderContent = () => {
 		const currentPath = location.pathname
-		
+
 		// Verificar acceso a la ruta actual
 		if (!hasAccessToRoute(currentPath)) {
 			// Redirigir a home si no tiene acceso
 			navigate("/dashboard/home", { replace: true })
 			return null
 		}
-		
+
 		// Determinar qué sección mostrar basado en la ruta
 		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
 			return <DashboardHome />
 		}
-		
+
 		if (currentPath === "/dashboard/pacientes") {
-			return (
-				<div className="p-6">
-					<DashboardHeader />
-					<MedicalRecords />
-				</div>
-			)
+			return <MedicalRecords />
 		}
-		
+
 		if (currentPath === "/dashboard/citas") {
 			return <AppointmentsSection />
 		}
-		
+
 		if (currentPath === "/dashboard/sala-de-cirugia") {
 			return <SurgeriesSection />
 		}
-		
+
 		if (currentPath === "/dashboard/inventario") {
-			return (
-				<div className="p-6">
-					<DashboardHeader />
-					<Inventory />
-				</div>
-			)
+			return <Inventory />
 		}
-		
+
 		if (currentPath === "/dashboard/configuracion") {
 			return <Settings userData={userData} />
 		}
-		
+
 		// Default: redirigir a home si la ruta no coincide
 		navigate("/dashboard/home", { replace: true })
 		return null
