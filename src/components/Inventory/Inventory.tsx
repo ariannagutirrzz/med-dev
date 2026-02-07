@@ -79,7 +79,13 @@ const Inventory = () => {
 	})
 
 	return (
-		<div className="p-4 space-y-6">
+		<div className="p-6 space-y-6">
+			<div className="mb-6">
+				<h1 className="text-3xl font-bold text-gray-800">Inventario</h1>
+				<p className="text-gray-600 mt-2">
+					Gestiona y manten un control de los insumos de la unidad
+				</p>
+			</div>
 			<div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-4 items-center">
 				<InventoryHeader
 					setSearchTerm={setSearchTerm}
