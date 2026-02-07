@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
-import { GiMedicalDrip } from "react-icons/gi"
+import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
 import AppointmentsSection from "../components/Appointments/AppointmentsSection"
 import Dashboard from "../components/Dashboard"
 import DashboardHome from "../components/Dashboard/DashboardHome"
+import DashboardHeader from "../components/DashboardHeader"
+import GenerateAI from "../components/GenerateAI"
 import Inventory from "../components/Inventory/Inventory"
 import MedicalRecords from "../components/Patients/MedicalRecords"
 import Settings from "../components/Settings/Settings"
@@ -30,6 +32,7 @@ const DashboardPage: React.FC = () => {
 		"/dashboard/citas": "appointments",
 		"/dashboard/sala-de-cirugia": "surgeryRoom",
 		"/dashboard/inventario": "inventory",
+		"/dashboard/asistente-ia": "ai",
 		"/dashboard/configuracion": "settings",
 	}
 
@@ -40,6 +43,7 @@ const DashboardPage: React.FC = () => {
 		appointments: "/dashboard/citas",
 		surgeryRoom: "/dashboard/sala-de-cirugia",
 		inventory: "/dashboard/inventario",
+		ai: "/dashboard/asistente-ia",
 		settings: "/dashboard/configuracion",
 	}
 
@@ -81,6 +85,13 @@ const DashboardPage: React.FC = () => {
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
 			path: "/dashboard/inventario",
+			allowedRoles: ["Médico"], // Solo médicos
+		},
+		{
+			id: "ai",
+			label: "Asistente Médico",
+			icon: <GiArtificialIntelligence className="w-5 h-5" />,
+			path: "/dashboard/asistente-ia",
 			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
@@ -164,6 +175,9 @@ const DashboardPage: React.FC = () => {
 
 		if (currentPath === "/dashboard/inventario") {
 			return <Inventory />
+		}
+		if (currentPath === "/dashboard/asistente-ia") {
+			return <GenerateAI />
 		}
 
 		if (currentPath === "/dashboard/configuracion") {
