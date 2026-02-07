@@ -1,3 +1,5 @@
+import { TbLogout2 } from "react-icons/tb"
+
 interface MenuItem {
 	id: string
 	label: string
@@ -24,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 	isSidebarOpen,
 	activeMenuItem,
 	onMenuItemClick,
+	onToggleSidebar,
 	onLogout,
 }) => {
 	return (
@@ -33,11 +36,20 @@ const Sidebar: React.FC<SidebarProps> = ({
         bg-white
         text-white
         transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? "w-80" : "w-20"}
+        ${isSidebarOpen ? "w-80" : "w-25"}
         relative
         shadow-xl
       `}
 		>
+			{/* --- BOTÓN DE TOGGLE AÑADIDO --- */}
+			<button
+				type="button"
+				onClick={onToggleSidebar}
+				className="absolute -right-3 top-10 bg-white border border-gray-200 rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-primary shadow-sm cursor-pointer z-50"
+			>
+				{isSidebarOpen ? "❮" : "❯"}
+			</button>
+			{/* ------------------------------ */}
 			{/* Header del usuario */}
 			<div className="p-5 border-b border-gray-700 flex-col text-center items-center gap-4 relative">
 				{/* Foto de perfil */}
@@ -49,7 +61,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 							className="w-18 h-18 rounded-full object-cover border-2 border-bg-primary"
 						/>
 					) : (
-						<div className="w-18 h-18 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+						<div
+							className={`w-18 h-18 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg `}
+						>
 							{user.name.charAt(0).toUpperCase()}
 						</div>
 					)}
@@ -121,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 						`}
 						title={!isSidebarOpen ? "Cerrar sesión" : undefined}
 					>
+						<TbLogout2 />
 						<span
 							className={`font-medium ${isSidebarOpen ? "block" : "hidden"}`}
 						>
