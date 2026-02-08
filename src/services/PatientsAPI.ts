@@ -25,6 +25,18 @@ export async function getPatients() {
 	}
 }
 
+export async function getDoctorPatients() {
+	try {
+		const { data } = await api.get("/patients/medico")
+		return data
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			throw new Error(error.response.data.error || "Error al obtener pacientes")
+		}
+		throw new Error("Error al conectar con el servidor")
+	}
+}
+
 export async function updatePatientById(formData: PatientFormData) {
 	try {
 		const { data } = await api.patch(
