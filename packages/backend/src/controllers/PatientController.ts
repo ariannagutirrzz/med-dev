@@ -174,7 +174,13 @@ export const deletePatient = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Patient not found" })
 
 		res.json({ message: "Patient deleted successfully" })
-	} catch (error) {
+	} catch (error: any) {
+		if (error.code === "23503") {
+			return res.status(409).json({
+				error:
+					"No se puede eliminar el paciente porque tiene registros asociados (citas, evoluciones, etc.).",
+			})
+		}
 		console.error("Error deleting patient:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
