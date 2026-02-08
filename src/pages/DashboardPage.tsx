@@ -162,12 +162,7 @@ const DashboardPage: React.FC = () => {
 		}
 
 		if (currentPath === "/dashboard/pacientes") {
-			return (
-				<div className="p-6">
-					<DashboardHeader />
-					<MedicalRecords />
-				</div>
-			)
+			return <MedicalRecords />
 		}
 
 		if (currentPath === "/dashboard/citas") {
@@ -179,12 +174,7 @@ const DashboardPage: React.FC = () => {
 		}
 
 		if (currentPath === "/dashboard/inventario") {
-			return (
-				<div className="p-6">
-					<DashboardHeader />
-					<Inventory />
-				</div>
-			)
+			return <Inventory />
 		}
 		if (currentPath === "/dashboard/asistente-ia") {
 			return <GenerateAI />

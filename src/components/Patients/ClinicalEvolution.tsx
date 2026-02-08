@@ -123,7 +123,7 @@ export default function ClinicalEvolution({
 		}
 	}
 	return (
-		<div className="p-6 bg-white min-h-screen">
+		<div className="bg-white rounded-2xl shadow-lg p-6 mb-6 min-h-screen">
 			<div className="flex justify-between items-center mb-8">
 				<h2 className="text-2xl font-black text-gray-800">
 					Paciente:{" "}
