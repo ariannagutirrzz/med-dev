@@ -3,6 +3,7 @@ import {
 	createPatient,
 	deletePatient,
 	getAllPatients,
+	getDoctorPatients,
 	getPatientById,
 	updatePatient,
 } from "../controllers/PatientController"
@@ -109,6 +110,7 @@ patientsRoutes.use(isMedic)
 
 patientsRoutes.post("/", createPatient)
 patientsRoutes.get("/", getAllPatients)
+patientsRoutes.get("/medico", getDoctorPatients)
 patientsRoutes.get("/:id", getPatientById)
 patientsRoutes.patch("/:id", updatePatient)
 patientsRoutes.delete("/:id", deletePatient)

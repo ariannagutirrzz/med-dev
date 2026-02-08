@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 // 1. Importamos el service
-import { getPatients } from "../../services/PatientsAPI"
+import { getDoctorPatients } from "../../services/PatientsAPI"
 import type { Patient } from "../../types"
 import { calcularEdad } from "../utils"
 import ClinicalEvolution from "./ClinicalEvolution"
@@ -22,7 +22,7 @@ export default function MedicalRecords() {
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
 		try {
-			const data = await getPatients()
+			const data = await getDoctorPatients()
 			// Transformamos birthdate de string a Date para que calcularEdad no falle
 			const formattedData = data.patients.map((p: Patient) => ({
 				...p,

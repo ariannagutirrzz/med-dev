@@ -91,6 +91,46 @@ export const getAllPatients = async (_req: Request, res: Response) => {
 	}
 }
 
+// 2. Get Patients assigned to the logged-in Doctor
+export const getDoctorPatients = async (req: Request, res: Response) => {
+	const doctorId = req.user?.document_id
+
+	if (!doctorId) {
+		return res
+			.status(401)
+			.json({ error: "No autorizado. ID de médico no encontrado." })
+	}
+
+	try {
+		// Buscamos pacientes que cumplan AL MENOS una de las tres condiciones con este médico
+		const result = await query(
+			`SELECT p.* FROM patients p
+             WHERE EXISTS (
+                 SELECT 1 FROM medical_records mr 
+                 WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+             )
+             OR EXISTS (
+                 SELECT 1 FROM appointments a 
+                 WHERE a.patient_id = p.document_id AND a.doctor_id = $1
+             )
+             OR EXISTS (
+                 SELECT 1 FROM surgeries s 
+                 WHERE s.patient_id = p.document_id AND s.doctor_id = $1
+             )
+             ORDER BY p.last_name ASC`,
+			[doctorId],
+		)
+
+		res.json({
+			count: result.rowCount,
+			patients: result.rows,
+		})
+	} catch (error) {
+		console.error("Error fetching doctor patients:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
 // 3. Get Patient by document_id
 export const getPatientById = async (req: Request, res: Response) => {
 	const { id } = req.params
@@ -174,7 +214,13 @@ export const deletePatient = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Patient not found" })
 
 		res.json({ message: "Patient deleted successfully" })
-	} catch (error) {
+	} catch (error: any) {
+		if (error.code === "23503") {
+			return res.status(409).json({
+				error:
+					"No se puede eliminar el paciente porque tiene registros asociados (citas, evoluciones, etc.).",
+			})
+		}
 		console.error("Error deleting patient:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
