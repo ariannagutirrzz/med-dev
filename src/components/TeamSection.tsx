@@ -1,22 +1,30 @@
 import { useEffect, useState } from "react"
+import { getDoctors } from "../services/UsersAPI"
 import TeamCard from "./TeamCard"
+
+interface Medico {
+	name: string
+	title: string
+	credentials: string
+	experience: string
+	description: string
+	image: string
+}
 
 const TeamSection = () => {
 	const [medicos, setMedicos] = useState<Medico[]>([])
-	interface Medico {
-		name: string
-		title: string
-		credentials: string
-		experience: string
-		description: string
-		image: string
-	}
 
 	useEffect(() => {
-		fetch("http://localhost:3001/medicos")
-			.then((res) => res.json())
-			.then((data) => setMedicos(data.medicos))
-			.catch((error) => console.error("Error fetching medicos:", error))
+		const fetchData = async () => {
+			try {
+				const data = await getDoctors()
+				setMedicos(data.doctors)
+			} catch (error) {
+				console.error("Error al cargar el equipo médico:", error)
+			}
+		}
+
+		fetchData()
 	}, [])
 
 	return (
@@ -31,7 +39,7 @@ const TeamSection = () => {
 					</p>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
 					{medicos.map((member) => (
 						<TeamCard
 							key={member.name}

@@ -10,7 +10,7 @@ const FAQSection = () => {
 		{
 			question: "¿Cómo puedo agendar una cita?",
 			answer:
-				"Puedes agendar una cita a través de nuestro sistema en línea después de iniciar sesión, o contactarnos directamente por teléfono al +58 412 123 4567. Nuestro horario de atención es de lunes a viernes de 9:00 AM a 6:00 PM, y sábados de 9:00 AM a 1:00 PM.",
+				"Puedes agendar una cita a través de nuestro sistema en línea después de iniciar sesión, o contactarnos directamente por teléfono al +58 424 659 9756. Nuestro horario de atención es de lunes a viernes de 9:00 AM a 6:00 PM previa cita.",
 		},
 		{
 			question: "¿Qué condiciones tratamos?",

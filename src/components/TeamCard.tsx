@@ -17,7 +17,7 @@ const TeamCard = ({
 }: TeamCardProps) => {
 	return (
 		<div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-[0_18px_40px_rgba(120,154,97,0.35)] hover:scale-105 transition-all duration-300 ease-in-out">
-			<div className="h-64 bg-linear-to-br from-bg-light to-bg-card flex items-center justify-center overflow-hidden">
+			<div className="h-70 bg-linear-to-br from-bg-light to-bg-card flex items-center justify-center overflow-hidden">
 				<img
 					src={image}
 					alt={name}

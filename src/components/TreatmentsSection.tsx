@@ -7,12 +7,13 @@ const TreatmentsSection = () => {
 		{
 			title: "Toracoscopia",
 			description:
-				"Procedimiento mínimamente invasivo para el diagnóstico y tratamiento de enfermedades pleurales. Permite visualización directa de la cavidad pleural con mínima invasión.",
+				"Procedimiento mínimamente invasivo para el diagnóstico y tratamiento de enfermedades pulmonares. Permite visualización directa de la cavidad pleural con mínima invasión.",
 			conditions: [
 				"Derrame pleural",
 				"Neumotórax",
 				"Tumores pleurales",
 				"Enfermedades pleurales benignas",
+				"Tumores pulmonares",
 			],
 		},
 		{

@@ -4,7 +4,7 @@ const Footer = () => {
 	const currentYear = new Date().getFullYear()
 
 	return (
-		<footer className="bg-primary text-white mt-16">
+		<footer id="contact" className="bg-primary text-white mt-16">
 			<div className="max-w-6xl mx-auto px-4 py-12">
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
 					{/* About Section */}
@@ -34,10 +34,10 @@ const Footer = () => {
 							</li>
 							<li>
 								<a
-									href="#services"
+									href="#treatments"
 									className="text-muted-light hover:text-white transition-colors text-sm"
 								>
-									Ventajas
+									Servicios
 								</a>
 							</li>
 							<li>
@@ -46,14 +46,6 @@ const Footer = () => {
 									className="text-muted-light hover:text-white transition-colors text-sm"
 								>
 									Agendar Cita
-								</a>
-							</li>
-							<li>
-								<a
-									href="#contact"
-									className="text-muted-light hover:text-white transition-colors text-sm"
-								>
-									Contáctanos
 								</a>
 							</li>
 						</ul>
@@ -68,7 +60,6 @@ const Footer = () => {
 									Horario de Atención
 								</p>
 								<p>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
-								<p>Sábados: 9:00 AM - 1:00 PM</p>
 							</li>
 							<li>
 								<p className="font-semibold text-white mb-1">Emergencias</p>
@@ -94,7 +85,7 @@ const Footer = () => {
 								<FaInstagram className="w-6 h-6" />
 							</a>
 							<a
-								href="https://wa.me/1234567890"
+								href="https://wa.me/+584246599756"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"
