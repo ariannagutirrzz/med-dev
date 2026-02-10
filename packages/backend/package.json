@@ -11,7 +11,8 @@
 		"setup-render-db": "node scripts/setup-render-db.js",
 		"verify-tables": "node scripts/verify-tables.js",
 		"show-schema": "node scripts/show-schema.js",
-		"add-custom-exchange-rate": "node scripts/add-custom-exchange-rate.js"
+		"add-custom-exchange-rate": "node scripts/add-custom-exchange-rate.js",
+		"create-notifications-table": "node scripts/create-notifications-table.js"
 	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",

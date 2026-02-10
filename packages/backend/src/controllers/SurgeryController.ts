@@ -1,5 +1,9 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
+import {
+	notifySurgeryCreated,
+	notifySurgeryUpdated,
+} from "../utils/notificationHelpers"
 
 // 1. Create Surgery (Reservation)
 export const createSurgery = async (req: Request, res: Response) => {
@@ -29,9 +33,33 @@ export const createSurgery = async (req: Request, res: Response) => {
 			],
 		)
 
+		const surgery = result.rows[0]
+
+		// Create notification for surgery creation
+		try {
+			const patientResult = await query(
+				`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+				[patient_id],
+			)
+			const patient = patientResult.rows[0]
+
+			if (patient) {
+				const patientName = `${patient.first_name} ${patient.last_name}`
+				await notifySurgeryCreated(
+					doctor_id,
+					patientName,
+					new Date(surgery_date),
+					surgery_type,
+					surgery.id,
+				)
+			}
+		} catch (notifError) {
+			console.error("Error creating surgery notification:", notifError)
+		}
+
 		res.status(201).json({
 			message: "Surgery reservation created successfully.",
-			surgery: result.rows[0],
+			surgery,
 		})
 	} catch (error) {
 		console.error("Error creating surgery:", error)
@@ -108,9 +136,37 @@ export const updateSurgery = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Surgery record not found." })
 		}
 
+		const updatedSurgery = result.rows[0]
+
+		// Create notification for surgery update
+		try {
+			const doctor_id = req.user?.document_id
+			if (doctor_id) {
+				const patientResult = await query(
+					`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+					[updatedSurgery.patient_id],
+				)
+				const patient = patientResult.rows[0]
+
+				if (patient) {
+					const patientName = `${patient.first_name} ${patient.last_name}`
+					await notifySurgeryUpdated(
+						doctor_id,
+						patientName,
+						new Date(updatedSurgery.surgery_date),
+						updatedSurgery.surgery_type,
+						updatedSurgery.id,
+						updatedSurgery.status,
+					)
+				}
+			}
+		} catch (notifError) {
+			console.error("Error creating surgery update notification:", notifError)
+		}
+
 		res.json({
 			message: "Surgery updated successfully",
-			surgery: result.rows[0],
+			surgery: updatedSurgery,
 		})
 	} catch (error) {
 		console.error("Error updating surgery:", error)

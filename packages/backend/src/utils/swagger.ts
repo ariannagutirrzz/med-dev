@@ -38,6 +38,10 @@ const options: Options = {
 				name: "Currency",
 				description: "Operaciones de la API relacionadas a las tasas de cambio",
 			},
+			{
+				name: "Notifications",
+				description: "Operaciones de la API relacionadas a las notificaciones",
+			},
 		],
 		info: {
 			title: "Documentacion API MedDev",
