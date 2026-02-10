@@ -1,6 +1,10 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
 import { sendWhatsApp } from "../utils/twilio"
+import {
+	notifyAppointmentCreated,
+	notifyAppointmentUpdated,
+} from "../utils/notificationHelpers"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
@@ -76,7 +80,10 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 		const appointment = result.rows[0]
 
-		// Fetch patient and doctor information for WhatsApp notifications
+		// Fetch patient and doctor information for WhatsApp notifications and in-app notifications
+		let patient: { name: string; phone?: string } | null = null
+		let doctor: { name: string; phone?: string } | null = null
+
 		try {
 			const [patientResult, doctorResult] = await Promise.all([
 				query(
@@ -88,8 +95,8 @@ export const createAppointment = async (req: Request, res: Response) => {
 				]),
 			])
 
-			const patient = patientResult.rows[0]
-			const doctor = doctorResult.rows[0]
+			patient = patientResult.rows[0] || null
+			doctor = doctorResult.rows[0] || null
 
 			// Format appointment date for WhatsApp
 			const appointmentDate = new Date(appointment_date)
@@ -138,6 +145,21 @@ Por favor, confirma tu disponibilidad.`
 		} catch (whatsappError) {
 			// Log WhatsApp error but don't fail the appointment creation
 			console.error("Error sending WhatsApp notifications:", whatsappError)
+		}
+
+		// Create in-app notification for doctor
+		try {
+			if (doctor && patient) {
+				await notifyAppointmentCreated(
+					doctor_id,
+					patient.name,
+					new Date(appointment_date),
+					appointment.id,
+				)
+			}
+		} catch (notifError) {
+			// Log notification error but don't fail the appointment creation
+			console.error("Error creating appointment notification:", notifError)
 		}
 
 		res.status(201).json({
@@ -304,8 +326,33 @@ export const updateAppointment = async (req: Request, res: Response) => {
 				.status(404)
 				.json({ error: "Appointment not found or unauthorized" })
 
+		const updatedAppointment = result.rows[0]
+
+		// Create notification for appointment update
+		if (role === "Médico") {
+			try {
+				const patientResult = await query(
+					`SELECT name FROM users WHERE document_id = $1`,
+					[updatedAppointment.patient_id],
+				)
+				const patient = patientResult.rows[0]
+
+				if (patient?.name) {
+					await notifyAppointmentUpdated(
+						userId,
+						patient.name,
+						new Date(updatedAppointment.appointment_date),
+						updatedAppointment.id,
+						updatedAppointment.status,
+					)
+				}
+			} catch (notifError) {
+				console.error("Error creating update notification:", notifError)
+			}
+		}
+
 		res.json({
-			appointment: result.rows[0],
+			appointment: updatedAppointment,
 			message: "Appointment updated successfully",
 		})
 	} catch (error) {

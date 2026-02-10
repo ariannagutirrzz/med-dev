@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import TeamCard from "../components/TeamCard"
+import { TeamCard } from "../features/home"
 
 interface Medico {
 	name: string
