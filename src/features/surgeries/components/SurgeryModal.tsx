@@ -8,7 +8,12 @@ import {
 	updateSurgeryById,
 } from "../services/SurgeriesAPI"
 import { getPatients } from "../../patients"
+import { getMyServices } from "../../services"
+import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import type { Surgery, SurgeryFormData, Patient } from "../../../shared"
+import type { DoctorServiceWithType } from "../../services"
+import { formatPrice } from "../../../shared"
 
 interface SurgeryModalProps {
 	isOpen: boolean
@@ -27,6 +32,10 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	const [loading, setLoading] = useState(false)
 	const [patients, setPatients] = useState<Patient[]>([])
 	const [loadingData, setLoadingData] = useState(false)
+	const [services, setServices] = useState<DoctorServiceWithType[]>([])
+	const [settings, setSettings] = useState<UserSettings | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [selectedService, setSelectedService] = useState<DoctorServiceWithType | null>(null)
 
 	const initialValues: SurgeryFormData = {
 		patient_id: "",
@@ -34,9 +43,27 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 		surgery_type: "",
 		status: "scheduled",
 		notes: "",
+		service_id: null,
 	}
 
 	const [formData, setFormData] = useState<SurgeryFormData>(initialValues)
+
+	// Cargar servicios del médico
+	const loadServices = useCallback(async () => {
+		try {
+			const [servicesData, settingsData, ratesData] = await Promise.all([
+				getMyServices(),
+				getSettings().catch(() => null),
+				getCurrencyRates().catch(() => null),
+			])
+			setServices(servicesData.filter((s) => s.is_active))
+			setSettings(settingsData)
+			setCurrencyRates(ratesData)
+		} catch (error) {
+			console.error("Error loading services:", error)
+			setServices([])
+		}
+	}, [])
 
 	// Cargar pacientes
 	const loadPatients = useCallback(async () => {
@@ -74,8 +101,9 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	useEffect(() => {
 		if (isOpen) {
 			loadPatients()
+			loadServices()
 		}
-	}, [isOpen, loadPatients])
+	}, [isOpen, loadPatients, loadServices])
 
 	// Cargar datos de la cirugía si es edición
 	useEffect(() => {
@@ -94,6 +122,14 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 				surgery_type: editingSurgery.surgery_type,
 				status: editingSurgery.status,
 				notes: editingSurgery.notes || "",
+				service_id: editingSurgery.service_id || null,
+			})
+			// Cargar servicios y seleccionar el servicio si existe
+			loadServices().then(() => {
+				if (editingSurgery.service_id) {
+					const service = services.find((s) => s.id === editingSurgery.service_id)
+					setSelectedService(service || null)
+				}
 			})
 		} else {
 			setFormData(initialValues)
@@ -213,6 +249,66 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								))}
 							</select>
 						</div>
+
+						{/* Servicio - Opcional, pero si se selecciona, actualiza el tipo de cirugía */}
+						{services.length > 0 && (
+							<div className="md:col-span-2 relative">
+								<label
+									htmlFor="service_id"
+									className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+								>
+									Servicio (Opcional)
+								</label>
+								<select
+									id="service_id"
+									value={formData.service_id?.toString() || ""}
+									className={inputClass}
+									onChange={(e) => {
+										const serviceId = e.target.value ? parseInt(e.target.value, 10) : null
+										const service = services.find((s) => s.id === serviceId)
+										setFormData({
+											...formData,
+											service_id: serviceId,
+											surgery_type: service?.service_type.name || formData.surgery_type,
+										})
+										setSelectedService(service || null)
+									}}
+								>
+									<option value="">Seleccionar servicio...</option>
+									{services.map((service) => (
+										<option key={service.id} value={service.id}>
+											{service.service_type.name} - ${formatPrice(service.price_usd)} USD
+										</option>
+									))}
+								</select>
+								{selectedService && (
+									<div className="mt-2 p-3 bg-blue-50 rounded-lg">
+										<div className="text-sm">
+											<div className="flex justify-between mb-1">
+												<span className="text-gray-600">Precio USD:</span>
+												<span className="font-semibold text-primary">
+													${formatPrice(selectedService.price_usd)}
+												</span>
+											</div>
+											{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+												<div className="flex justify-between">
+													<span className="text-gray-600">Precio BS:</span>
+													<span className="font-semibold text-green-600">
+														Bs.{" "}
+														{formatPrice(
+															selectedService.price_usd *
+																(settings?.custom_exchange_rate ||
+																	currencyRates?.oficial?.promedio ||
+																	0),
+														)}
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
+								)}
+							</div>
+						)}
 
 						{/* Tipo de Cirugía */}
 						<div className="md:col-span-2 relative">

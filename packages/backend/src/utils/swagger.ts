@@ -42,6 +42,10 @@ const options: Options = {
 				name: "Notifications",
 				description: "Operaciones de la API relacionadas a las notificaciones",
 			},
+			{
+				name: "Services",
+				description: "Operaciones de la API relacionadas a los servicios y precios médicos",
+			},
 		],
 		info: {
 			title: "Documentacion API MedDev",

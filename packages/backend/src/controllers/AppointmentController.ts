@@ -16,6 +16,7 @@ export const createAppointment = async (req: Request, res: Response) => {
 		appointment_date,
 		status,
 		notes,
+		service_id,
 	} = req.body
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
@@ -63,9 +64,26 @@ export const createAppointment = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// If service_id is provided, fetch the price from doctor_services
+		let price_usd: number | null = null
+		let final_service_id: number | null = null
+
+		if (service_id) {
+			const serviceResult = await query(
+				`SELECT id, price_usd FROM doctor_services 
+				WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
+				[service_id, doctor_id],
+			)
+
+			if (serviceResult.rows.length > 0) {
+				final_service_id = serviceResult.rows[0].id
+				price_usd = parseFloat(serviceResult.rows[0].price_usd)
+			}
+		}
+
 		const result = await query(
-			`INSERT INTO appointments (patient_id, doctor_id, appointment_date, status, notes) 
-         VALUES ($1, $2, $3, $4, $5) 
+			`INSERT INTO appointments (patient_id, doctor_id, appointment_date, status, notes, service_id, price_usd) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) 
          RETURNING *,
          TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, 
          TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at`,
@@ -75,6 +93,8 @@ export const createAppointment = async (req: Request, res: Response) => {
 				appointment_date,
 				status.toLowerCase(),
 				notes || null,
+				final_service_id,
+				price_usd,
 			],
 		)
 
