@@ -4,6 +4,7 @@ import { HiOutlineBellAlert, HiOutlineMagnifyingGlass } from "react-icons/hi2"
 
 export default function DashboardHeader() {
 	const [searchTerm, setSearchTerm] = useState("")
+
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSearchTerm(e.target.value)
 	}
@@ -29,9 +30,7 @@ export default function DashboardHeader() {
 				/>
 			</div>
 
-			<h2 className="text-lg text-gray-400 font-semibold">
-				Valor Dolar: <b className="text-primary font-semibold">3019.91 Bs</b>
-			</h2>
+		
 			<HiOutlineBellAlert className="w-8 h-8 cursor-pointer text-gray-400" />
 		</div>
 	)

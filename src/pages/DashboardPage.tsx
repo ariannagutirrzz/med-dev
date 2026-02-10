@@ -148,13 +148,6 @@ const DashboardPage: React.FC = () => {
 	const renderContent = () => {
 		const currentPath = location.pathname
 
-		// Verificar acceso a la ruta actual
-		if (!hasAccessToRoute(currentPath)) {
-			// Redirigir a home si no tiene acceso
-			navigate("/dashboard/home", { replace: true })
-			return null
-		}
-
 		// Determinar qué sección mostrar basado en la ruta
 		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
 			return <DashboardHome />
@@ -183,9 +176,8 @@ const DashboardPage: React.FC = () => {
 			return <Settings userData={userData} />
 		}
 
-		// Default: redirigir a home si la ruta no coincide
-		navigate("/dashboard/home", { replace: true })
-		return null
+		// Default: mostrar home si la ruta no coincide
+		return <DashboardHome />
 	}
 
 	const handleLogout = () => {
