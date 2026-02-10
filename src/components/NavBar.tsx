@@ -1,21 +1,29 @@
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
 
 const NavBar = () => {
+	const [isUserLogged, setIsUserLogged] = useState(false)
 	const navItems = [
 		{
 			label: "Sobre Nosotros",
 			href: "#about",
 		},
 		{
-			label: "Ventajas",
-			href: "#services",
+			label: "Servicios",
+			href: "#treatments",
 		},
 		{
 			label: "Contáctanos",
 			href: "#contact",
 		},
 	]
+
+	useEffect(() => {
+		localStorage.getItem("AUTH_TOKEN")
+			? setIsUserLogged(true)
+			: setIsUserLogged(false)
+	}, [])
 
 	return (
 		<header className="bg-transparent py-4">
@@ -40,7 +48,7 @@ const NavBar = () => {
 						to="/login"
 						className="ml-4 px-3 py-2 rounded-md bg-primary font-semibold text-white shadow-sm hover:shadow-[0_12px_24px_rgba(120,154,97,0.4)] transition-shadow duration-300 ease-in-out"
 					>
-						Iniciar Sesión
+						{isUserLogged ? "Ir a Dashboard" : "Iniciar Sesión"}
 					</Link>
 				</nav>
 			</div>
