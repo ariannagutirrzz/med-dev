@@ -1,0 +1,345 @@
+import { useState } from "react"
+import { Button, InputField } from "../../../shared"
+
+interface SignupFormData {
+	name: string
+	email: string
+	password: string
+	confirmPassword: string
+	document_id: string
+	phone: string
+	birthdate: string
+	gender: string
+	address: string
+}
+
+interface SignupFormErrors {
+	name?: string
+	email?: string
+	password?: string
+	confirmPassword?: string
+	document_id?: string
+	phone?: string
+	birthdate?: string
+	gender?: string
+	address?: string
+}
+
+interface SignupFormProps {
+	onSignUp: (data: Omit<SignupFormData, 'confirmPassword'>) => void
+}
+
+const SignupForm = ({ onSignUp }: SignupFormProps) => {
+	const [formData, setFormData] = useState<SignupFormData>({
+		name: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+		document_id: "",
+		phone: "",
+		birthdate: "",
+		gender: "",
+		address: "",
+	})
+
+	const [errors, setErrors] = useState<SignupFormErrors>({})
+	const [isSubmitting, setIsSubmitting] = useState(false)
+
+	const validateEmail = (email: string): boolean => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+		return emailRegex.test(email)
+	}
+
+	const validatePhone = (phone: string): boolean => {
+		// Allow phone numbers with or without country code, spaces, dashes, parentheses
+		const phoneRegex = /^[\d\s\-\+\(\)]+$/
+		return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 7
+	}
+
+	const validateDocumentId = (docId: string): boolean => {
+		// Allow alphanumeric document IDs, typically 6-12 characters
+		return /^[A-Za-z0-9]{6,12}$/.test(docId)
+	}
+
+	const validateForm = (): boolean => {
+		const newErrors: SignupFormErrors = {}
+
+		// Name validation
+		if (!formData.name.trim()) {
+			newErrors.name = "El nombre es requerido"
+		} else if (formData.name.trim().length < 2) {
+			newErrors.name = "El nombre debe tener al menos 2 caracteres"
+		}
+
+		// Email validation
+		if (!formData.email.trim()) {
+			newErrors.email = "El correo electrónico es requerido"
+		} else if (!validateEmail(formData.email)) {
+			newErrors.email = "Ingresa un correo electrónico válido"
+		}
+
+		// Password validation
+		if (!formData.password) {
+			newErrors.password = "La contraseña es requerida"
+		} else if (formData.password.length < 8) {
+			newErrors.password = "La contraseña debe tener al menos 8 caracteres"
+		}
+
+		// Confirm Password validation
+		if (!formData.confirmPassword) {
+			newErrors.confirmPassword = "Confirma tu contraseña"
+		} else if (formData.password !== formData.confirmPassword) {
+			newErrors.confirmPassword = "Las contraseñas no coinciden"
+		}
+
+		// Document ID validation
+		if (!formData.document_id.trim()) {
+			newErrors.document_id = "La cédula/documento es requerido"
+		} else if (!validateDocumentId(formData.document_id)) {
+			newErrors.document_id =
+				"La cédula debe tener entre 6 y 12 caracteres alfanuméricos"
+		}
+
+		// Phone validation
+		if (!formData.phone.trim()) {
+			newErrors.phone = "El teléfono es requerido"
+		} else if (!validatePhone(formData.phone)) {
+			newErrors.phone = "Ingresa un número de teléfono válido"
+		}
+
+		// Birthdate validation
+		if (!formData.birthdate) {
+			newErrors.birthdate = "La fecha de nacimiento es requerida"
+		} else {
+			const birthDate = new Date(formData.birthdate)
+			const today = new Date()
+			const age = today.getFullYear() - birthDate.getFullYear()
+			const monthDiff = today.getMonth() - birthDate.getMonth()
+			const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age
+
+			if (actualAge < 0) {
+				newErrors.birthdate = "La fecha de nacimiento no puede ser futura"
+			} else if (actualAge > 120) {
+				newErrors.birthdate = "Por favor verifica la fecha de nacimiento"
+			}
+		}
+
+		// Gender validation
+		if (!formData.gender) {
+			newErrors.gender = "El género es requerido"
+		}
+
+		// Address validation
+		if (!formData.address.trim()) {
+			newErrors.address = "La dirección es requerida"
+		} else if (formData.address.trim().length < 5) {
+			newErrors.address = "La dirección debe tener al menos 5 caracteres"
+		}
+
+		setErrors(newErrors)
+		return Object.keys(newErrors).length === 0
+	}
+
+	const handleChange = (field: keyof SignupFormData) => (
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+	) => {
+		const value = e.target.value
+		setFormData((prev) => ({ ...prev, [field]: value }))
+		// Clear error for this field when user starts typing
+		if (errors[field]) {
+			setErrors((prev) => ({ ...prev, [field]: undefined }))
+		}
+		// If password changes, also clear confirmPassword error
+		if (field === "password" && errors.confirmPassword) {
+			setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+		}
+		// If confirmPassword changes and passwords match, clear error
+		if (field === "confirmPassword" && formData.password === value && errors.confirmPassword) {
+			setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+		}
+	}
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
+		
+		if (!validateForm()) {
+			return
+		}
+
+		setIsSubmitting(true)
+		try {
+			// Don't send confirmPassword to backend
+			const { confirmPassword: _confirmPassword, ...dataToSend } = formData
+			await onSignUp(dataToSend)
+		} catch (error) {
+			console.error("Error in signup:", error)
+		} finally {
+			setIsSubmitting(false)
+		}
+	}
+
+	return (
+		<form onSubmit={handleSubmit} className="py-6">
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+				{/* Name */}
+				<InputField
+					label="Nombre Completo"
+					type="text"
+					placeholder="Ingresa tu nombre completo"
+					value={formData.name}
+					onChange={handleChange("name")}
+					error={errors.name}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+
+				{/* Document ID */}
+				<InputField
+					label="Cédula/Documento de Identidad"
+					type="text"
+					placeholder="Ej: V12345678"
+					value={formData.document_id}
+					onChange={handleChange("document_id")}
+					error={errors.document_id}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+
+				{/* Email */}
+				<InputField
+					label="Correo Electrónico"
+					type="email"
+					placeholder="correo@ejemplo.com"
+					value={formData.email}
+					onChange={handleChange("email")}
+					error={errors.email}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+
+				{/* Phone */}
+				<InputField
+					label="Teléfono"
+					type="tel"
+					placeholder="Ej: 0412-1234567"
+					value={formData.phone}
+					onChange={handleChange("phone")}
+					error={errors.phone}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+
+				{/* Birthdate */}
+				<div>
+					<label htmlFor="birthdate" className="text-sm text-text ml-1 mb-1 flex justify-start">
+						Fecha de Nacimiento
+						<span className="text-red-500 ml-1">*</span>
+					</label>
+					<input
+						id="birthdate"
+						type="date"
+						value={formData.birthdate}
+						onChange={handleChange("birthdate")}
+						className={`w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text ${
+							errors.birthdate
+								? "border-red-500 focus:border-red-500"
+								: "border-muted hover:border-primary focus:border-primary"
+						} focus:outline-none transition-colors`}
+						max={new Date().toISOString().split("T")[0]}
+					/>
+					{errors.birthdate && (
+						<p className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1" role="alert">
+							<span className="text-red-500">•</span>
+							{errors.birthdate}
+						</p>
+					)}
+				</div>
+
+				{/* Gender */}
+				<div>
+					<label htmlFor="gender" className="text-sm text-text ml-1 mb-1 flex justify-start">
+						Género
+						<span className="text-red-500 ml-1">*</span>
+					</label>
+					<select
+						id="gender"
+						value={formData.gender}
+						onChange={handleChange("gender")}
+						className={`w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text ${
+							errors.gender
+								? "border-red-500 focus:border-red-500"
+								: "border-muted hover:border-primary focus:border-primary"
+						} focus:outline-none transition-colors`}
+					>
+						<option value="">Selecciona un género</option>
+						<option value="M">Masculino</option>
+						<option value="F">Femenino</option>
+						<option value="O">Otro</option>
+					</select>
+					{errors.gender && (
+						<p className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1" role="alert">
+							<span className="text-red-500">•</span>
+							{errors.gender}
+						</p>
+					)}
+				</div>
+
+				{/* Address */}
+				<div className="md:col-span-2">
+					<InputField
+						label="Dirección"
+						type="text"
+						placeholder="Ingresa tu dirección completa"
+						value={formData.address}
+						onChange={handleChange("address")}
+						error={errors.address}
+						required
+						showIcon={false}
+						showSeparator={false}
+					/>
+				</div>
+
+				{/* Password */}
+				<InputField
+					label="Contraseña"
+					type="password"
+					placeholder="Crea una contraseña segura (mín. 8 caracteres)"
+					value={formData.password}
+					onChange={handleChange("password")}
+					error={errors.password}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+
+				{/* Confirm Password */}
+				<InputField
+					label="Confirmar Contraseña"
+					type="password"
+					placeholder="Confirma tu contraseña"
+					value={formData.confirmPassword}
+					onChange={handleChange("confirmPassword")}
+					error={errors.confirmPassword}
+					required
+					showIcon={false}
+					showSeparator={false}
+				/>
+			</div>
+
+			<div className="mt-6">
+				<Button
+					text={isSubmitting ? "Registrando..." : "Registrarse"}
+					onClick={() => {}}
+					type="submit"
+					disabled={isSubmitting}
+				/>
+			</div>
+		</form>
+	)
+}
+
+export default SignupForm

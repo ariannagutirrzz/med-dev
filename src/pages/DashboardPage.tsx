@@ -3,15 +3,18 @@ import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
-import AppointmentsSection from "../components/Appointments/AppointmentsSection"
-import Dashboard from "../components/Dashboard"
-import DashboardHome from "../components/Dashboard/DashboardHome"
-import GenerateAI from "../components/GenerateAI"
-import Inventory from "../components/Inventory/Inventory"
-import MedicalRecords from "../components/Patients/MedicalRecords"
-import Settings from "../components/Settings/Settings"
-import SurgeriesSection from "../components/Surgeries/SurgeriesSection"
-import { useAuth } from "../contexts/AuthContext"
+import {
+	Dashboard,
+	DashboardHome,
+	DashboardSearchProvider,
+} from "../features/dashboard"
+import { AppointmentsSection } from "../features/appointments"
+import { GenerateAI } from "../features/ai"
+import { Inventory } from "../features/inventory"
+import { MedicalRecords } from "../features/patients"
+import { Settings } from "../features/settings"
+import { SurgeriesSection } from "../features/surgeries"
+import { useAuth } from "../features/auth"
 
 const DashboardPage: React.FC = () => {
 	const { user, logout } = useAuth()
@@ -186,17 +189,19 @@ const DashboardPage: React.FC = () => {
 	}
 
 	return (
-		<Dashboard
-			user={userData}
-			menuItems={menuItems}
-			isSidebarOpen={isSidebarOpen}
-			activeMenuItem={activeMenuItem}
-			onMenuItemClick={handleMenuItemClick}
-			onToggleSidebar={handleToggleSidebar}
-			onLogout={handleLogout}
-		>
-			{renderContent()}
-		</Dashboard>
+		<DashboardSearchProvider>
+			<Dashboard
+				user={userData}
+				menuItems={menuItems}
+				isSidebarOpen={isSidebarOpen}
+				activeMenuItem={activeMenuItem}
+				onMenuItemClick={handleMenuItemClick}
+				onToggleSidebar={handleToggleSidebar}
+				onLogout={handleLogout}
+			>
+				{renderContent()}
+			</Dashboard>
+		</DashboardSearchProvider>
 	)
 }
 

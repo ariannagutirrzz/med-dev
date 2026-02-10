@@ -1,10 +1,12 @@
 import draNinive from "../assets/dra-ninive.jpg"
-import AboutSection from "../components/AboutSection"
-import FAQSection from "../components/FAQSection"
-import Footer from "../components/Footer"
-import NavBar from "../components/NavBar"
-import TeamSection from "../components/TeamSection"
-import TreatmentsSection from "../components/TreatmentsSection"
+import {
+	AboutSection,
+	FAQSection,
+	Footer,
+	NavBar,
+	TeamSection,
+	TreatmentsSection,
+} from "../features/home"
 
 const HomePage = () => {
 	return (
