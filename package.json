@@ -13,7 +13,8 @@
 		"start": "vite",
 		"preview": "vite preview",
 		"lint": "biome check",
-		"lint-format": "biome check --write"
+		"lint-format": "biome check --write",
+		"knip": "knip"
 	},
 	"pnpm": {
 		"workspaces": [
@@ -53,6 +54,7 @@
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"eslint-plugin-react-refresh": "^0.4.24",
 		"globals": "^16.5.0",
+		"knip": "^5.83.1",
 		"postcss": "^8.4.32",
 		"typescript": "~5.9.3",
 		"typescript-eslint": "^8.46.3",

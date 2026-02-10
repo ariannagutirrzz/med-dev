@@ -9,6 +9,8 @@ export interface UserSettings {
 	inventory_alerts: boolean
 	language: "es" | "en"
 	theme: "light" | "dark"
+	// Tasa de cambio personalizada por usuario (médico)
+	custom_exchange_rate: number | null
 	created_at: string
 	updated_at: string
 }
@@ -19,6 +21,7 @@ export interface UpdateSettingsInput {
 	inventory_alerts?: boolean
 	language?: "es" | "en"
 	theme?: "light" | "dark"
+	custom_exchange_rate?: number | null
 }
 
 /**
@@ -34,6 +37,13 @@ export async function getSettings(): Promise<UserSettings> {
 		const { data } = await api.get<{ settings: UserSettings; message: string }>(
 			"/settings",
 		)
+		// Asegurar que custom_exchange_rate sea un número o null
+		if (data.settings.custom_exchange_rate != null) {
+			data.settings.custom_exchange_rate =
+				typeof data.settings.custom_exchange_rate === "string"
+					? parseFloat(data.settings.custom_exchange_rate)
+					: Number(data.settings.custom_exchange_rate)
+		}
 		return data.settings
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
@@ -56,6 +66,13 @@ export async function updateSettings(
 			settings: UserSettings
 			message: string
 		}>("/settings", updates)
+		// Asegurar que custom_exchange_rate sea un número o null
+		if (data.settings.custom_exchange_rate != null) {
+			data.settings.custom_exchange_rate =
+				typeof data.settings.custom_exchange_rate === "string"
+					? parseFloat(data.settings.custom_exchange_rate)
+					: Number(data.settings.custom_exchange_rate)
+		}
 		return data.settings
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {

@@ -4,6 +4,7 @@ import express from "express"
 import swaggerUI from "swagger-ui-express"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import currencyRoutes from "./routes/currencyRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
 import settingsRoutes from "./routes/settingsRoutes.js"
@@ -30,6 +31,7 @@ app.use("/api/patients", patientsRoutes)
 app.use("/api/medicalRecords", medicalRecordsRoutes)
 app.use("/api/supplies", suppliesRoutes)
 app.use("/api/settings", settingsRoutes)
+app.use("/api/currency", currencyRoutes)
 
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))

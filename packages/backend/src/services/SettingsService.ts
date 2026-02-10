@@ -23,6 +23,7 @@ export async function getSettingsByUserId(
 				inventory_alerts,
 				language,
 				theme,
+				custom_exchange_rate,
 				created_at,
 				updated_at
 			FROM user_settings 
@@ -141,6 +142,7 @@ export interface Settings {
 	inventory_alerts: boolean
 	language: "es" | "en"
 	theme: "light" | "dark"
+	custom_exchange_rate: number | null
 	created_at: Date
 	updated_at: Date
 }

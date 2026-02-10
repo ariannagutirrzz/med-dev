@@ -34,6 +34,10 @@ const options: Options = {
 				name: "Medical_Supplies",
 				description: "Operaciones de la API relacionadas a los insumos médicos",
 			},
+			{
+				name: "Currency",
+				description: "Operaciones de la API relacionadas a las tasas de cambio",
+			},
 		],
 		info: {
 			title: "Documentacion API MedDev",
