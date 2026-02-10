@@ -1,0 +1,10 @@
+// Home Feature Exports
+export { default as AboutSection } from "./components/AboutSection"
+export { default as FAQSection } from "./components/FAQSection"
+export { default as FeatureCard } from "./components/FeatureCard"
+export { default as Footer } from "./components/Footer"
+export { default as NavBar } from "./components/NavBar"
+export { default as TeamCard } from "./components/TeamCard"
+export { default as TeamSection } from "./components/TeamSection"
+export { default as TreatmentCard } from "./components/TreatmentCard"
+export { default as TreatmentsSection } from "./components/TreatmentsSection"
