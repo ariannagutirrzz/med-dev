@@ -6,6 +6,7 @@ import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { getAppointments } from "../../appointments"
 import { getCurrencyRates, type CurrencyRates } from "../../currency"
 import { getSettings, updateSettings, type UserSettings } from "../../settings"
+import { formatPrice } from "../../../shared"
 import { getPatients } from "../../patients"
 import { getSurgeries } from "../../surgeries"
 import type { Appointment, Patient, Surgery } from "../../../shared"
@@ -480,11 +481,11 @@ const DashboardHome = () => {
 							<>
 								<div className="flex flex-row justify-between text-sm sm:text-base font-semibold text-gray-400 px-2 sm:px-4">
 									<span>{currencyRates.oficial.nombre}</span>
-									<span>{currencyRates.oficial.promedio.toFixed(2)}</span>
+									<span>{formatPrice(currencyRates.oficial.promedio)}</span>
 								</div>
 								<div className="flex flex-row justify-between text-sm sm:text-base font-semibold text-gray-400 px-2 sm:px-4">
 									<span>{currencyRates.paralelo.nombre}</span>
-									<span>{currencyRates.paralelo.promedio.toFixed(2)}</span>
+									<span>{formatPrice(currencyRates.paralelo.promedio)}</span>
 								</div>
 
 								{/* Configuración de tasa personalizada por médico */}
@@ -493,10 +494,10 @@ const DashboardHome = () => {
 										<p className="mb-2">
 											Tu tasa personalizada actual:{" "}
 											<span className="font-semibold text-primary">
-												{settings?.custom_exchange_rate != null &&
-												typeof settings.custom_exchange_rate === "number"
-													? `${Number(settings.custom_exchange_rate).toFixed(2)} Bs`
-													: "No definida"}
+											{settings?.custom_exchange_rate != null &&
+											typeof settings.custom_exchange_rate === "number"
+												? `${formatPrice(Number(settings.custom_exchange_rate))} Bs`
+												: "No definida"}
 											</span>
 										</p>
 										<div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -505,9 +506,7 @@ const DashboardHome = () => {
 												min="0"
 												step="0.01"
 												className="w-full sm:max-w-[140px] px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-												placeholder={currencyRates.oficial.promedio
-													.toFixed(2)
-													.toString()}
+												placeholder={formatPrice(currencyRates.oficial.promedio)}
 												value={customRateInput}
 												onChange={(e) => setCustomRateInput(e.target.value)}
 											/>

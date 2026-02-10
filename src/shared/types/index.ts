@@ -59,6 +59,8 @@ export type Appointment = {
 	appointment_date: string // ISO string format
 	status: "pending" | "scheduled" | "cancelled" | "completed"
 	notes?: string | null
+	service_id?: number | null
+	price_usd?: number | null
 	created_at?: string
 	updated_at?: string | null
 	// Campos adicionales que vienen del JOIN con users
@@ -72,6 +74,7 @@ export type AppointmentFormData = {
 	appointment_date: string // ISO string format: YYYY-MM-DDTHH:mm:ss
 	status: "pending" | "scheduled" | "cancelled" | "completed"
 	notes?: string | null
+	service_id?: number | null
 }
 
 export type Surgery = {
@@ -82,6 +85,8 @@ export type Surgery = {
 	surgery_type: string
 	status: string
 	notes?: string | null
+	service_id?: number | null
+	price_usd?: number | null
 	created_at?: string
 	updated_at?: string | null
 	// Campos adicionales que vienen del JOIN
@@ -96,4 +101,5 @@ export type SurgeryFormData = {
 	surgery_type: string
 	status?: string
 	notes?: string | null
+	service_id?: number | null
 }

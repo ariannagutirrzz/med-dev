@@ -10,7 +10,10 @@
 		"seed-medicos": "node scripts/seed-medicos.js",
 		"setup-render-db": "node scripts/setup-render-db.js",
 		"verify-tables": "node scripts/verify-tables.js",
-		"show-schema": "node scripts/show-schema.js"
+		"show-schema": "node scripts/show-schema.js",
+		"create-service-types-table": "node scripts/create-service-types-table.js",
+		"create-doctor-services-table": "node scripts/create-doctor-services-table.js",
+		"add-service-columns": "node scripts/add-service-columns-to-appointments-surgeries.js"
 	},
 	"dependencies": {
 		"bcryptjs": "^2.4.3",
