@@ -3,7 +3,7 @@ import { FaCalendarCheck, FaUserInjured, FaStethoscope } from "react-icons/fa"
 import { toast } from "react-toastify"
 import { useAuth } from "../../auth"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
-import { getAppointments } from "../../appointments"
+import { getFilteredAppointments } from "../../appointments"
 import { getCurrencyRates, type CurrencyRates } from "../../currency"
 import { getSettings, updateSettings, type UserSettings } from "../../settings"
 import { getPatients } from "../../patients"
@@ -55,7 +55,7 @@ const DashboardHome = () => {
 			// Cargar citas
 			let appointmentsData: { appointments?: Appointment[] } = { appointments: [] }
 			try {
-				appointmentsData = await getAppointments()
+				appointmentsData = await getFilteredAppointments()
 			} catch (error) {
 				console.error("Error cargando citas:", error)
 				// Si el usuario no tiene acceso, simplemente no cargamos las citas
@@ -488,7 +488,7 @@ const DashboardHome = () => {
 								</div>
 
 								{/* Configuración de tasa personalizada por médico */}
-								{user?.role === "Médico" && (
+								{user?.role === "Médico" || user?.role === "Admin" && (
 									<div className="mt-3 pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500">
 										<p className="mb-2">
 											Tu tasa personalizada actual:{" "}

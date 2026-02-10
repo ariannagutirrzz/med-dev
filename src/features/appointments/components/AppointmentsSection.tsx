@@ -5,7 +5,8 @@ import { toast } from "react-toastify"
 import { useAuth } from "../../auth"
 import {
 	deleteAppointmentById,
-	getAppointments,
+	getAllAppointments,
+	getFilteredAppointments,
 } from "../services/AppointmentsAPI"
 import type { Appointment } from "../../../shared"
 import AppointmentModal from "./AppointmentModal"
@@ -29,7 +30,12 @@ const AppointmentsSection = () => {
 	const loadAppointments = useCallback(async () => {
 		setLoading(true)
 		try {
-			const data = await getAppointments()
+			let data;
+			if (user?.role === 'Admin') {
+				data = await getAllAppointments()
+			} else {
+				data = await getFilteredAppointments()
+			}
 			setAppointments(data.appointments || [])
 		} catch (error) {
 			console.error("Error al cargar citas:", error)
@@ -158,6 +164,7 @@ const AppointmentsSection = () => {
 	})
 
 	const isDoctor = user?.role === "Médico"
+	const isAdmin = user?.role === "Admin"
 
 	return (
 		<div className="p-6">
@@ -241,7 +248,7 @@ const AppointmentsSection = () => {
 					<div className="space-y-4">
 						{filteredAppointments.map((appointment) => {
 							const { date, time } = formatDateTime(appointment.appointment_date)
-							const displayName = isDoctor
+							const displayName = isDoctor || isAdmin
 								? appointment.patient_name
 								: appointment.doctor_name
 

@@ -150,8 +150,8 @@ Por favor, confirma tu disponibilidad.`
 	}
 }
 
-// 2. Get all appointments (Filtered by whichever role the user has)
-export const getAllAppointments = async (req: Request, res: Response) => {
+// 2. Get filtered appointments (Filtered by whichever role the user has)
+export const getFilteredAppointments = async (req: Request, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}
@@ -184,6 +184,38 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 		console.error("Error fetching appointments:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
+}
+
+export const getAllAppointments = async (req: Request, res: Response) => {
+    if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized: User not found" })
+    }
+    
+    const { role } = req.user
+
+    if (role !== "Admin") {
+        return res.status(401).json({ error: "Solo un usuario administrativo puede hacer esta solicitud."})
+    }
+
+    try {
+        // Realizamos el JOIN para traer el nombre del doctor desde la tabla users
+        const result = await query(
+            `SELECT 
+                a.*, 
+                p.first_name || ' ' || p.last_name as patient_name 
+             FROM appointments a
+             INNER JOIN patients p ON a.patient_id = p.document_id
+             ORDER BY a.appointment_date DESC`
+        )
+
+        res.json({
+            appointments: result.rows,
+            message: "Appointments fetched successfully",
+        })
+    } catch (error) {
+        console.error("Error fetching appointments:", error)
+        res.status(500).json({ error: "Internal server error" })
+    }
 }
 
 // 3. Get a specific appointment by ID (Secured for both roles)
@@ -245,7 +277,7 @@ export const updateAppointment = async (req: Request, res: Response) => {
 
 	// 2. NEW LOGIC: Field-Level Authorization
 	// Check if 'status' is being updated by someone who is NOT a Médico
-	if (keys.includes("status") && role !== "Médico") {
+	if (keys.includes("status") && (role !== "Médico" || "Admin")) {
 		return res.status(403).json({
 			error:
 				"Only doctors (Médicos) are authorized to update the appointment status.",

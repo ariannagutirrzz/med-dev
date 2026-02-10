@@ -59,49 +59,49 @@ const DashboardPage: React.FC = () => {
 			label: "Inicio",
 			icon: <CiHome className="w-5 h-5" />,
 			path: "/dashboard/home",
-			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
+			allowedRoles: ["Médico", "Paciente", "Admin"], // Todos pueden acceder
 		},
 		{
 			id: "patients",
 			label: "Pacientes",
 			icon: <CiUser className="w-5 h-5" />,
 			path: "/dashboard/pacientes",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
 		},
 		{
 			id: "appointments",
 			label: "Citas",
 			icon: <CiCalendar className="w-5 h-5" />,
 			path: "/dashboard/citas",
-			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
+			allowedRoles: ["Médico", "Paciente", "Admin"], // Todos pueden acceder
 		},
 		{
 			id: "surgeryRoom",
 			label: "Sala de Cirugía",
 			icon: <GiMedicalDrip className="w-5 h-5" />,
 			path: "/dashboard/sala-de-cirugia",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
 		},
 		{
 			id: "inventory",
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
 			path: "/dashboard/inventario",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
 		},
 		{
 			id: "ai",
 			label: "Asistente Médico",
 			icon: <GiArtificialIntelligence className="w-5 h-5" />,
 			path: "/dashboard/asistente-ia",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
 		},
 		{
 			id: "settings",
 			label: "Configuración",
 			icon: <CiSettings className="w-5 h-5" />,
 			path: "/dashboard/configuracion",
-			allowedRoles: ["Médico", "Paciente"], // Ambos pueden acceder
+			allowedRoles: ["Médico", "Paciente", "Admin"], // Todos pueden acceder
 		},
 	]
 
