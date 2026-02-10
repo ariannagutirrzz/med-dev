@@ -8,6 +8,7 @@ import currencyRoutes from "./routes/currencyRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import notificationRoutes from "./routes/notificationRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
+import reportRoutes from "./routes/reportRoutes.js"
 import serviceRoutes from "./routes/serviceRoutes.js"
 import settingsRoutes from "./routes/settingsRoutes.js"
 import suppliesRoutes from "./routes/suppliesRoutes.js"
@@ -21,7 +22,15 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 // Middleware
-app.use(cors())
+app.use(
+	cors({
+		// Reflexiona el origin de la petición (por ejemplo http://localhost:5173 en desarrollo)
+		origin: true,
+		credentials: true,
+		allowedHeaders: ["Content-Type", "Authorization"],
+		exposedHeaders: ["Content-Disposition", "Content-Type"],
+	}),
+)
 app.use(express.json())
 
 // Routes
@@ -36,6 +45,7 @@ app.use("/api/settings", settingsRoutes)
 app.use("/api/currency", currencyRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/services", serviceRoutes)
+app.use("/api/reports", reportRoutes)
 
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))

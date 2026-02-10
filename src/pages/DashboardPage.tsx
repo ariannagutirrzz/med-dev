@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
-import { FaDollarSign } from "react-icons/fa"
+import { FaChartBar, FaDollarSign } from "react-icons/fa"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -13,6 +13,7 @@ import { AppointmentsSection } from "../features/appointments"
 import { GenerateAI } from "../features/ai"
 import { Inventory } from "../features/inventory"
 import { MedicalRecords } from "../features/patients"
+import { ReportsSection } from "../features/reports"
 import { ServicesManagement } from "../features/services"
 import { Settings } from "../features/settings"
 import { SurgeriesSection } from "../features/surgeries"
@@ -37,6 +38,7 @@ const DashboardPage: React.FC = () => {
 		"/dashboard/sala-de-cirugia": "surgeryRoom",
 		"/dashboard/inventario": "inventory",
 		"/dashboard/servicios": "services",
+		"/dashboard/reportes": "reports",
 		"/dashboard/asistente-ia": "ai",
 		"/dashboard/configuracion": "settings",
 	}
@@ -49,6 +51,7 @@ const DashboardPage: React.FC = () => {
 		surgeryRoom: "/dashboard/sala-de-cirugia",
 		inventory: "/dashboard/inventario",
 		services: "/dashboard/servicios",
+		reports: "/dashboard/reportes",
 		ai: "/dashboard/asistente-ia",
 		settings: "/dashboard/configuracion",
 	}
@@ -98,6 +101,13 @@ const DashboardPage: React.FC = () => {
 			label: "Servicios",
 			icon: <FaDollarSign className="w-5 h-5" />,
 			path: "/dashboard/servicios",
+			allowedRoles: ["Médico"], // Solo médicos
+		},
+		{
+			id: "reports",
+			label: "Reportes",
+			icon: <FaChartBar className="w-5 h-5" />,
+			path: "/dashboard/reportes",
 			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
@@ -185,6 +195,10 @@ const DashboardPage: React.FC = () => {
 
 		if (currentPath === "/dashboard/servicios") {
 			return <ServicesManagement />
+		}
+
+		if (currentPath === "/dashboard/reportes") {
+			return <ReportsSection />
 		}
 
 		if (currentPath === "/dashboard/asistente-ia") {

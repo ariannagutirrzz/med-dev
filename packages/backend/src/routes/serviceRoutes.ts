@@ -79,6 +79,43 @@ const serviceRoutes: Router = Router()
  *       500:
  *         description: Error interno del servidor
  *
+ * /api/services:
+ *   post:
+ *     summary: Crear un nuevo servicio para el médico autenticado
+ *     tags:
+ *       - Services
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - service_name
+ *               - price_usd
+ *             properties:
+ *               service_name:
+ *                 type: string
+ *               service_type_id:
+ *                 type: integer
+ *               price_usd:
+ *                 type: number
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Servicio creado exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Solo médicos pueden crear servicios
+ *       500:
+ *         description: Error interno del servidor
+ *
  * /api/services/{id}:
  *   get:
  *     summary: Obtener un servicio específico por ID
@@ -103,43 +140,6 @@ const serviceRoutes: Router = Router()
  *         description: Servicio no encontrado
  *       500:
  *         description: Error interno del servidor
- *
- * /api/services:
- *   post:
- *     summary: Crear un nuevo servicio para el médico autenticado
- *     tags:
- *       - Services
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - service_type_id
- *               - price_usd
- *             properties:
- *               service_type_id:
- *                 type: integer
- *               price_usd:
- *                 type: number
- *               is_active:
- *                 type: boolean
- *     responses:
- *       201:
- *         description: Servicio creado exitosamente
- *       400:
- *         description: Datos inválidos
- *       401:
- *         description: No autorizado
- *       403:
- *         description: Solo médicos pueden crear servicios
- *       500:
- *         description: Error interno del servidor
- *
- * /api/services/{id}:
  *   patch:
  *     summary: Actualizar un servicio
  *     tags:
@@ -176,8 +176,6 @@ const serviceRoutes: Router = Router()
  *         description: Servicio no encontrado
  *       500:
  *         description: Error interno del servidor
- *
- * /api/services/{id}:
  *   delete:
  *     summary: Eliminar un servicio
  *     tags:
