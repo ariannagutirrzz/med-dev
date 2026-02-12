@@ -7,6 +7,8 @@ export const updateSettingsSchema = z.object({
 	inventory_alerts: z.boolean().optional(),
 	language: z.enum(["es", "en"]).optional(),
 	theme: z.enum(["light", "dark"]).optional(),
+	// Permite que cada médico configure una tasa de cambio personalizada
+	custom_exchange_rate: z.number().positive().nullable().optional(),
 })
 
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>

@@ -18,11 +18,13 @@ export const authenticate = async (
 ) => {
 	const bearer = req.headers.authorization
 	if (!bearer) {
+		console.log("Auth failed: No authorization header for", req.method, req.path)
 		return res.status(401).json({ error: "No Autorizado" })
 	}
 
 	const token = bearer.split(" ")[1]
 	if (!token) {
+		console.log("Auth failed: No token in bearer for", req.method, req.path)
 		return res.status(401).json({ error: "Token no proporcionado" })
 	}
 

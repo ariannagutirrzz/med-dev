@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
-import LoginForm from "../components/auth/LoginForm"
-import SelectionButtons from "../components/auth/SelectionButtons"
-import SignupForm from "../components/auth/SignupForm"
-import { useAuth } from "../contexts/AuthContext"
+import {
+	LoginForm,
+	SelectionButtons,
+	SignupForm,
+	useAuth,
+} from "../features/auth"
 
 const LoginPage = () => {
 	const navigate = useNavigate()

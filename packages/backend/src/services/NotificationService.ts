@@ -1,201 +1,197 @@
 import { query } from "../db"
-import { whatsAppService } from "./WhatsAppService"
-import { getSettingsByUserId } from "./SettingsService"
 
-interface NotificationOptions {
-	userDocumentId: string
-	email?: string
-	phone?: string
+export interface Notification {
+	id: number
+	user_id: string
+	title: string
+	message: string
+	type: "info" | "success" | "warning" | "error"
+	read: boolean
+	related_type?: string | null
+	related_id?: number | null
+	created_at: string
+	updated_at?: string | null
+}
+
+export interface CreateNotificationInput {
+	user_id: string // document_id from users table
+	title: string
+	message: string
+	type?: "info" | "success" | "warning" | "error"
+	related_type?: string
+	related_id?: number
 }
 
 /**
- * NotificationService
- * Coordinates WhatsApp notifications based on user preferences
+ * Get all notifications for a user
  */
-class NotificationService {
-	/**
-	 * Check if user has notifications enabled
-	 */
-	private async checkNotificationPreferences(
-		userDocumentId: string,
-		type: "email_notifications" | "appointment_reminders" | "inventory_alerts",
-	): Promise<boolean> {
-		try {
-			const settings = await getSettingsByUserId(userDocumentId)
-			if (!settings) {
-				// Default to true if no settings found
-				return true
-			}
-			return settings[type] === true
-		} catch (error) {
-			console.error("Error checking notification preferences:", error)
-			// Default to true on error
-			return true
-		}
-	}
-
-	/**
-	 * Get user contact information
-	 */
-	private async getUserContactInfo(
-		userDocumentId: string,
-	): Promise<{ email: string | null; phone: string | null }> {
-		try {
-			const result = await query(
-				`SELECT email, phone FROM users WHERE document_id = $1`,
-				[userDocumentId],
-			)
-
-			if (result.rows.length === 0) {
-				return { email: null, phone: null }
-			}
-
-			return {
-				email: result.rows[0].email || null,
-				phone: result.rows[0].phone || null,
-			}
-		} catch (error) {
-			console.error("Error fetching user contact info:", error)
-			return { email: null, phone: null }
-		}
-	}
-
-	/**
-	 * Send appointment reminder
-	 */
-	async sendAppointmentReminder(
-		userDocumentId: string,
-		patientName: string,
-		appointmentDate: Date,
-		doctorName?: string,
-		options?: NotificationOptions,
-	): Promise<{ whatsappSent: boolean }> {
-		const remindersEnabled = await this.checkNotificationPreferences(
-			userDocumentId,
-			"appointment_reminders",
-		)
-
-		if (!remindersEnabled) {
-			return { whatsappSent: false }
-		}
-
-		// Get user contact info if not provided
-		const contactInfo = options
-			? { email: options.email || null, phone: options.phone || null }
-			: await this.getUserContactInfo(userDocumentId)
-
-		const results = {
-			whatsappSent: false,
-		}
-
-		// Email sending is disabled for now
-		// if (contactInfo.email) {
-		// 	results.emailSent = await emailService.sendAppointmentReminder(...)
-		// }
-
-		// Send WhatsApp if available
-		if (contactInfo.phone) {
-			results.whatsappSent = await whatsAppService.sendAppointmentReminder(
-				contactInfo.phone,
-				patientName,
-				appointmentDate,
-				doctorName,
-			)
-		}
-
-		return results
-	}
-
-	/**
-	 * Send inventory alert
-	 */
-	async sendInventoryAlert(
-		userDocumentId: string,
-		supplyName: string,
-		currentStock: number,
-		minStock: number,
-		options?: NotificationOptions,
-	): Promise<{ whatsappSent: boolean }> {
-		const alertsEnabled = await this.checkNotificationPreferences(
-			userDocumentId,
-			"inventory_alerts",
-		)
-
-		if (!alertsEnabled) {
-			return { whatsappSent: false }
-		}
-
-		// Get user contact info if not provided
-		const contactInfo = options
-			? { email: options.email || null, phone: options.phone || null }
-			: await this.getUserContactInfo(userDocumentId)
-
-		const results = {
-			whatsappSent: false,
-		}
-
-		// Email sending is disabled for now
-		// if (contactInfo.email) {
-		// 	results.emailSent = await emailService.sendInventoryAlert(...)
-		// }
-
-		// Send WhatsApp if available
-		if (contactInfo.phone) {
-			results.whatsappSent = await whatsAppService.sendInventoryAlert(
-				contactInfo.phone,
-				supplyName,
-				currentStock,
-				minStock,
-			)
-		}
-
-		return results
-	}
-
-	/**
-	 * Send general notification
-	 */
-	async sendGeneralNotification(
-		userDocumentId: string,
-		title: string,
-		message: string,
-		options?: NotificationOptions,
-	): Promise<{ whatsappSent: boolean }> {
-		const notificationsEnabled = await this.checkNotificationPreferences(
-			userDocumentId,
-			"email_notifications",
-		)
-
-		if (!notificationsEnabled) {
-			return { whatsappSent: false }
-		}
-
-		// Get user contact info if not provided
-		const contactInfo = options
-			? { email: options.email || null, phone: options.phone || null }
-			: await this.getUserContactInfo(userDocumentId)
-
-		const results = {
-			whatsappSent: false,
-		}
-
-		// Email sending is disabled for now
-		// if (contactInfo.email) {
-		// 	results.emailSent = await emailService.sendGeneralNotification(...)
-		// }
-
-		// Send WhatsApp if available
-		if (contactInfo.phone) {
-			results.whatsappSent = await whatsAppService.sendGeneralNotification(
-				contactInfo.phone,
+export async function getNotificationsByUserId(
+	user_id: string,
+): Promise<Notification[]> {
+	try {
+		const result = await query(
+			`SELECT 
+				id,
+				user_id,
 				title,
 				message,
-			)
-		}
+				type,
+				read,
+				related_type,
+				related_id,
+				TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as created_at,
+				TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as updated_at
+			FROM notifications
+			WHERE user_id = $1
+			ORDER BY created_at DESC
+			LIMIT 50`,
+			[user_id],
+		)
 
-		return results
+		return result.rows
+	} catch (error) {
+		console.error("Error fetching notifications:", error)
+		throw new Error("Failed to fetch notifications")
 	}
 }
 
-// Export singleton instance
-export const notificationService = new NotificationService()
+/**
+ * Get unread notifications count for a user
+ */
+export async function getUnreadNotificationsCount(
+	user_id: string,
+): Promise<number> {
+	try {
+		const result = await query(
+			`SELECT COUNT(*) as count
+			FROM notifications
+			WHERE user_id = $1 AND read = FALSE`,
+			[user_id],
+		)
+
+		return parseInt(result.rows[0].count, 10)
+	} catch (error) {
+		console.error("Error fetching unread count:", error)
+		throw new Error("Failed to fetch unread notifications count")
+	}
+}
+
+/**
+ * Create a new notification
+ */
+export async function createNotification(
+	input: CreateNotificationInput,
+): Promise<Notification> {
+	try {
+		const result = await query(
+			`INSERT INTO notifications (user_id, title, message, type, related_type, related_id)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING 
+				id,
+				user_id,
+				title,
+				message,
+				type,
+				read,
+				related_type,
+				related_id,
+				TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as created_at,
+				TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as updated_at`,
+			[
+				input.user_id,
+				input.title,
+				input.message,
+				input.type || "info",
+				input.related_type || null,
+				input.related_id || null,
+			],
+		)
+
+		return result.rows[0]
+	} catch (error) {
+		console.error("Error creating notification:", error)
+		throw new Error("Failed to create notification")
+	}
+}
+
+/**
+ * Mark notification as read
+ */
+export async function markNotificationAsRead(
+	notification_id: number,
+	user_id: string,
+): Promise<Notification> {
+	try {
+		const result = await query(
+			`UPDATE notifications
+			SET read = TRUE, updated_at = CURRENT_TIMESTAMP
+			WHERE id = $1 AND user_id = $2
+			RETURNING 
+				id,
+				user_id,
+				title,
+				message,
+				type,
+				read,
+				related_type,
+				related_id,
+				TO_CHAR(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as created_at,
+				TO_CHAR(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') as updated_at`,
+			[notification_id, user_id],
+		)
+
+		if (result.rows.length === 0) {
+			throw new Error("Notification not found")
+		}
+
+		return result.rows[0]
+	} catch (error) {
+		console.error("Error marking notification as read:", error)
+		throw new Error("Failed to mark notification as read")
+	}
+}
+
+/**
+ * Mark all notifications as read for a user
+ */
+export async function markAllNotificationsAsRead(
+	user_id: string,
+): Promise<{ count: number }> {
+	try {
+		const result = await query(
+			`UPDATE notifications
+			SET read = TRUE, updated_at = CURRENT_TIMESTAMP
+			WHERE user_id = $1 AND read = FALSE
+			RETURNING id`,
+			[user_id],
+		)
+
+		return { count: result.rows.length }
+	} catch (error) {
+		console.error("Error marking all notifications as read:", error)
+		throw new Error("Failed to mark all notifications as read")
+	}
+}
+
+/**
+ * Delete a notification
+ */
+export async function deleteNotification(
+	notification_id: number,
+	user_id: string,
+): Promise<void> {
+	try {
+		const result = await query(
+			`DELETE FROM notifications
+			WHERE id = $1 AND user_id = $2`,
+			[notification_id, user_id],
+		)
+
+		if (result.rowCount === 0) {
+			throw new Error("Notification not found")
+		}
+	} catch (error) {
+		console.error("Error deleting notification:", error)
+		throw new Error("Failed to delete notification")
+	}
+}

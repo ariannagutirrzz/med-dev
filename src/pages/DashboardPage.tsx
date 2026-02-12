@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
+import { FaChartBar, FaDollarSign } from "react-icons/fa"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
-import AppointmentsSection from "../components/Appointments/AppointmentsSection"
-import Dashboard from "../components/Dashboard"
-import DashboardHome from "../components/Dashboard/DashboardHome"
-import GenerateAI from "../components/GenerateAI"
-import Inventory from "../components/Inventory/Inventory"
-import MedicalRecords from "../components/Patients/MedicalRecords"
-import Settings from "../components/Settings/Settings"
-import SurgeriesSection from "../components/Surgeries/SurgeriesSection"
-import { useAuth } from "../contexts/AuthContext"
+import {
+	Dashboard,
+	DashboardHome,
+	DashboardSearchProvider,
+} from "../features/dashboard"
+import { AppointmentsSection } from "../features/appointments"
+import { GenerateAI } from "../features/ai"
+import { Inventory } from "../features/inventory"
+import { MedicalRecords } from "../features/patients"
+import { ReportsSection } from "../features/reports"
+import { ServicesManagement } from "../features/services"
+import { Settings } from "../features/settings"
+import { SurgeriesSection } from "../features/surgeries"
+import { useAuth } from "../features/auth"
 
 const DashboardPage: React.FC = () => {
 	const { user, logout } = useAuth()
@@ -31,6 +37,8 @@ const DashboardPage: React.FC = () => {
 		"/dashboard/citas": "appointments",
 		"/dashboard/sala-de-cirugia": "surgeryRoom",
 		"/dashboard/inventario": "inventory",
+		"/dashboard/servicios": "services",
+		"/dashboard/reportes": "reports",
 		"/dashboard/asistente-ia": "ai",
 		"/dashboard/configuracion": "settings",
 	}
@@ -42,6 +50,8 @@ const DashboardPage: React.FC = () => {
 		appointments: "/dashboard/citas",
 		surgeryRoom: "/dashboard/sala-de-cirugia",
 		inventory: "/dashboard/inventario",
+		services: "/dashboard/servicios",
+		reports: "/dashboard/reportes",
 		ai: "/dashboard/asistente-ia",
 		settings: "/dashboard/configuracion",
 	}
@@ -84,6 +94,20 @@ const DashboardPage: React.FC = () => {
 			label: "Inventario",
 			icon: <MdOutlineInventory2 className="w-5 h-5" />,
 			path: "/dashboard/inventario",
+			allowedRoles: ["Médico"], // Solo médicos
+		},
+		{
+			id: "services",
+			label: "Servicios",
+			icon: <FaDollarSign className="w-5 h-5" />,
+			path: "/dashboard/servicios",
+			allowedRoles: ["Médico"], // Solo médicos
+		},
+		{
+			id: "reports",
+			label: "Reportes",
+			icon: <FaChartBar className="w-5 h-5" />,
+			path: "/dashboard/reportes",
 			allowedRoles: ["Médico"], // Solo médicos
 		},
 		{
@@ -148,13 +172,6 @@ const DashboardPage: React.FC = () => {
 	const renderContent = () => {
 		const currentPath = location.pathname
 
-		// Verificar acceso a la ruta actual
-		if (!hasAccessToRoute(currentPath)) {
-			// Redirigir a home si no tiene acceso
-			navigate("/dashboard/home", { replace: true })
-			return null
-		}
-
 		// Determinar qué sección mostrar basado en la ruta
 		if (currentPath === "/dashboard" || currentPath === "/dashboard/home") {
 			return <DashboardHome />
@@ -175,6 +192,15 @@ const DashboardPage: React.FC = () => {
 		if (currentPath === "/dashboard/inventario") {
 			return <Inventory />
 		}
+
+		if (currentPath === "/dashboard/servicios") {
+			return <ServicesManagement />
+		}
+
+		if (currentPath === "/dashboard/reportes") {
+			return <ReportsSection />
+		}
+
 		if (currentPath === "/dashboard/asistente-ia") {
 			return <GenerateAI />
 		}
@@ -183,9 +209,8 @@ const DashboardPage: React.FC = () => {
 			return <Settings userData={userData} />
 		}
 
-		// Default: redirigir a home si la ruta no coincide
-		navigate("/dashboard/home", { replace: true })
-		return null
+		// Default: mostrar home si la ruta no coincide
+		return <DashboardHome />
 	}
 
 	const handleLogout = () => {
@@ -194,17 +219,19 @@ const DashboardPage: React.FC = () => {
 	}
 
 	return (
-		<Dashboard
-			user={userData}
-			menuItems={menuItems}
-			isSidebarOpen={isSidebarOpen}
-			activeMenuItem={activeMenuItem}
-			onMenuItemClick={handleMenuItemClick}
-			onToggleSidebar={handleToggleSidebar}
-			onLogout={handleLogout}
-		>
-			{renderContent()}
-		</Dashboard>
+		<DashboardSearchProvider>
+			<Dashboard
+				user={userData}
+				menuItems={menuItems}
+				isSidebarOpen={isSidebarOpen}
+				activeMenuItem={activeMenuItem}
+				onMenuItemClick={handleMenuItemClick}
+				onToggleSidebar={handleToggleSidebar}
+				onLogout={handleLogout}
+			>
+				{renderContent()}
+			</Dashboard>
+		</DashboardSearchProvider>
 	)
 }
 
