@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { FaCalendarCheck, FaUserInjured, FaStethoscope } from "react-icons/fa"
+import { FaCalendarCheck, FaStethoscope, FaUserInjured } from "react-icons/fa"
 import { toast } from "react-toastify"
-import { useAuth } from "../../auth"
-import { useDashboardSearch } from "../contexts/DashboardSearchContext"
-import { getFilteredAppointments } from "../../appointments"
-import { getCurrencyRates, type CurrencyRates } from "../../currency"
-import { getSettings, updateSettings, type UserSettings } from "../../settings"
-import { formatPrice } from "../../../shared"
-import { getPatients } from "../../patients"
-import { getSurgeries } from "../../surgeries"
 import type { Appointment, Patient, Surgery } from "../../../shared"
-import { Calendar, CalendarLegend } from "../../../shared"
+import { Calendar, CalendarLegend, formatPrice } from "../../../shared"
+import { getAllAppointments, getFilteredAppointments } from "../../appointments"
+import { useAuth } from "../../auth"
+import { type CurrencyRates, getCurrencyRates } from "../../currency"
+import { getPatients } from "../../patients"
+import { getSettings, type UserSettings, updateSettings } from "../../settings"
+import { getSurgeries } from "../../surgeries"
+import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import DashboardHeader from "./DashboardHeader"
 
 interface DashboardStats {
@@ -21,14 +20,17 @@ interface DashboardStats {
 	surgeriesToday: number
 }
 
+interface CalendarSurgery {
+	day: number
+	type: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada"
+}
+
 const DashboardHome = () => {
 	const { user } = useAuth()
 	const { searchTerm } = useDashboardSearch()
 	const [loading, setLoading] = useState(true)
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(
-		null,
-	)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [loadingCurrency, setLoadingCurrency] = useState(true)
 	const [savingCustomRate, setSavingCustomRate] = useState(false)
 	const [customRateInput, setCustomRateInput] = useState("")
@@ -42,7 +44,8 @@ const DashboardHome = () => {
 		totalSurgeries: 0,
 		surgeriesToday: 0,
 	})
-	const [surgeries, setSurgeries] = useState<Surgery[]>([])
+	// surgeries is now CalendarSurgery[]
+	const [surgeries, setSurgeries] = useState<CalendarSurgery[]>([])
 	const [currentDate] = useState(new Date())
 
 	const loadDashboardData = useCallback(async () => {
@@ -54,9 +57,15 @@ const DashboardHome = () => {
 			tomorrow.setDate(tomorrow.getDate() + 1)
 
 			// Cargar citas
-			let appointmentsData: { appointments?: Appointment[] } = { appointments: [] }
+			let appointmentsData: { appointments?: Appointment[] } = {
+				appointments: [],
+			}
 			try {
-				appointmentsData = await getFilteredAppointments()
+				if (user?.role === "Médico") {
+					appointmentsData = await getFilteredAppointments()
+				} else {
+					appointmentsData = await getAllAppointments()
+				}
 			} catch (error) {
 				console.error("Error cargando citas:", error)
 				// Si el usuario no tiene acceso, simplemente no cargamos las citas
@@ -72,7 +81,7 @@ const DashboardHome = () => {
 			// Cargar pacientes (solo si es médico)
 			let patientsCount = 0
 			let patientsList: Patient[] = []
-			if (user?.role === "Médico") {
+			if (user?.role === "Médico" || user?.role === "Admin") {
 				try {
 					const patientsData = await getPatients()
 					patientsList = (patientsData?.patients || []) as Patient[]
@@ -85,7 +94,7 @@ const DashboardHome = () => {
 
 			// Cargar cirugías (solo si es médico)
 			let surgeriesData: { surgeries?: Surgery[] } = { surgeries: [] }
-			if (user?.role === "Médico") {
+			if (user?.role === "Médico" || user?.role === "Admin") {
 				try {
 					surgeriesData = await getSurgeries()
 				} catch (error) {
@@ -110,12 +119,20 @@ const DashboardHome = () => {
 						surgeryDate.getFullYear() === currentDate.getFullYear()
 					) {
 						// Mapear tipos de cirugía a los tipos permitidos del calendario
-						let mappedType: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada" =
-							"Cirugía Programada"
-						
-						if (surgery.surgery_type?.includes("Mayor") || surgery.surgery_type?.includes("mayor")) {
+						let mappedType:
+							| "Cirugía Mayor"
+							| "Cirugía Menor"
+							| "Cirugía Programada" = "Cirugía Programada"
+
+						if (
+							surgery.surgery_type?.includes("Mayor") ||
+							surgery.surgery_type?.includes("mayor")
+						) {
 							mappedType = "Cirugía Mayor"
-						} else if (surgery.surgery_type?.includes("Menor") || surgery.surgery_type?.includes("menor")) {
+						} else if (
+							surgery.surgery_type?.includes("Menor") ||
+							surgery.surgery_type?.includes("menor")
+						) {
 							mappedType = "Cirugía Menor"
 						} else {
 							mappedType = "Cirugía Programada"
@@ -128,7 +145,14 @@ const DashboardHome = () => {
 					}
 					return null
 				})
-				.filter((s): s is { day: number; type: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada" } => s !== null)
+				.filter(
+					(
+						s,
+					): s is {
+						day: number
+						type: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada"
+					} => s !== null,
+				)
 
 			setStats({
 				appointmentsToday,
@@ -211,7 +235,8 @@ const DashboardHome = () => {
 		const filteredSurgeries =
 			user?.role === "Médico"
 				? allSurgeriesData.filter((surgery) => {
-						const patientName = `${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
+						const patientName =
+							`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
 						return (
 							patientName.includes(searchLower) ||
 							surgery.doctor_name?.toLowerCase().includes(searchLower) ||
@@ -226,7 +251,8 @@ const DashboardHome = () => {
 		const filteredPatients =
 			user?.role === "Médico"
 				? allPatients.filter((patient) => {
-						const fullName = `${patient.first_name || ""} ${patient.last_name || ""}`.toLowerCase()
+						const fullName =
+							`${patient.first_name || ""} ${patient.last_name || ""}`.toLowerCase()
 						return (
 							fullName.includes(searchLower) ||
 							patient.email?.toLowerCase().includes(searchLower) ||
@@ -249,7 +275,7 @@ const DashboardHome = () => {
 
 	// Handler para guardar la tasa personalizada
 	const handleSaveCustomRate = async () => {
-		if (!customRateInput || isNaN(parseFloat(customRateInput))) {
+		if (!customRateInput || Number.isNaN(parseFloat(customRateInput))) {
 			toast.error("Por favor ingresa un valor numérico válido")
 			return
 		}
@@ -273,22 +299,31 @@ const DashboardHome = () => {
 				custom_exchange_rate: rateValue,
 			})
 			setSettings(updatedSettings)
-			
+
 			// Disparar evento personalizado para actualizar el header
-			window.dispatchEvent(new CustomEvent("settingsUpdated", { 
-				detail: { custom_exchange_rate: rateValue } 
-			}))
-			
+			window.dispatchEvent(
+				new CustomEvent("settingsUpdated", {
+					detail: { custom_exchange_rate: rateValue },
+				}),
+			)
+
 			toast.success("Tasa personalizada guardada exitosamente")
 		} catch (error) {
 			console.error("Error saving custom rate:", error)
 			const errorMessage =
-				error instanceof Error ? error.message : "Error al guardar la tasa personalizada"
+				error instanceof Error
+					? error.message
+					: "Error al guardar la tasa personalizada"
 			toast.error(errorMessage)
-			
+
 			// Si es un error 401, podría ser que el token expiró
-			if (errorMessage.includes("401") || errorMessage.includes("No Autorizado")) {
-				toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.")
+			if (
+				errorMessage.includes("401") ||
+				errorMessage.includes("No Autorizado")
+			) {
+				toast.error(
+					"Tu sesión ha expirado. Por favor inicia sesión nuevamente.",
+				)
 			}
 		} finally {
 			setSavingCustomRate(false)
@@ -324,17 +359,22 @@ const DashboardHome = () => {
 													{apt.patient_name || "Paciente desconocido"}
 												</p>
 												<p className="text-sm text-gray-600">
-													{new Date(apt.appointment_date).toLocaleDateString("es-ES", {
-														weekday: "long",
-														year: "numeric",
-														month: "long",
-														day: "numeric",
-														hour: "2-digit",
-														minute: "2-digit",
-													})}
+													{new Date(apt.appointment_date).toLocaleDateString(
+														"es-ES",
+														{
+															weekday: "long",
+															year: "numeric",
+															month: "long",
+															day: "numeric",
+															hour: "2-digit",
+															minute: "2-digit",
+														},
+													)}
 												</p>
 												{apt.notes && (
-													<p className="text-xs text-gray-500 mt-1">{apt.notes}</p>
+													<p className="text-xs text-gray-500 mt-1">
+														{apt.notes}
+													</p>
 												)}
 											</div>
 										))}
@@ -348,39 +388,44 @@ const DashboardHome = () => {
 							)}
 
 							{/* Cirugías encontradas */}
-							{filteredData.surgeries.length > 0 && user?.role === "Médico" && (
-								<div>
-									<h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-										<FaStethoscope className="text-primary" />
-										Cirugías ({filteredData.surgeries.length})
-									</h4>
-									<div className="space-y-2">
-										{filteredData.surgeries.slice(0, 5).map((surgery) => (
-											<div
-												key={surgery.id}
-												className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-colors"
-											>
-												<p className="font-medium text-gray-800">
-													{`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.trim() ||
-														"Paciente desconocido"}
+							{filteredData.surgeries.length > 0 &&
+								(user?.role === "Médico" || user?.role === "Admin") && (
+									<div>
+										<h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+											<FaStethoscope className="text-primary" />
+											Cirugías ({filteredData.surgeries.length})
+										</h4>
+										<div className="space-y-2">
+											{filteredData.surgeries.slice(0, 5).map((surgery) => (
+												<div
+													key={surgery.id}
+													className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-colors"
+												>
+													<p className="font-medium text-gray-800">
+														{`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.trim() ||
+															"Paciente desconocido"}
+													</p>
+													<p className="text-sm text-gray-600">
+														{surgery.surgery_type} -{" "}
+														{new Date(surgery.surgery_date).toLocaleDateString(
+															"es-ES",
+														)}
+													</p>
+													{surgery.notes && (
+														<p className="text-xs text-gray-500 mt-1">
+															{surgery.notes}
+														</p>
+													)}
+												</div>
+											))}
+											{filteredData.surgeries.length > 5 && (
+												<p className="text-xs text-gray-500 text-center">
+													Y {filteredData.surgeries.length - 5} más...
 												</p>
-												<p className="text-sm text-gray-600">
-													{surgery.surgery_type} -{" "}
-													{new Date(surgery.surgery_date).toLocaleDateString("es-ES")}
-												</p>
-												{surgery.notes && (
-													<p className="text-xs text-gray-500 mt-1">{surgery.notes}</p>
-												)}
-											</div>
-										))}
-										{filteredData.surgeries.length > 5 && (
-											<p className="text-xs text-gray-500 text-center">
-												Y {filteredData.surgeries.length - 5} más...
-											</p>
-										)}
+											)}
+										</div>
 									</div>
-								</div>
-							)}
+								)}
 
 							{/* Pacientes encontrados */}
 							{filteredData.patients.length > 0 && user?.role === "Médico" && (
@@ -431,8 +476,8 @@ const DashboardHome = () => {
 						<b className="text-primary">comenzar</b> hoy?
 					</h1>
 					<p className="mt-2 sm:mt-4 text-base sm:text-lg text-gray-400 font-semibold">
-						Despliega y familiarizate con cada una de las siguientes opciones, te
-						ayudaremos a gestionar de manera más eficiente, fácil y rápida.
+						Despliega y familiarizate con cada una de las siguientes opciones,
+						te ayudaremos a gestionar de manera más eficiente, fácil y rápida.
 					</p>
 				</div>
 
@@ -489,38 +534,41 @@ const DashboardHome = () => {
 								</div>
 
 								{/* Configuración de tasa personalizada por médico */}
-								{user?.role === "Médico" || user?.role === "Admin" && (
-									<div className="mt-3 pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500">
-										<p className="mb-2">
-											Tu tasa personalizada actual:{" "}
-											<span className="font-semibold text-primary">
-											{settings?.custom_exchange_rate != null &&
-											typeof settings.custom_exchange_rate === "number"
-												? `${formatPrice(Number(settings.custom_exchange_rate))} Bs`
-												: "No definida"}
-											</span>
-										</p>
-										<div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-											<input
-												type="number"
-												min="0"
-												step="0.01"
-												className="w-full sm:max-w-[140px] px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-												placeholder={formatPrice(currencyRates.oficial.promedio)}
-												value={customRateInput}
-												onChange={(e) => setCustomRateInput(e.target.value)}
-											/>
-											<button
-												type="button"
-												onClick={handleSaveCustomRate}
-												disabled={savingCustomRate}
-												className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
-											>
-												{savingCustomRate ? "Guardando..." : "Guardar tasa"}
-											</button>
+								{user?.role === "Médico" ||
+									(user?.role === "Admin" && (
+										<div className="mt-3 pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500">
+											<p className="mb-2">
+												Tu tasa personalizada actual:{" "}
+												<span className="font-semibold text-primary">
+													{settings?.custom_exchange_rate != null &&
+													typeof settings.custom_exchange_rate === "number"
+														? `${formatPrice(Number(settings.custom_exchange_rate))} Bs`
+														: "No definida"}
+												</span>
+											</p>
+											<div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+												<input
+													type="number"
+													min="0"
+													step="0.01"
+													className="w-full sm:max-w-[140px] px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+													placeholder={formatPrice(
+														currencyRates.oficial.promedio,
+													)}
+													value={customRateInput}
+													onChange={(e) => setCustomRateInput(e.target.value)}
+												/>
+												<button
+													type="button"
+													onClick={handleSaveCustomRate}
+													disabled={savingCustomRate}
+													className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
+												>
+													{savingCustomRate ? "Guardando..." : "Guardar tasa"}
+												</button>
+											</div>
 										</div>
-									</div>
-								)}
+									))}
 							</>
 						) : (
 							<div className="flex items-center justify-center flex-1">
@@ -536,7 +584,7 @@ const DashboardHome = () => {
 			{/* Grid de estadísticas y calendario - Responsive */}
 			<div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 				{/* Pacientes Activos - Solo para médicos */}
-				{user?.role === "Médico" && (
+				{(user?.role === "Médico" || user?.role === "Admin") && (
 					<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
 						<h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
 							<FaUserInjured className="text-blue-600" />
@@ -560,7 +608,7 @@ const DashboardHome = () => {
 				)}
 
 				{/* Calendario de Cirugías - Solo para médicos */}
-				{user?.role === "Médico" && (
+				{(user?.role === "Médico" || user?.role === "Admin") && (
 					<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 min-h-[300px] sm:min-h-[360px] flex flex-col">
 						<h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
 							<FaStethoscope className="text-primary" />
@@ -568,7 +616,9 @@ const DashboardHome = () => {
 						</h3>
 						{loading ? (
 							<div className="flex-1 flex items-center justify-center">
-								<div className="animate-pulse text-gray-400">Cargando calendario...</div>
+								<div className="animate-pulse text-gray-400">
+									Cargando calendario...
+								</div>
 							</div>
 						) : (
 							<div className="flex-1 flex items-center justify-center">
@@ -604,17 +654,18 @@ const DashboardHome = () => {
 			</div>
 
 			{/* Leyenda del calendario - Solo para médicos */}
-			{user?.role === "Médico" && surgeries.length > 0 && (
-				<div className="mt-4 sm:mt-6 flex justify-center">
-					<CalendarLegend
-						surgeries={surgeries}
-						currentMonth={currentDate.getMonth()}
-					/>
-				</div>
-			)}
+			{(user?.role === "Médico" || user?.role === "Admin") &&
+				surgeries.length > 0 && (
+					<div className="mt-4 sm:mt-6 flex justify-center">
+						<CalendarLegend
+							surgeries={surgeries}
+							currentMonth={currentDate.getMonth()}
+						/>
+					</div>
+				)}
 
 			{/* Estadísticas adicionales para médicos */}
-			{user?.role === "Médico" && (
+			{(user?.role === "Médico" || user?.role === "Admin") && (
 				<div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 					<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
 						<h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-3 sm:mb-4">
