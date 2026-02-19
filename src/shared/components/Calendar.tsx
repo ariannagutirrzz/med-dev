@@ -2,6 +2,8 @@ import { useState } from "react"
 
 export interface Surgery {
 	day: number
+	month: number
+	year: number
 	type: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada"
 }
 
@@ -10,15 +12,15 @@ interface CalendarProps {
 	showLegend?: boolean // Nueva prop para controlar la leyenda
 }
 
-const Calendar: React.FC<CalendarProps> = ({
-	surgeries = [
-		{ day: 15, type: "Cirugía Mayor" },
-		{ day: 18, type: "Cirugía Menor" },
-		{ day: 22, type: "Cirugía Programada" },
-		{ day: 25, type: "Cirugía Mayor" },
-	],
-}) => {
+const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
 	const [currentDate, setCurrentDate] = useState(new Date())
+
+	// Solo cirugías del mes/año actualmente mostrado
+	const surgeriesThisMonth = surgeries.filter(
+		(s) =>
+			s.month === currentDate.getMonth() &&
+			s.year === currentDate.getFullYear()
+	)
 
 	const monthNames = [
 		"Enero",
@@ -71,7 +73,7 @@ const Calendar: React.FC<CalendarProps> = ({
 	}
 
 	const getSurgeryForDay = (day: number) => {
-		return surgeries.find((surgery) => surgery.day === day)
+		return surgeriesThisMonth.find((surgery) => surgery.day === day)
 	}
 
 	return (

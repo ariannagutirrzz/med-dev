@@ -1,0 +1,93 @@
+import { getAppointments } from "../../appointments"
+import { getDoctorPatients } from "../../patients"
+import { getSurgeries } from "../../surgeries"
+import type { Appointment, Patient, Surgery } from "../../../shared"
+import { getTodayRange } from "../utils/dateUtils"
+import {
+	convertSurgeriesToCalendarFormat,
+	filterSurgeriesByDoctor,
+} from "../utils/surgeryUtils"
+import type { DashboardStats } from "../types/dashboard.types"
+
+export interface DashboardDataResult {
+	appointments: Appointment[]
+	surgeries: Surgery[]
+	patients: Patient[]
+	stats: DashboardStats
+	calendarSurgeries: ReturnType<typeof convertSurgeriesToCalendarFormat>
+}
+
+export const fetchDashboardData = async (
+	userRole?: string,
+	doctorId?: string,
+): Promise<DashboardDataResult> => {
+	const { today, tomorrow } = getTodayRange()
+
+	// Fetch appointments
+	let appointments: Appointment[] = []
+	try {
+		const appointmentsData = await getAppointments()
+		appointments = appointmentsData.appointments || []
+	} catch (error) {
+		console.error("Error cargando citas:", error)
+	}
+
+	// Fetch patients (only for doctors)
+	let patients: Patient[] = []
+	if (userRole === "Médico") {
+		try {
+			const patientsData = await getDoctorPatients()
+			patients = (patientsData?.patients || []) as Patient[]
+		} catch (error) {
+			console.error("Error cargando pacientes:", error)
+		}
+	}
+
+	// Fetch surgeries (only for doctors)
+	let surgeries: Surgery[] = []
+	if (userRole === "Médico") {
+		try {
+			const surgeriesData = await getSurgeries()
+			if (doctorId && surgeriesData.surgeries) {
+				surgeries = filterSurgeriesByDoctor(
+					surgeriesData.surgeries,
+					doctorId,
+				)
+			} else {
+				surgeries = surgeriesData.surgeries || []
+			}
+		} catch (error) {
+			console.error("Error cargando cirugías:", error)
+		}
+	}
+
+	// Calculate stats
+	const appointmentsToday = appointments.filter((apt) => {
+		const aptDate = new Date(apt.appointment_date)
+		return aptDate >= today && aptDate < tomorrow
+	}).length
+
+	const surgeriesToday = surgeries.filter((surgery) => {
+		const surgeryDate = new Date(surgery.surgery_date)
+		return surgeryDate >= today && surgeryDate < tomorrow
+	}).length
+
+	const stats: DashboardStats = {
+		appointmentsToday,
+		totalAppointments: appointments.length,
+		activePatients: patients.length,
+		totalSurgeries: surgeries.length,
+		surgeriesToday,
+	}
+
+	// Convert surgeries to calendar format
+	const calendarSurgeries = convertSurgeriesToCalendarFormat(surgeries)
+
+	return {
+		appointments,
+		surgeries,
+		patients,
+		stats,
+		calendarSurgeries,
+	}
+}

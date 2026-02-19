@@ -10,11 +10,19 @@ export default function DashboardHeader() {
 		setSearchTerm(e.target.value)
 	}
 
+	const now = new Date()
+	const weekday = now.toLocaleDateString("es-ES", { weekday: "long" })
+	const dateFormatted = now.toLocaleDateString("es-ES", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	})
+
 	return (
 		<div className="mb-4 justify-between flex items-center">
-			<h2 className="text-lg text-gray-400 font-semibold flex flex-row items-center gap-2">
+			<h2 className="text-lg text-gray-400 font-semibold flex flex-row items-center gap-2 capitalize">
 				<CiCalendar className="text-primary font-semibold" />
-				Miercoles <b className="text-primary font-semibold">24/11/2025</b>
+				{weekday} <b className="text-primary font-semibold">{dateFormatted}</b>
 			</h2>
 
 			{/* Barra de búsqueda */}
