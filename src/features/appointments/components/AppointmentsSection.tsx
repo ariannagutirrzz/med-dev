@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendarCheck, FaClock, FaEdit, FaTrash, FaUserMd } from "react-icons/fa"
+import { FaCalendarCheck, FaClock, FaDollarSign, FaEdit, FaTrash, FaUserMd } from "react-icons/fa"
 import { MdAddCircleOutline, MdFilterList, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import { useAuth } from "../../auth"
@@ -8,7 +8,10 @@ import {
 	getAllAppointments,
 	getFilteredAppointments,
 } from "../services/AppointmentsAPI"
+import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import type { Appointment } from "../../../shared"
+import { formatPrice } from "../../../shared"
 import AppointmentModal from "./AppointmentModal"
 import { ConfirmModal } from "../../../shared"
 
@@ -26,6 +29,8 @@ const AppointmentsSection = () => {
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
+	const [settings, setSettings] = useState<UserSettings | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<any>(null)
 
 	const loadAppointments = useCallback(async () => {
 		setLoading(true)
@@ -47,6 +52,19 @@ const AppointmentsSection = () => {
 
 	useEffect(() => {
 		loadAppointments()
+		const loadPriceData = async () => {
+			try {
+				const [settingsData, ratesData] = await Promise.all([
+					getSettings().catch(() => null),
+					getCurrencyRates().catch(() => null),
+				])
+				setSettings(settingsData)
+				setCurrencyRates(ratesData)
+			} catch (error) {
+				console.error("Error loading price data:", error)
+			}
+		}
+		loadPriceData()
 	}, [loadAppointments])
 
 	const handleCreateAppointment = () => {
@@ -178,7 +196,7 @@ const AppointmentsSection = () => {
 				<button
 					type="button"
 					onClick={handleCreateAppointment}
-					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors"
+					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors cursor-pointer"
 				>
 					<MdAddCircleOutline className="w-5 h-5" />
 					<span>Nueva Cita</span>
@@ -282,6 +300,25 @@ const AppointmentsSection = () => {
 															{appointment.patient_name}
 														</span>
 													)}
+													{appointment.price_usd && (
+														<>
+															<span className="flex items-center gap-1 text-primary font-semibold">
+																<FaDollarSign className="w-4 h-4" />
+																${formatPrice(appointment.price_usd)} USD
+															</span>
+															{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+																<span className="flex items-center gap-1 text-green-600 font-semibold">
+																	Bs.{" "}
+																	{formatPrice(
+																		appointment.price_usd *
+																			(settings?.custom_exchange_rate ||
+																				currencyRates?.oficial?.promedio ||
+																				0),
+																	)}
+																</span>
+															)}
+														</>
+													)}
 												</div>
 											</div>
 										</div>
@@ -291,7 +328,7 @@ const AppointmentsSection = () => {
 												<button
 													type="button"
 													onClick={() => handleEditAppointment(appointment)}
-													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
 													title="Editar cita"
 												>
 													<FaEdit className="w-4 h-4" />
@@ -305,7 +342,7 @@ const AppointmentsSection = () => {
 																appointment,
 															})
 														}
-														className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+														className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
 														title="Eliminar cita"
 													>
 														<FaTrash className="w-4 h-4" />

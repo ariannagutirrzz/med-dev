@@ -10,3 +10,5 @@ export const calcularEdad = (fechaNacimiento: Date): number => {
 
 	return edad
 }
+
+export * from "./formatPrice"

@@ -1,6 +1,7 @@
 import { CiCalendar } from "react-icons/ci"
-import { HiOutlineBellAlert, HiOutlineMagnifyingGlass } from "react-icons/hi2"
+import { HiOutlineMagnifyingGlass } from "react-icons/hi2"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
+import { NotificationBell } from "../../notifications"
 
 export default function DashboardHeader() {
 	const { searchTerm, setSearchTerm } = useDashboardSearch()
@@ -31,7 +32,7 @@ export default function DashboardHeader() {
 			</div>
 
 		
-			<HiOutlineBellAlert className="w-8 h-8 cursor-pointer text-gray-400" />
+			<NotificationBell />
 		</div>
 	)
 }

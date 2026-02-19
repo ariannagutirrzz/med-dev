@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendarCheck, FaClock, FaEdit, FaTrash, FaUserMd, FaStethoscope } from "react-icons/fa"
+import { FaCalendarCheck, FaClock, FaDollarSign, FaEdit, FaTrash, FaUserMd, FaStethoscope } from "react-icons/fa"
 import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import {
 	deleteSurgeryById,
 	getSurgeries,
 } from "../services/SurgeriesAPI"
+import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import type { Surgery } from "../../../shared"
+import { formatPrice } from "../../../shared"
 import { ConfirmModal } from "../../../shared"
 import SurgeryModal from "./SurgeryModal"
 
@@ -20,6 +23,8 @@ const SurgeriesSection = () => {
 		surgery: Surgery | null
 	}>({ isOpen: false, surgery: null })
 	const [searchTerm, setSearchTerm] = useState("")
+	const [settings, setSettings] = useState<UserSettings | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<any>(null)
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
 
@@ -38,6 +43,19 @@ const SurgeriesSection = () => {
 
 	useEffect(() => {
 		loadSurgeries()
+		const loadPriceData = async () => {
+			try {
+				const [settingsData, ratesData] = await Promise.all([
+					getSettings().catch(() => null),
+					getCurrencyRates().catch(() => null),
+				])
+				setSettings(settingsData)
+				setCurrencyRates(ratesData)
+			} catch (error) {
+				console.error("Error loading price data:", error)
+			}
+		}
+		loadPriceData()
 	}, [loadSurgeries])
 
 	const handleCreateSurgery = () => {
@@ -185,7 +203,7 @@ const SurgeriesSection = () => {
 				<button
 					type="button"
 					onClick={handleCreateSurgery}
-					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors"
+					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors cursor-pointer"
 				>
 					<MdAddCircleOutline className="w-5 h-5" />
 					<span>Nueva Reserva</span>
@@ -318,6 +336,25 @@ const SurgeriesSection = () => {
 														<FaClock className="w-4 h-4" />
 														{date} - {time}
 													</span>
+													{surgery.price_usd && (
+														<>
+															<span className="flex items-center gap-1 text-primary font-semibold">
+																<FaDollarSign className="w-4 h-4" />
+																${formatPrice(surgery.price_usd)} USD
+															</span>
+															{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+																<span className="flex items-center gap-1 text-green-600 font-semibold">
+																	Bs.{" "}
+																	{formatPrice(
+																		surgery.price_usd *
+																			(settings?.custom_exchange_rate ||
+																				currencyRates?.oficial?.promedio ||
+																				0),
+																	)}
+																</span>
+															)}
+														</>
+													)}
 												</div>
 											</div>
 										</div>
@@ -327,7 +364,7 @@ const SurgeriesSection = () => {
 												<button
 													type="button"
 													onClick={() => handleEditSurgery(surgery)}
-													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
 													title="Editar cirugía"
 												>
 													<FaEdit className="w-4 h-4" />
@@ -340,7 +377,7 @@ const SurgeriesSection = () => {
 															surgery,
 														})
 													}
-													className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+													className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
 													title="Eliminar cirugía"
 												>
 													<FaTrash className="w-4 h-4" />

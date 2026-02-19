@@ -8,8 +8,13 @@ import {
 	updateAppointmentById,
 } from "../services/AppointmentsAPI"
 import { getPatients } from "../../patients"
+import { getDoctorServices } from "../../services"
+import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import { api } from "../../../config/axios"
 import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
+import type { DoctorServiceWithType } from "../../services"
+import { formatPrice } from "../../../shared"
 
 interface AppointmentModalProps {
 	isOpen: boolean
@@ -35,6 +40,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const [patients, setPatients] = useState<Patient[]>([])
 	const [doctors, setDoctors] = useState<Doctor[]>([])
 	const [loadingData, setLoadingData] = useState(false)
+	const [services, setServices] = useState<DoctorServiceWithType[]>([])
+	const [settings, setSettings] = useState<UserSettings | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [selectedService, setSelectedService] = useState<DoctorServiceWithType | null>(null)
 
 	const initialValues: AppointmentFormData = {
 		patient_id: "",
@@ -42,9 +51,32 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 		appointment_date: "",
 		status: "scheduled",
 		notes: "",
+		service_id: null,
 	}
 
 	const [formData, setFormData] = useState<AppointmentFormData>(initialValues)
+
+	// Cargar servicios cuando cambia el doctor_id
+	const loadServices = useCallback(async (doctorId: string) => {
+		if (!doctorId) {
+			setServices([])
+			setSelectedService(null)
+			return
+		}
+		try {
+			const [servicesData, settingsData, ratesData] = await Promise.all([
+				getDoctorServices(doctorId),
+				getSettings().catch(() => null),
+				getCurrencyRates().catch(() => null),
+			])
+			setServices(servicesData.filter((s) => s.is_active))
+			setSettings(settingsData)
+			setCurrencyRates(ratesData)
+		} catch (error) {
+			console.error("Error loading services:", error)
+			setServices([])
+		}
+	}, [])
 
 	// Cargar pacientes y doctores
 	const loadPatientsAndDoctors = useCallback(async () => {
@@ -136,7 +168,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 				appointment_date: localDateTime,
 				status: editingAppointment.status,
 				notes: editingAppointment.notes || "",
+				service_id: editingAppointment.service_id || null,
 			})
+			// Cargar servicios si hay doctor_id
+			if (editingAppointment.doctor_id) {
+				loadServices(editingAppointment.doctor_id)
+			}
 		} else {
 			// Si el usuario es médico, establecer su doctor_id automáticamente
 			if (user?.role === "Médico" && user?.document_id) {
@@ -264,17 +301,76 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									required={!isDoctor}
 									disabled={loadingData}
 									className={inputClass}
-									onChange={(e) =>
-										setFormData({ ...formData, doctor_id: e.target.value })
-									}
+								onChange={(e) => {
+									const doctorId = e.target.value
+									setFormData({ ...formData, doctor_id: doctorId, service_id: null })
+									loadServices(doctorId)
+									setSelectedService(null)
+								}}
+							>
+								<option value="">Seleccionar médico...</option>
+								{doctors.map((doctor) => (
+									<option key={doctor.document_id} value={doctor.document_id}>
+										{doctor.name} - {doctor.document_id}
+									</option>
+								))}
+							</select>
+						</div>
+						)}
+
+						{/* Servicio - Solo visible si hay doctor seleccionado */}
+						{formData.doctor_id && services.length > 0 && (
+							<div className="md:col-span-2 relative">
+								<label
+									htmlFor="service_id"
+									className="text-xs font-bold text-gray-700 mb-1 block ml-1"
 								>
-									<option value="">Seleccionar médico...</option>
-									{doctors.map((doctor) => (
-										<option key={doctor.document_id} value={doctor.document_id}>
-											{doctor.name} - {doctor.document_id}
+									Servicio (Opcional)
+								</label>
+								<select
+									id="service_id"
+									value={formData.service_id?.toString() || ""}
+									className={inputClass}
+									onChange={(e) => {
+										const serviceId = e.target.value ? parseInt(e.target.value, 10) : null
+										const service = services.find((s) => s.id === serviceId)
+										setFormData({ ...formData, service_id: serviceId })
+										setSelectedService(service || null)
+									}}
+								>
+									<option value="">Seleccionar servicio...</option>
+									{services.map((service) => (
+										<option key={service.id} value={service.id}>
+											{service.service_type.name} - ${formatPrice(service.price_usd)} USD
 										</option>
 									))}
 								</select>
+								{selectedService && (
+									<div className="mt-2 p-3 bg-blue-50 rounded-lg">
+										<div className="text-sm">
+											<div className="flex justify-between mb-1">
+												<span className="text-gray-600">Precio USD:</span>
+												<span className="font-semibold text-primary">
+													${formatPrice(selectedService.price_usd)}
+												</span>
+											</div>
+											{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+												<div className="flex justify-between">
+													<span className="text-gray-600">Precio BS:</span>
+													<span className="font-semibold text-green-600">
+														Bs.{" "}
+														{formatPrice(
+															selectedService.price_usd *
+																(settings?.custom_exchange_rate ||
+																	currencyRates?.oficial?.promedio ||
+																	0),
+														)}
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
+								)}
 							</div>
 						)}
 

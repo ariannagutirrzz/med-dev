@@ -1,9 +1,14 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
+import {
+	notifySurgeryCreated,
+	notifySurgeryUpdated,
+} from "../utils/notificationHelpers"
 
 // 1. Create Surgery (Reservation)
 export const createSurgery = async (req: Request, res: Response) => {
-	const { patient_id, surgery_date, status, notes, surgery_type } = req.body
+	const { patient_id, surgery_date, status, notes, surgery_type, service_id } =
+		req.body
 
 	// Logic: doctor_id is extracted from the logged-in user's data
 	const doctor_id = req.user?.document_id
@@ -15,9 +20,26 @@ export const createSurgery = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// If service_id is provided, fetch the price from doctor_services
+		let price_usd: number | null = null
+		let final_service_id: number | null = null
+
+		if (service_id) {
+			const serviceResult = await query(
+				`SELECT id, price_usd FROM doctor_services 
+				WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
+				[service_id, doctor_id],
+			)
+
+			if (serviceResult.rows.length > 0) {
+				final_service_id = serviceResult.rows[0].id
+				price_usd = parseFloat(serviceResult.rows[0].price_usd)
+			}
+		}
+
 		const result = await query(
-			`INSERT INTO surgeries (patient_id, doctor_id, surgery_date, status, notes, surgery_type)
-             VALUES ($1, $2, $3, $4, $5, $6)
+			`INSERT INTO surgeries (patient_id, doctor_id, surgery_date, status, notes, surgery_type, service_id, price_usd)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
 			[
 				patient_id,
@@ -26,12 +48,38 @@ export const createSurgery = async (req: Request, res: Response) => {
 				status || "Scheduled",
 				notes,
 				surgery_type,
+				final_service_id,
+				price_usd,
 			],
 		)
 
+		const surgery = result.rows[0]
+
+		// Create notification for surgery creation
+		try {
+			const patientResult = await query(
+				`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+				[patient_id],
+			)
+			const patient = patientResult.rows[0]
+
+			if (patient) {
+				const patientName = `${patient.first_name} ${patient.last_name}`
+				await notifySurgeryCreated(
+					doctor_id,
+					patientName,
+					new Date(surgery_date),
+					surgery_type,
+					surgery.id,
+				)
+			}
+		} catch (notifError) {
+			console.error("Error creating surgery notification:", notifError)
+		}
+
 		res.status(201).json({
 			message: "Surgery reservation created successfully.",
-			surgery: result.rows[0],
+			surgery,
 		})
 	} catch (error) {
 		console.error("Error creating surgery:", error)
@@ -82,13 +130,42 @@ export const updateSurgery = async (req: Request, res: Response) => {
 	const { id } = req.params
 	const updates = req.body
 
-	const allowedFields = ["surgery_date", "status", "notes", "patient_id", "surgery_type"]
+	const allowedFields = [
+		"surgery_date",
+		"status",
+		"notes",
+		"patient_id",
+		"surgery_type",
+		"service_id",
+	]
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
 	if (keys.length === 0) {
 		return res
 			.status(400)
 			.json({ error: "No valid fields provided for update." })
+	}
+
+	// If service_id is being updated, fetch the price
+	let price_usd: number | null = null
+	if (keys.includes("service_id")) {
+		const doctor_id = req.user?.document_id
+		if (doctor_id) {
+			const serviceResult = await query(
+				`SELECT id, price_usd FROM doctor_services 
+				WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
+				[updates.service_id, doctor_id],
+			)
+
+			if (serviceResult.rows.length > 0) {
+				price_usd = parseFloat(serviceResult.rows[0].price_usd)
+				// Add price_usd to the update
+				if (!keys.includes("price_usd")) {
+					keys.push("price_usd")
+					updates.price_usd = price_usd
+				}
+			}
+		}
 	}
 
 	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
@@ -108,9 +185,37 @@ export const updateSurgery = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Surgery record not found." })
 		}
 
+		const updatedSurgery = result.rows[0]
+
+		// Create notification for surgery update
+		try {
+			const doctor_id = req.user?.document_id
+			if (doctor_id) {
+				const patientResult = await query(
+					`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+					[updatedSurgery.patient_id],
+				)
+				const patient = patientResult.rows[0]
+
+				if (patient) {
+					const patientName = `${patient.first_name} ${patient.last_name}`
+					await notifySurgeryUpdated(
+						doctor_id,
+						patientName,
+						new Date(updatedSurgery.surgery_date),
+						updatedSurgery.surgery_type,
+						updatedSurgery.id,
+						updatedSurgery.status,
+					)
+				}
+			}
+		} catch (notifError) {
+			console.error("Error creating surgery update notification:", notifError)
+		}
+
 		res.json({
 			message: "Surgery updated successfully",
-			surgery: result.rows[0],
+			surgery: updatedSurgery,
 		})
 	} catch (error) {
 		console.error("Error updating surgery:", error)
