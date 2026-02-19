@@ -34,7 +34,7 @@ const DashboardHome = () => {
 	}
 
 	return (
-		<div className="p-4 sm:p-6">
+		<div className="p-3 sm:p-4 md:p-6">
 			<DashboardHeader />
 
 			<SearchResults
@@ -47,7 +47,7 @@ const DashboardHome = () => {
 			/>
 
 			{/* Grid principal - Responsive */}
-			<div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mt-4 sm:mt-6">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6">
 				<WelcomeSection userName={user?.name} />
 
 				<AppointmentsTodayCard count={data.stats.appointmentsToday} loading={loading} />
@@ -56,7 +56,7 @@ const DashboardHome = () => {
 			</div>
 
 			{/* Grid de estadísticas y calendario - Responsive */}
-			<div className="mt-4 sm:mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+			<div className="mt-3 sm:mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
 				{user?.role === "Médico" && (
 					<>
 						<GeneralStatsCard stats={data.stats} loading={loading} />

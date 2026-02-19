@@ -32,11 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 	return (
 		<aside
 			className={`
-        flex flex-col
+        flex flex-col h-full min-h-screen
         bg-white
         text-white
         transition-all duration-300 ease-in-out
-        ${isSidebarOpen ? "w-80" : "w-25"}
+        ${isSidebarOpen ? "w-64 sm:w-72" : "w-16 sm:w-20"}
         relative
         shadow-xl
       `}
@@ -51,18 +51,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 			</button>
 			{/* ------------------------------ */}
 			{/* Header del usuario */}
-			<div className="p-5 border-b border-gray-200 flex-col text-center items-center gap-4 relative">
+			<div className="p-3 sm:p-4 md:p-5 border-b border-gray-200 flex-col text-center items-center gap-2 sm:gap-4 relative">
 				{/* Foto de perfil */}
-				<div className="shrink-0 justify-center flex mb-4">
+				<div className="shrink-0 justify-center flex mb-2 sm:mb-3 md:mb-4">
 					{user.profilePicture ? (
 						<img
 							src={user.profilePicture}
 							alt={`${user.name} profile`}
-							className="w-18 h-18 rounded-full object-cover border-2 border-bg-primary"
+							className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-bg-primary"
 						/>
 					) : (
 						<div
-							className={`w-18 h-18 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg `}
+							className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg`}
 						>
 							{user.name.charAt(0).toUpperCase()}
 						</div>
@@ -71,16 +71,16 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 				{/* Información del usuario */}
 				<div className={`flex-1 min-w-0 ${isSidebarOpen ? "block" : "hidden"}`}>
-					<h3 className="text-base text-black font-semibold truncate">
+					<h3 className="text-sm sm:text-base text-black font-semibold truncate">
 						{user.name}
 					</h3>
-					<p className="text-sm text-gray-400 truncate">{user.role}</p>
+					<p className="text-xs sm:text-sm text-gray-400 truncate">{user.role}</p>
 				</div>
 			</div>
 
 			{/* Menú de opciones */}
-			<nav className="flex-1 p-4">
-				<ul className="space-y-2">
+			<nav className="flex-1 p-2 sm:p-3 md:p-4">
+				<ul className="space-y-1 sm:space-y-2">
 					{menuItems.map((item) => {
 						const isActive = activeMenuItem === item.id
 						return (
@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 								<button
 									type="button"
 									className={`
-                    w-full flex items-center gap-3 px-3 py-3 rounded-lg
+                    w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 md:py-3 rounded-lg
                     transition-all duration-200 ease-in-out cursor-pointer
                     border-0 bg-transparent
                     ${
@@ -106,7 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 								>
 									{/* Icono */}
 									{item.icon && (
-										<span className={`shrink-0 text-lg ${isActive ? 'text-white' : 'text-gray-600'}`}>
+										<span className={`shrink-0 text-base sm:text-lg ${isActive ? 'text-white' : 'text-gray-600'}`}>
 											{item.icon}
 										</span>
 									)}
@@ -114,7 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 									{/* Label */}
 									<span
 										className={`
-                    font-medium
+                    font-medium text-sm sm:text-base
                     ${isSidebarOpen ? "block" : "hidden"}
                   `}
 									>
@@ -129,12 +129,12 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 			{/* Logout button */}
 			{onLogout && (
-				<div className="p-4 border-t border-gray-200">
+				<div className="p-2 sm:p-3 md:p-4 border-t border-gray-200">
 					<button
 						type="button"
 						onClick={onLogout}
 						className={`
-							w-full flex items-center gap-3 px-3 py-3 rounded-lg
+							w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 md:py-3 rounded-lg
 							transition-all duration-200 ease-in-out cursor-pointer
 							border-0 bg-transparent
 							!text-red-500 hover:!bg-red-50 hover:!text-red-700
@@ -145,9 +145,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 						}}
 						title={!isSidebarOpen ? "Cerrar sesión" : undefined}
 					>
-						<TbLogout2 />
+						<TbLogout2 className="text-base sm:text-lg" />
 						<span
-							className={`font-medium ${isSidebarOpen ? "block" : "hidden"}`}
+							className={`font-medium text-sm sm:text-base ${isSidebarOpen ? "block" : "hidden"}`}
 						>
 							Cerrar sesión
 						</span>
