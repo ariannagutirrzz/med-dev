@@ -1,5 +1,8 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { ConfigProvider } from "antd"
+import esES from "antd/locale/es_ES"
+import "antd/dist/reset.css"
 import "./index.css"
 import App from "./App.tsx"
 import { AuthProvider } from "./features/auth"
@@ -15,8 +18,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
 	<StrictMode>
-		<AuthProvider>
-			<App />
-		</AuthProvider>
+		<ConfigProvider locale={esES}>
+			<AuthProvider>
+				<App />
+			</AuthProvider>
+		</ConfigProvider>
 	</StrictMode>,
 )

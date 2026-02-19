@@ -5,6 +5,8 @@ import swaggerUI from "swagger-ui-express"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
 import currencyRoutes from "./routes/currencyRoutes.js"
+import doctorAvailabilityRoutes from "./routes/doctorAvailabilityRoutes.js"
+import doctorUnavailabilityRoutes from "./routes/doctorUnavailabilityRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import notificationRoutes from "./routes/notificationRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
@@ -46,6 +48,8 @@ app.use("/api/currency", currencyRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/services", serviceRoutes)
 app.use("/api/reports", reportRoutes)
+app.use("/api/doctor-availability", doctorAvailabilityRoutes)
+app.use("/api/doctor-unavailability", doctorUnavailabilityRoutes)
 
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))

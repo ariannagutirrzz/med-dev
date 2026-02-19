@@ -14,6 +14,7 @@ export const createAccount = async (req: Request, res: Response) => {
 			gender,
 			address,
 			document_id,
+			blood_type,
 		} = req.body
 
 		if (
@@ -54,7 +55,7 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		// Create user
 		const result = await query(
-			"INSERT INTO users (email, password, name, role, document_id, phone, birthdate, gender, address) VALUES ($1, $2, $3, 'Paciente', $4, $5, $6, $7, $8) RETURNING id, email, name, role",
+			"INSERT INTO users (email, password, name, role, document_id, phone, birthdate, gender, address, blood_type) VALUES ($1, $2, $3, 'Paciente', $4, $5, $6, $7, $8, $9) RETURNING id, email, name, role",
 			[
 				email.toLowerCase(),
 				hashedPassword,
@@ -64,6 +65,7 @@ export const createAccount = async (req: Request, res: Response) => {
 				birthdate,
 				gender,
 				address,
+				blood_type || null,
 			],
 		)
 

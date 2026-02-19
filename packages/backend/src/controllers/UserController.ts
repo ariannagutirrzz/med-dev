@@ -9,7 +9,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 		}
 
 		const result = await query(
-			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image, blood_type 
              FROM users 
              WHERE id = $1`,
 			[userId],
@@ -32,7 +32,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 export const getAllUsers = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
-			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image, blood_type 
                     FROM users
                     ORDER BY name`,
 		)
@@ -57,7 +57,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
 	try {
 		const result = await query(
-			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+			`SELECT id, name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image, blood_type 
              FROM users 
              WHERE id = $1`,
 			[parseInt(id)], // Parse to integer for ID lookup
@@ -89,7 +89,7 @@ export const getUserByDocumentId = getUserById
 export const getAllDoctors = async (_req: Request, res: Response) => {
 	try {
 		const result = await query(
-			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image 
+			`SELECT name, email, document_id, phone, birthdate, gender, address, role, title, credentials, experience, description, image, blood_type 
              FROM users 
              WHERE role ILIKE 'Médico'`,
 		)

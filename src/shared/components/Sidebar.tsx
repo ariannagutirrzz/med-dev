@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 			</button>
 			{/* ------------------------------ */}
 			{/* Header del usuario */}
-			<div className="p-5 border-b border-gray-700 flex-col text-center items-center gap-4 relative">
+			<div className="p-5 border-b border-gray-200 flex-col text-center items-center gap-4 relative">
 				{/* Foto de perfil */}
 				<div className="shrink-0 justify-center flex mb-4">
 					{user.profilePicture ? (
@@ -90,19 +90,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 									className={`
                     w-full flex items-center gap-3 px-3 py-3 rounded-lg
                     transition-all duration-200 ease-in-out cursor-pointer
+                    border-0 bg-transparent
                     ${
 											isActive
-												? "bg-primary text-white shadow-lg" // Estilo cuando está activo
-												: "text-gray-300 hover:translate-x-1 hover:bg-primary-dark hover:text-white" // Estilo normal + hover solo cuando NO está activo
+												? "!bg-primary !text-white shadow-lg" // Estilo cuando está activo
+												: "!text-gray-600 hover:translate-x-1 hover:!bg-gray-100 hover:!text-primary" // Estilo normal + hover solo cuando NO está activo
 										}
                     ${isSidebarOpen ? "justify-start" : "justify-center"}
                   `}
+									style={{
+										color: isActive ? undefined : '#4b5563', // gray-600
+									}}
 									onClick={() => onMenuItemClick(item.id)}
 									title={!isSidebarOpen ? item.label : undefined}
 								>
 									{/* Icono */}
 									{item.icon && (
-										<span className="shrink-0 text-lg">{item.icon}</span>
+										<span className={`shrink-0 text-lg ${isActive ? 'text-white' : 'text-gray-600'}`}>
+											{item.icon}
+										</span>
 									)}
 
 									{/* Label */}
@@ -123,16 +129,20 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 			{/* Logout button */}
 			{onLogout && (
-				<div className="p-4 border-t border-gray-700">
+				<div className="p-4 border-t border-gray-200">
 					<button
 						type="button"
 						onClick={onLogout}
 						className={`
 							w-full flex items-center gap-3 px-3 py-3 rounded-lg
 							transition-all duration-200 ease-in-out cursor-pointer
-							text-red-500 hover:bg-red-50 hover:text-red-700
+							border-0 bg-transparent
+							!text-red-500 hover:!bg-red-50 hover:!text-red-700
 							${isSidebarOpen ? "justify-start" : "justify-center"}
 						`}
+						style={{
+							color: '#ef4444', // red-500
+						}}
 						title={!isSidebarOpen ? "Cerrar sesión" : undefined}
 					>
 						<TbLogout2 />
