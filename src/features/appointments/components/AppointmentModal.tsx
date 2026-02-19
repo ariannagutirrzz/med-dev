@@ -1,3 +1,7 @@
+import { DatePicker, Select, TimePicker } from "antd"
+import type { Dayjs } from "dayjs"
+import dayjs from "dayjs"
+import customParseFormat from "dayjs/plugin/customParseFormat"
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
 import {
@@ -8,6 +12,7 @@ import {
 	FaUser,
 	FaUserMd,
 } from "react-icons/fa"
+import "dayjs/locale/es"
 import { toast } from "react-toastify"
 import { api } from "../../../config/axios"
 import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
@@ -54,6 +59,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 	const isDoctor = user?.role === "Médico"
 	const isAdmin = user?.role === "Admin"
+	const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
+	const [loadingTimeSlots, setLoadingTimeSlots] = useState(false)
 
 	const initialValues: AppointmentFormData = {
 		patient_id: "",
@@ -87,6 +94,28 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 			setServices([])
 		}
 	}, [])
+
+	// Cargar slots disponibles cuando cambia el doctor_id o la fecha
+	const loadAvailableTimeSlots = useCallback(
+		async (doctorId: string, date: string) => {
+			if (!doctorId || !date) {
+				setAvailableTimeSlots([])
+				return
+			}
+			setLoadingTimeSlots(true)
+			try {
+				const data = await getAvailableTimeSlots(doctorId, date)
+				setAvailableTimeSlots(data.availableSlots || [])
+			} catch (error) {
+				console.error("Error loading available time slots:", error)
+				setAvailableTimeSlots([])
+				// Si no hay slots disponibles configurados, permitir cualquier hora (backward compatibility)
+			} finally {
+				setLoadingTimeSlots(false)
+			}
+		},
+		[],
+	)
 
 	const loadPatientsAndDoctors = useCallback(async () => {
 		setLoadingData(true)
@@ -276,6 +305,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									className={inputClass}
 									onChange={(e) => {
 										const doctorId = e.target.value
+										const currentDate =
+											formData.appointment_date.split("T")[0] || ""
 										setFormData({
 											...formData,
 											doctor_id: doctorId,
@@ -283,6 +314,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 										})
 										loadServices(doctorId)
 										setSelectedService(null)
+										// Cargar slots disponibles si hay fecha seleccionada
+										if (currentDate) {
+											loadAvailableTimeSlots(doctorId, currentDate)
+										}
 									}}
 								>
 									<option value="">Seleccionar médico...</option>
@@ -356,56 +391,99 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 						)}
 
 						{/* Fecha */}
-						<div className="relative">
-							<label
-								htmlFor="appointment_date"
-								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
-							>
+						<div>
+							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
 								Fecha *
 							</label>
-							<FaCalendar className="absolute left-3 bottom-3 text-gray-400" />
-							<input
-								id="appointment_date"
-								type="date"
-								value={formData.appointment_date.split("T")[0] || ""}
-								required
-								className={inputClass}
-								onChange={(e) => {
-									const date = e.target.value
-									const time =
-										formData.appointment_date.split("T")[1] || "09:00"
-									setFormData({
-										...formData,
-										appointment_date: `${date}T${time}`,
-									})
+							<DatePicker
+								value={
+									formData.appointment_date
+										? dayjs(formData.appointment_date.split("T")[0])
+										: null
+								}
+								onChange={(date: Dayjs | null) => {
+									if (date) {
+										const dateStr = date.format("YYYY-MM-DD")
+										const currentTime =
+											formData.appointment_date.split("T")[1] || "09:00"
+										setFormData({
+											...formData,
+											appointment_date: `${dateStr}T${currentTime}`,
+										})
+										// Cargar slots disponibles cuando cambia la fecha
+										if (formData.doctor_id) {
+											loadAvailableTimeSlots(formData.doctor_id, dateStr)
+										}
+									}
 								}}
+								format="DD/MM/YYYY"
+								className="w-full"
+								placeholder="Seleccionar fecha"
+								disabledDate={(current) =>
+									current && current < dayjs().startOf("day")
+								}
 							/>
 						</div>
 
 						{/* Hora */}
-						<div className="relative">
-							<label
-								htmlFor="appointment_time"
-								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
-							>
+						<div>
+							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
 								Hora *
 							</label>
-							<FaClock className="absolute left-3 bottom-3 text-gray-400" />
-							<input
-								id="appointment_time"
-								type="time"
-								value={formData.appointment_date.split("T")[1] || "09:00"}
-								required
-								className={inputClass}
-								onChange={(e) => {
-									const time = e.target.value
-									const date = formData.appointment_date.split("T")[0] || ""
-									setFormData({
-										...formData,
-										appointment_date: `${date}T${time}`,
-									})
-								}}
-							/>
+							{formData.doctor_id &&
+							formData.appointment_date.split("T")[0] &&
+							availableTimeSlots.length > 0 ? (
+								<Select
+									value={formData.appointment_date.split("T")[1] || undefined}
+									onChange={(time) => {
+										const date = formData.appointment_date.split("T")[0] || ""
+										setFormData({
+											...formData,
+											appointment_date: `${date}T${time}`,
+										})
+									}}
+									className="w-full"
+									placeholder={
+										loadingTimeSlots
+											? "Cargando..."
+											: "Seleccionar hora disponible"
+									}
+									loading={loadingTimeSlots}
+									options={availableTimeSlots.map((slot) => ({
+										value: slot,
+										label: slot,
+									}))}
+								/>
+							) : (
+								<TimePicker
+									value={
+										formData.appointment_date.split("T")[1]
+											? dayjs(formData.appointment_date.split("T")[1], "HH:mm")
+											: null
+									}
+									onChange={(time: Dayjs | null) => {
+										const date = formData.appointment_date.split("T")[0] || ""
+										const timeStr = time ? time.format("HH:mm") : "09:00"
+										setFormData({
+											...formData,
+											appointment_date: `${date}T${timeStr}`,
+										})
+									}}
+									format="HH:mm"
+									className="w-full"
+									placeholder="Seleccionar hora"
+									minuteStep={30}
+								/>
+							)}
+							{formData.doctor_id &&
+								formData.appointment_date.split("T")[0] &&
+								availableTimeSlots.length === 0 &&
+								!loadingTimeSlots && (
+									<p className="text-xs text-gray-500 mt-1">
+										No hay horarios disponibles configurados para este día.
+										Puede seleccionar cualquier hora.
+									</p>
+								)}
 						</div>
 
 						{/* Estado - Solo editable por médicos */}

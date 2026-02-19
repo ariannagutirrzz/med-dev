@@ -58,6 +58,7 @@ const PatientModalForm = ({
 				gender: "M",
 				address: "",
 				document_id: "",
+				blood_type: "",
 			})
 		}
 	}, [patient])
@@ -280,7 +281,7 @@ const PatientModalForm = ({
 								</div>
 							</div>
 
-							{/* 4. Fecha de Nacimiento */}
+							{/* 4. Fecha de Nacimiento y Tipo de Sangre */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="birthdate" className={labelClass}>
@@ -295,6 +296,28 @@ const PatientModalForm = ({
 										value={formData.birthdate}
 										onChange={handleInputChange}
 									/>
+								</div>
+								<div className="flex flex-col">
+									<label htmlFor="blood_type" className={labelClass}>
+										<FaVenusMars /> Tipo de Sangre
+									</label>
+									<select
+										name="blood_type"
+										disabled={loading}
+										className={inputBaseClass}
+										value={formData.blood_type || ""}
+										onChange={handleInputChange}
+									>
+										<option value="">Seleccionar...</option>
+										<option value="A+">A+</option>
+										<option value="A-">A-</option>
+										<option value="B+">B+</option>
+										<option value="B-">B-</option>
+										<option value="AB+">AB+</option>
+										<option value="AB-">AB-</option>
+										<option value="O+">O+</option>
+										<option value="O-">O-</option>
+									</select>
 								</div>
 							</div>
 

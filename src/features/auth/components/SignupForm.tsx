@@ -11,6 +11,7 @@ interface SignupFormData {
 	birthdate: string
 	gender: string
 	address: string
+	blood_type?: string
 }
 
 interface SignupFormErrors {
@@ -40,6 +41,7 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		birthdate: "",
 		gender: "",
 		address: "",
+		blood_type: "",
 	})
 
 	const [errors, setErrors] = useState<SignupFormErrors>({})
@@ -286,6 +288,29 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 							{errors.gender}
 						</p>
 					)}
+				</div>
+
+				{/* Blood Type */}
+				<div>
+					<label htmlFor="blood_type" className="text-sm text-text ml-1 mb-1 flex justify-start">
+						Tipo de Sangre
+					</label>
+					<select
+						id="blood_type"
+						value={formData.blood_type || ""}
+						onChange={handleChange("blood_type")}
+						className="w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text border-muted hover:border-primary focus:border-primary focus:outline-none transition-colors"
+					>
+						<option value="">Seleccionar...</option>
+						<option value="A+">A+</option>
+						<option value="A-">A-</option>
+						<option value="B+">B+</option>
+						<option value="B-">B-</option>
+						<option value="AB+">AB+</option>
+						<option value="AB-">AB-</option>
+						<option value="O+">O+</option>
+						<option value="O-">O-</option>
+					</select>
 				</div>
 
 				{/* Address */}
