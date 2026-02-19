@@ -81,11 +81,12 @@ import { authenticate } from "../middleware/auth"
 
 const userRoutes: Router = Router()
 
+userRoutes.get("/medicos", getAllDoctors) // Disponible para todos para que pacientes puedan ver médicos
+
 userRoutes.use(authenticate)
 
 // Rutas compartidas (disponibles para todos los usuarios autenticados)
 userRoutes.get("/me", getCurrentUser)
-userRoutes.get("/medicos", getAllDoctors) // Disponible para todos para que pacientes puedan ver médicos
 
 // Rutas que requieren permisos específicos
 userRoutes.get("/", getAllUsers) // Solo para administradores o médicos (si es necesario)
