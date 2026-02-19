@@ -10,8 +10,11 @@ export const createSurgery = async (req: Request, res: Response) => {
 	const { patient_id, surgery_date, status, notes, surgery_type, service_id } =
 		req.body
 
-	// Logic: doctor_id is extracted from the logged-in user's data
-	const doctor_id = req.user?.document_id
+	const userRole = req.user?.role
+	const userDocumentId = req.user?.document_id
+
+	// Si es Admin, puede enviar un doctor_id en el body. Si no, usamos el del usuario logueado.
+	const doctor_id = userRole === "Admin" ? req.body.doctor_id : userDocumentId
 
 	if (!patient_id || !surgery_date || !doctor_id) {
 		return res.status(400).json({
@@ -128,8 +131,10 @@ export const getSurgeryById = async (req: Request, res: Response) => {
 // 4. Update Surgery (PATCH)
 export const updateSurgery = async (req: Request, res: Response) => {
 	const { id } = req.params
-	const updates = req.body
+	const updates = { ...req.body }
+	const userRole = req.user?.role
 
+	// Campos permitidos, incluyendo doctor_id para Admins
 	const allowedFields = [
 		"surgery_date",
 		"status",
@@ -137,7 +142,14 @@ export const updateSurgery = async (req: Request, res: Response) => {
 		"patient_id",
 		"surgery_type",
 		"service_id",
+		"doctor_id", // Permitimos cambiar el doctor
 	]
+
+	// Seguridad: Si NO es admin, eliminamos doctor_id de los updates para que no pueda cambiarse a sí mismo o a otros
+	if (userRole !== "Admin") {
+		delete updates.doctor_id
+	}
+
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
 	if (keys.length === 0) {
@@ -146,68 +158,66 @@ export const updateSurgery = async (req: Request, res: Response) => {
 			.json({ error: "No valid fields provided for update." })
 	}
 
-	// If service_id is being updated, fetch the price
-	let price_usd: number | null = null
-	if (keys.includes("service_id")) {
-		const doctor_id = req.user?.document_id
-		if (doctor_id) {
+	try {
+		// Obtener la cirugía actual para saber de quién es (si no se está cambiando el doctor)
+		const currentSurgeryRes = await query(
+			`SELECT doctor_id FROM surgeries WHERE id = $1`,
+			[id],
+		)
+		if (currentSurgeryRes.rowCount === 0) {
+			return res.status(404).json({ error: "Surgery record not found." })
+		}
+
+		const currentDoctorId =
+			updates.doctor_id || currentSurgeryRes.rows[0].doctor_id
+
+		// Si se actualiza el servicio, recalculamos el precio basado en el doctor (nuevo o actual)
+		if (keys.includes("service_id")) {
 			const serviceResult = await query(
-				`SELECT id, price_usd FROM doctor_services 
-				WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
-				[updates.service_id, doctor_id],
+				`SELECT price_usd FROM doctor_services 
+                 WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
+				[updates.service_id, currentDoctorId],
 			)
 
 			if (serviceResult.rows.length > 0) {
-				price_usd = parseFloat(serviceResult.rows[0].price_usd)
-				// Add price_usd to the update
-				if (!keys.includes("price_usd")) {
-					keys.push("price_usd")
-					updates.price_usd = price_usd
-				}
+				const price_usd = parseFloat(serviceResult.rows[0].price_usd)
+				keys.push("price_usd")
+				updates.price_usd = price_usd
 			}
 		}
-	}
 
-	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
-	const values = keys.map((key) => updates[key])
-	values.push(id)
+		const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
+		const values = keys.map((key) => updates[key])
+		values.push(id)
 
-	try {
 		const result = await query(
 			`UPDATE surgeries 
              SET ${setClause}, updated_at = NOW()
              WHERE id = $${values.length}
              RETURNING *`,
-			values,
+			[...values],
 		)
-
-		if (result.rowCount === 0) {
-			return res.status(404).json({ error: "Surgery record not found." })
-		}
 
 		const updatedSurgery = result.rows[0]
 
-		// Create notification for surgery update
+		// Notificación de actualización
 		try {
-			const doctor_id = req.user?.document_id
-			if (doctor_id) {
-				const patientResult = await query(
-					`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
-					[updatedSurgery.patient_id],
-				)
-				const patient = patientResult.rows[0]
+			const patientResult = await query(
+				`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+				[updatedSurgery.patient_id],
+			)
+			const patient = patientResult.rows[0]
 
-				if (patient) {
-					const patientName = `${patient.first_name} ${patient.last_name}`
-					await notifySurgeryUpdated(
-						doctor_id,
-						patientName,
-						new Date(updatedSurgery.surgery_date),
-						updatedSurgery.surgery_type,
-						updatedSurgery.id,
-						updatedSurgery.status,
-					)
-				}
+			if (patient) {
+				const patientName = `${patient.first_name} ${patient.last_name}`
+				await notifySurgeryUpdated(
+					updatedSurgery.doctor_id, // Usamos el doctor actual de la cirugía
+					patientName,
+					new Date(updatedSurgery.surgery_date),
+					updatedSurgery.surgery_type,
+					updatedSurgery.id,
+					updatedSurgery.status,
+				)
 			}
 		} catch (notifError) {
 			console.error("Error creating surgery update notification:", notifError)
