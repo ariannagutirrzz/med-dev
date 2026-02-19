@@ -32,6 +32,7 @@ import {
 	createAppointment,
 	updateAppointmentById,
 } from "../services/AppointmentsAPI"
+import { getAvailableTimeSlots } from "../services/DoctorAvailabilityAPI"
 
 interface AppointmentModalProps {
 	isOpen: boolean
