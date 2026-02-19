@@ -3,6 +3,8 @@ import { jwtDecode } from "jwt-decode"
 import { getSettings, updateSettings as updateUserSettings, type UpdateSettingsInput, type UserSettings } from "../services/SettingsAPI"
 import { api } from "../../../config/axios"
 import type { MyTokenPayload } from "../../../shared"
+import DoctorAvailabilityManagement from "./DoctorAvailabilityManagement"
+import DoctorUnavailabilityManagement from "./DoctorUnavailabilityManagement"
 
 /**
  * Settings Component
@@ -17,7 +19,7 @@ interface SettingsProps {
 	}
 }
 
-type SettingsSection = "profile" | "notifications" | "security"  
+type SettingsSection = "profile" | "notifications" | "security" | "availability"  
 const Settings: React.FC<SettingsProps> = ({ userData }) => {
 	const [activeSection, setActiveSection] = useState<SettingsSection>("profile")
 	const [settings, setSettings] = useState<UserSettings | null>(null)
@@ -222,6 +224,9 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 								{ id: "profile", label: "Perfil" },
 								{ id: "notifications", label: "Notificaciones" },
 								{ id: "security", label: "Seguridad" },
+								...(userData.role === "Médico"
+									? [{ id: "availability", label: "Disponibilidad" }]
+									: []),
 								// { id: "preferences", label: "Preferencias" },
 							].map((section) => (
 								<button
@@ -481,6 +486,18 @@ const Settings: React.FC<SettingsProps> = ({ userData }) => {
 										{saving ? "Actualizando..." : "Actualizar Contraseña"}
 									</button>
 								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Availability Section - Only for Doctors */}
+					{activeSection === "availability" && userData.role === "Médico" && (
+						<div className="space-y-6">
+							<div className="bg-white rounded-2xl shadow-lg p-6">
+								<DoctorAvailabilityManagement />
+							</div>
+							<div className="bg-white rounded-2xl shadow-lg p-6">
+								<DoctorUnavailabilityManagement />
 							</div>
 						</div>
 					)}

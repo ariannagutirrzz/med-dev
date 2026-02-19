@@ -20,11 +20,13 @@ async function showSchema() {
 		console.log("Database Schema:\n")
 		console.log("=".repeat(60))
 
-		// Get all tables
+		// Get all tables (excluding system tables and extensions)
 		const tablesResult = await pool.query(`
 			SELECT table_name 
 			FROM information_schema.tables 
 			WHERE table_schema = 'public' 
+			AND table_name NOT LIKE 'pg_%'
+			AND table_name NOT LIKE '_pg_%'
 			ORDER BY table_name
 		`)
 

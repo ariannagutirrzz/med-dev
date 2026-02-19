@@ -23,7 +23,10 @@ const DashboardPage: React.FC = () => {
 	const { user, logout } = useAuth()
 	const navigate = useNavigate()
 	const location = useLocation()
-	const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+	// En móvil empezar con el menú cerrado; en desktop abierto
+	const [isSidebarOpen, setIsSidebarOpen] = useState(
+		() => typeof window !== "undefined" && window.innerWidth >= 768,
+	)
 
 	const userData = {
 		name: user?.name || "Usuario",

@@ -1,5 +1,9 @@
 import type { ReactNode } from "react"
+import { HiOutlineBars3 } from "react-icons/hi2"
+import { useLocation } from "react-router-dom"
 import { Sidebar } from "../../../shared"
+import { DashboardLayoutProvider } from "../contexts/DashboardLayoutContext"
+import { useIsMobile } from "../hooks/useIsMobile"
 
 interface MenuItem {
 	id: string
@@ -32,20 +36,71 @@ const Dashboard: React.FC<DashboardProps> = ({
 	onToggleSidebar,
 	onLogout,
 }) => {
+	const isMobile = useIsMobile()
+	const location = useLocation()
+
+	const handleMenuItemClick = (itemId: string) => {
+		onMenuItemClick(itemId)
+		if (isMobile) onToggleSidebar()
+	}
+
+	const handleLogout = () => {
+		onLogout?.()
+		if (isMobile) onToggleSidebar()
+	}
+
 	return (
 		<div className="flex h-screen bg-gray-100">
-			<Sidebar
-				user={user}
-				menuItems={menuItems}
-				isSidebarOpen={isSidebarOpen}
-				activeMenuItem={activeMenuItem}
-				onMenuItemClick={onMenuItemClick}
-				onToggleSidebar={onToggleSidebar}
-				onLogout={onLogout}
-			/>
+			{/* Backdrop móvil: tap fuera cierra el menú */}
+			{isMobile && isSidebarOpen && (
+				<button
+					type="button"
+					aria-label="Cerrar menú"
+					onClick={onToggleSidebar}
+					className="fixed inset-0 z-30 bg-black/50 md:hidden"
+				/>
+			)}
 
-			{/* Contenido principal */}
-			<main className="flex-1 overflow-auto">{children}</main>
+			{/* Sidebar: overlay en móvil (altura completa, más estrecho), en flujo en desktop */}
+			<div
+				className={`
+					fixed left-0 top-0 bottom-0 z-40 h-screen w-56 max-w-[75vw] transform transition-transform duration-300 ease-in-out
+					md:relative md:inset-auto md:top-auto md:bottom-auto md:h-full md:min-h-0 md:translate-x-0 md:w-auto md:max-w-none
+					${isMobile ? (isSidebarOpen ? "translate-x-0" : "-translate-x-full") : ""}
+				`}
+			>
+				<Sidebar
+					user={user}
+					menuItems={menuItems}
+					isSidebarOpen={isMobile ? true : isSidebarOpen}
+					activeMenuItem={activeMenuItem}
+					onMenuItemClick={handleMenuItemClick}
+					onToggleSidebar={onToggleSidebar}
+					onLogout={onLogout ? handleLogout : undefined}
+				/>
+			</div>
+
+			{/* Contenido principal; menú móvil va en el header (home) o en barra superior (resto) */}
+			<main className="flex-1 overflow-auto relative min-w-0 flex flex-col">
+				<DashboardLayoutProvider
+					value={{ isMobile, onToggleSidebar }}
+				>
+					{/* En páginas que no son home, barra con solo hamburger para abrir menú */}
+					{isMobile && location.pathname !== "/dashboard/home" && (
+						<div className="flex items-center shrink-0 h-10 px-3 border-b border-gray-200 bg-white/95">
+							<button
+								type="button"
+								onClick={onToggleSidebar}
+								aria-label="Abrir menú"
+								className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 cursor-pointer"
+							>
+								<HiOutlineBars3 className="w-5 h-5" />
+							</button>
+						</div>
+					)}
+					{children}
+				</DashboardLayoutProvider>
+			</main>
 		</div>
 	)
 }

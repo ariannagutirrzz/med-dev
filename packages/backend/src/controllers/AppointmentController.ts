@@ -64,6 +64,89 @@ export const createAppointment = async (req: Request, res: Response) => {
 	}
 
 	try {
+		// Check if doctor is unavailable for this date (date range exceptions)
+		const appointmentDate = new Date(appointment_date)
+		const appointmentDateOnly = appointmentDate.toISOString().split("T")[0] // YYYY-MM-DD format
+
+		const unavailabilityResult = await query(
+			`SELECT id, start_date, end_date, reason 
+			FROM doctor_unavailability 
+			WHERE doctor_id = $1 
+			AND is_active = TRUE
+			AND (
+				(end_date IS NULL AND start_date = $2::date)
+				OR (end_date IS NOT NULL AND $2::date BETWEEN start_date AND end_date)
+			)`,
+			[doctor_id, appointmentDateOnly],
+		)
+
+		if (unavailabilityResult.rows.length > 0) {
+			const period = unavailabilityResult.rows[0]
+			const reason = period.reason ? ` (${period.reason})` : ""
+			return res.status(400).json({
+				error: `El doctor no está disponible en esta fecha${reason}. Por favor seleccione otra fecha.`,
+			})
+		}
+
+		// Check if doctor has availability for this date and time
+		const dayOfWeek = appointmentDate.getDay()
+		const appointmentTime = appointmentDate.toTimeString().slice(0, 5) // HH:MM format
+
+		// Get doctor's availability for this day
+		const availabilityResult = await query(
+			`SELECT start_time, end_time 
+			FROM doctor_availability 
+			WHERE doctor_id = $1 
+			AND day_of_week = $2 
+			AND is_active = TRUE`,
+			[doctor_id, dayOfWeek],
+		)
+
+		if (availabilityResult.rows.length > 0) {
+			// Check if the appointment time falls within any availability slot
+			let isTimeAvailable = false
+			for (const slot of availabilityResult.rows) {
+				const slotStart = slot.start_time.slice(0, 5) // HH:MM format
+				const slotEnd = slot.end_time.slice(0, 5) // HH:MM format
+
+				if (appointmentTime >= slotStart && appointmentTime < slotEnd) {
+					isTimeAvailable = true
+					break
+				}
+			}
+
+			if (!isTimeAvailable) {
+				return res.status(400).json({
+					error:
+						"The selected time is not available. Please choose a time within the doctor's available hours.",
+				})
+			}
+		} else {
+			// If no availability slots are set, allow the appointment (backward compatibility)
+			// You can change this to require availability slots if needed
+			console.warn(
+				`No availability slots found for doctor ${doctor_id} on day ${dayOfWeek}`,
+			)
+		}
+
+		// Check if the time slot is already booked
+		const existingAppointmentResult = await query(
+			`SELECT id 
+			FROM appointments 
+			WHERE doctor_id = $1 
+			AND DATE(appointment_date) = DATE($2)
+			AND EXTRACT(HOUR FROM appointment_date) = EXTRACT(HOUR FROM $2::timestamp)
+			AND EXTRACT(MINUTE FROM appointment_date) = EXTRACT(MINUTE FROM $2::timestamp)
+			AND status NOT IN ('cancelled', 'completed')`,
+			[doctor_id, appointment_date],
+		)
+
+		if (existingAppointmentResult.rows.length > 0) {
+			return res.status(400).json({
+				error: "This time slot is already booked. Please choose another time.",
+			})
+		}
+
 		// If service_id is provided, fetch the price from doctor_services
 		let price_usd: number | null = null
 		let final_service_id: number | null = null

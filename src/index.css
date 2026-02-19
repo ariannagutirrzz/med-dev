@@ -28,3 +28,17 @@
 	/* Fonts */
 	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+/* Override Ant Design reset for sidebar */
+aside nav button {
+	color: inherit !important;
+	background-color: transparent !important;
+	border: none !important;
+	padding: 0.75rem !important;
+	font-family: inherit !important;
+}
+
+aside nav button:focus {
+	outline: none !important;
+	box-shadow: none !important;
+}
