@@ -1,5 +1,5 @@
-import PDFDocument from "pdfkit"
 import ExcelJS from "exceljs"
+import PDFDocument from "pdfkit-table"
 import type {
 	AppointmentReportData,
 	FinancialReportData,
@@ -10,105 +10,106 @@ import type {
 /**
  * Generate PDF report for appointments
  */
-export function generateAppointmentsPDF(
+export async function generateAppointmentsPDF(
 	data: AppointmentReportData[],
 	filters: { startDate?: string; endDate?: string; status?: string },
 ): Promise<Buffer> {
-	return new Promise((resolve, reject) => {
-		try {
-			const doc = new PDFDocument({ margin: 50 })
-			const chunks: Buffer[] = []
+	const doc = new PDFDocument({
+		margin: 30,
+		size: "A4",
+		layout: "landscape",
+	})
 
-			doc.on("data", (chunk) => chunks.push(chunk))
-			doc.on("end", () => resolve(Buffer.concat(chunks)))
-			doc.on("error", reject)
+	const chunks: Buffer[] = []
+	const bufferPromise = new Promise<Buffer>((resolve, reject) => {
+		doc.on("data", (chunk) => chunks.push(chunk))
+		doc.on("end", () => resolve(Buffer.concat(chunks)))
+		doc.on("error", reject)
+	})
 
-			// Header
-			doc.fontSize(20).text("Reporte de Citas Médicas", { align: "center" })
-			doc.moveDown()
+	try {
+		// Cabecera
+		doc
+			.fontSize(20)
+			.font("Helvetica-Bold")
+			.text("Reporte de Citas Médicas", { align: "center" })
+		doc.moveDown()
 
-			// Filters info
-			if (filters.startDate || filters.endDate || filters.status) {
-				doc.fontSize(10).text("Filtros aplicados:", { underline: true })
-				if (filters.startDate) {
-					doc.text(`Fecha inicio: ${filters.startDate}`)
-				}
-				if (filters.endDate) {
-					doc.text(`Fecha fin: ${filters.endDate}`)
-				}
-				if (filters.status) {
-					doc.text(`Estado: ${filters.status}`)
-				}
-				doc.moveDown()
-			}
-
-			// Table header
-			const tableTop = doc.y
-			const rowHeight = 20
-			const colWidths = [50, 100, 100, 100, 80, 150]
-
-			doc.fontSize(10).font("Helvetica-Bold")
-			doc.text("ID", 50, tableTop)
-			doc.text("Paciente", 100, tableTop)
-			doc.text("Médico", 200, tableTop)
-			doc.text("Fecha", 300, tableTop)
-			doc.text("Estado", 400, tableTop)
-			doc.text("Servicio", 480, tableTop)
-			doc.text("Precio USD", 580, tableTop)
-
-			// Table rows
+		// Información de Filtros
+		if (filters.startDate || filters.endDate || filters.status) {
+			doc
+				.fontSize(10)
+				.font("Helvetica-Bold")
+				.text("Filtros aplicados:", { underline: true })
 			doc.font("Helvetica").fontSize(9)
-			let y = tableTop + rowHeight
+			if (filters.startDate) doc.text(`Fecha inicio: ${filters.startDate}`)
+			if (filters.endDate) doc.text(`Fecha fin: ${filters.endDate}`)
+			if (filters.status) doc.text(`Estado: ${filters.status}`)
+			doc.moveDown()
+		}
 
-			data.forEach((row, index) => {
-				if (y > 750) {
-					// New page
-					doc.addPage()
-					y = 50
-				}
+		// Configuración de la Tabla
+		const tableData = {
+			headers: [
+				{ label: "ID", property: "id", width: 40 },
+				{ label: "Paciente", property: "patient", width: 150 },
+				{ label: "Médico", property: "doctor", width: 120 },
+				{ label: "Fecha", property: "date", width: 80 },
+				{ label: "Estado", property: "status", width: 80 },
+				{ label: "Servicio", property: "service", width: 150 },
+				{ label: "Precio USD", property: "price", width: 80 },
+			],
+			datas: data.map((row) => ({
+				id: row.id.toString(),
+				patient: row.patient_name || "N/A",
+				doctor: row.doctor_name || "N/A",
+				date: new Date(row.appointment_date).toLocaleDateString("es-ES"),
+				status: (row.status || "").toUpperCase(),
+				service: row.service_name || "N/A",
+				price: row.price_usd ? `$${Number(row.price_usd).toFixed(2)}` : "$0.00",
+			})),
+		}
 
-				doc.text(row.id.toString(), 50, y)
-				doc.text(row.patient_name || "N/A", 100, y, { width: 100 })
-				doc.text(row.doctor_name || "N/A", 200, y, { width: 100 })
-				doc.text(
-					new Date(row.appointment_date).toLocaleDateString("es-ES"),
-					300,
-					y,
-					{ width: 100 },
-				)
-				doc.text(row.status, 400, y, { width: 80 })
-				doc.text(row.service_name || "N/A", 480, y, { width: 100 })
-				doc.text(
-					row.price_usd
-						? `$${Number(row.price_usd).toFixed(2)}`
-						: "N/A",
-					580,
-					y,
-					{ width: 100 },
-				)
+		// Renderizar tabla
+		await (doc as PDFDocument).table(tableData, {
+			prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+			prepareRow: () => doc.font("Helvetica").fontSize(9),
+		})
 
-				y += rowHeight
-			})
+		// --- SECCIÓN DE RESUMEN (REINTEGRADA) ---
+		doc.moveDown(1.5) // Espacio después de la tabla
 
-			// Summary
-			doc.moveDown(2)
-			doc.fontSize(12).font("Helvetica-Bold")
-			doc.text(`Total de citas: ${data.length}`, { align: "left" })
-			const totalRevenue = data.reduce(
-				(sum, row) => sum + (Number(row.price_usd) || 0),
-				0,
-			)
-			if (totalRevenue > 0) {
-				doc.text(`Ingresos totales: $${totalRevenue.toFixed(2)} USD`, {
+		// Línea divisoria para el resumen
+		const currentY = doc.y
+		doc.moveTo(30, currentY).lineTo(790, currentY).stroke()
+		doc.moveDown(0.5)
+
+		// Cálculo de totales
+		const totalAppointments = data.length
+		const totalRevenue = data.reduce(
+			(sum, row) => sum + (Number(row.price_usd) || 0),
+			0,
+		)
+
+		doc.fontSize(12).font("Helvetica-Bold")
+		doc.text(`Total de citas: ${totalAppointments}`, { align: "left" })
+
+		if (totalRevenue > 0) {
+			doc
+				.fillColor("#2d5a27") // Un tono verde oscuro para el ingreso
+				.text(`Ingresos totales: $${totalRevenue.toFixed(2)} USD`, {
 					align: "left",
 				})
-			}
-
-			doc.end()
-		} catch (error) {
-			reject(error)
+				.fillColor("black") // Resetear color
 		}
-	})
+		// ---------------------------------------
+
+		doc.end()
+		return await bufferPromise
+	} catch (error) {
+		doc.end()
+		throw error
+	}
 }
 
 /**
@@ -134,7 +135,8 @@ export async function generateAppointmentsExcel(
 		worksheet.getCell(`A${filterRow}`).font = { bold: true }
 		filterRow++
 		if (filters.startDate) {
-			worksheet.getCell(`A${filterRow}`).value = `Fecha inicio: ${filters.startDate}`
+			worksheet.getCell(`A${filterRow}`).value =
+				`Fecha inicio: ${filters.startDate}`
 			filterRow++
 		}
 		if (filters.endDate) {
@@ -168,19 +170,19 @@ export async function generateAppointmentsExcel(
 	}
 
 	// Data rows
-		data.forEach((row) => {
-			const dataRow = worksheet.addRow([
-				row.id,
-				row.patient_name || "N/A",
-				row.doctor_name || "N/A",
-				new Date(row.appointment_date).toLocaleDateString("es-ES"),
-				row.status,
-				row.service_name || "N/A",
-				Number(row.price_usd) || 0,
-				row.notes || "",
-			])
-			dataRow.getCell(7).numFmt = "$#,##0.00" // Format price
-		})
+	data.forEach((row) => {
+		const dataRow = worksheet.addRow([
+			row.id,
+			row.patient_name || "N/A",
+			row.doctor_name || "N/A",
+			new Date(row.appointment_date).toLocaleDateString("es-ES"),
+			row.status,
+			row.service_name || "N/A",
+			Number(row.price_usd) || 0,
+			row.notes || "",
+		])
+		dataRow.getCell(7).numFmt = "$#,##0.00" // Format price
+	})
 
 	// Auto-fit columns
 	worksheet.columns.forEach((column) => {
@@ -188,16 +190,17 @@ export async function generateAppointmentsExcel(
 	})
 
 	// Summary
-		const summaryRow = worksheet.addRow([])
-		summaryRow.getCell(1).value = `Total de citas: ${data.length}`
-		summaryRow.getCell(1).font = { bold: true }
-		const totalRevenue = data.reduce(
-			(sum, row) => sum + (Number(row.price_usd) || 0),
-			0,
-		)
+	const summaryRow = worksheet.addRow([])
+	summaryRow.getCell(1).value = `Total de citas: ${data.length}`
+	summaryRow.getCell(1).font = { bold: true }
+	const totalRevenue = data.reduce(
+		(sum, row) => sum + (Number(row.price_usd) || 0),
+		0,
+	)
 	if (totalRevenue > 0) {
 		const revenueRow = worksheet.addRow([])
-		revenueRow.getCell(1).value = `Ingresos totales: $${totalRevenue.toFixed(2)} USD`
+		revenueRow.getCell(1).value =
+			`Ingresos totales: $${totalRevenue.toFixed(2)} USD`
 		revenueRow.getCell(1).font = { bold: true }
 	}
 
@@ -208,105 +211,114 @@ export async function generateAppointmentsExcel(
 /**
  * Generate PDF report for surgeries
  */
-export function generateSurgeriesPDF(
+export async function generateSurgeriesPDF(
 	data: SurgeryReportData[],
 	filters: { startDate?: string; endDate?: string; status?: string },
 ): Promise<Buffer> {
-	return new Promise((resolve, reject) => {
-		try {
-			const doc = new PDFDocument({ margin: 50 })
-			const chunks: Buffer[] = []
+	// 1. Configuración del documento (Landscape para acomodar todas las columnas)
+	const doc = new PDFDocument({
+		margin: 30,
+		size: "A4",
+		layout: "landscape",
+	})
 
-			doc.on("data", (chunk) => chunks.push(chunk))
-			doc.on("end", () => resolve(Buffer.concat(chunks)))
-			doc.on("error", reject)
+	const chunks: Buffer[] = []
 
-			// Header
-			doc.fontSize(20).text("Reporte de Cirugías", { align: "center" })
-			doc.moveDown()
+	// Promesa para capturar el Buffer final
+	const bufferPromise = new Promise<Buffer>((resolve, reject) => {
+		doc.on("data", (chunk) => chunks.push(chunk))
+		doc.on("end", () => resolve(Buffer.concat(chunks)))
+		doc.on("error", reject)
+	})
 
-			// Filters info
-			if (filters.startDate || filters.endDate || filters.status) {
-				doc.fontSize(10).text("Filtros aplicados:", { underline: true })
-				if (filters.startDate) {
-					doc.text(`Fecha inicio: ${filters.startDate}`)
-				}
-				if (filters.endDate) {
-					doc.text(`Fecha fin: ${filters.endDate}`)
-				}
-				if (filters.status) {
-					doc.text(`Estado: ${filters.status}`)
-				}
-				doc.moveDown()
-			}
+	try {
+		// Cabecera del Reporte
+		doc
+			.fontSize(20)
+			.font("Helvetica-Bold")
+			.text("Reporte de Cirugías", { align: "center" })
+		doc.moveDown()
 
-			// Table header
-			const tableTop = doc.y
-			const rowHeight = 20
-
-			doc.fontSize(10).font("Helvetica-Bold")
-			doc.text("ID", 50, tableTop)
-			doc.text("Paciente", 100, tableTop)
-			doc.text("Médico", 200, tableTop)
-			doc.text("Fecha", 300, tableTop)
-			doc.text("Tipo", 400, tableTop)
-			doc.text("Estado", 480, tableTop)
-			doc.text("Servicio", 550, tableTop)
-			doc.text("Precio USD", 650, tableTop)
-
-			// Table rows
+		// Información de Filtros
+		if (filters.startDate || filters.endDate || filters.status) {
+			doc
+				.fontSize(10)
+				.font("Helvetica-Bold")
+				.text("Filtros aplicados:", { underline: true })
 			doc.font("Helvetica").fontSize(9)
-			let y = tableTop + rowHeight
+			if (filters.startDate) doc.text(`Fecha inicio: ${filters.startDate}`)
+			if (filters.endDate) doc.text(`Fecha fin: ${filters.endDate}`)
+			if (filters.status) doc.text(`Estado: ${filters.status}`)
+			doc.moveDown()
+		}
 
-			data.forEach((row) => {
-				if (y > 750) {
-					doc.addPage()
-					y = 50
-				}
+		// 2. Configuración de la Tabla de Cirugías
+		const tableData = {
+			title: "Detalle de Procedimientos Quirúrgicos",
+			headers: [
+				{ label: "ID", property: "id", width: 40 },
+				{ label: "Paciente", property: "patient", width: 130 },
+				{ label: "Médico", property: "doctor", width: 120 },
+				{ label: "Fecha", property: "date", width: 70 },
+				{ label: "Tipo", property: "type", width: 90 },
+				{ label: "Estado", property: "status", width: 80 },
+				{ label: "Servicio", property: "service", width: 130 },
+				{ label: "Precio USD", property: "price", width: 70 },
+			],
+			datas: data.map((row) => ({
+				id: row.id.toString(),
+				patient: row.patient_name || "N/A",
+				doctor: row.doctor_name || "N/A",
+				date: new Date(row.surgery_date).toLocaleDateString("es-ES"),
+				type: row.surgery_type || "N/A",
+				status: (row.status || "").toUpperCase(),
+				service: row.service_name || "N/A",
+				price: row.price_usd ? `$${Number(row.price_usd).toFixed(2)}` : "$0.00",
+			})),
+		}
 
-				doc.text(row.id.toString(), 50, y)
-				doc.text(row.patient_name || "N/A", 100, y, { width: 100 })
-				doc.text(row.doctor_name || "N/A", 200, y, { width: 100 })
-				doc.text(
-					new Date(row.surgery_date).toLocaleDateString("es-ES"),
-					300,
-					y,
-					{ width: 100 },
-				)
-				doc.text(row.surgery_type || "N/A", 400, y, { width: 80 })
-				doc.text(row.status, 480, y, { width: 80 })
-				doc.text(row.service_name || "N/A", 550, y, { width: 100 })
-				doc.text(
-					row.price_usd
-						? `$${Number(row.price_usd).toFixed(2)}`
-						: "N/A",
-					650,
-					y,
-					{ width: 100 },
-				)
+		// Renderizado asíncrono de la tabla
+		await (doc as any).table(tableData, {
+			prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+			prepareRow: () => doc.font("Helvetica").fontSize(9),
+		})
 
-				y += rowHeight
-			})
+		// 3. Sección de Resumen Financiero
+		doc.moveDown(1.5)
 
-			// Summary
-			doc.moveDown(2)
-			doc.fontSize(12).font("Helvetica-Bold")
-			doc.text(`Total de cirugías: ${data.length}`, { align: "left" })
-			const totalRevenue = data.reduce(
-				(sum, row) => sum + (Number(row.price_usd) || 0),
-				0,
-			)
-			if (totalRevenue > 0) {
-				doc.text(`Ingresos totales: $${totalRevenue.toFixed(2)} USD`, {
+		// Línea divisoria
+		const currentY = doc.y
+		doc.moveTo(30, currentY).lineTo(790, currentY).stroke()
+		doc.moveDown(0.5)
+
+		// Cálculos
+		const totalSurgeries = data.length
+		const totalRevenue = data.reduce(
+			(sum, row) => sum + (Number(row.price_usd) || 0),
+			0,
+		)
+
+		doc.fontSize(12).font("Helvetica-Bold")
+		doc.text(`Total de cirugías: ${totalSurgeries}`, { align: "left" })
+
+		if (totalRevenue > 0) {
+			doc
+				.fillColor("#1a4d80") // Azul oscuro para diferenciarlo de las citas
+				.text(`Ingresos totales: $${totalRevenue.toFixed(2)} USD`, {
 					align: "left",
 				})
-			}
-
-			doc.end()
-		} catch (error) {
-			reject(error)
+				.fillColor("black")
 		}
-	})
+
+		// Finalizar el documento
+		doc.end()
+
+		// Retornar el buffer una vez completado
+		return await bufferPromise
+	} catch (error) {
+		doc.end()
+		throw error
+	}
 }
 
 /**
@@ -332,7 +344,8 @@ export async function generateSurgeriesExcel(
 		worksheet.getCell(`A${filterRow}`).font = { bold: true }
 		filterRow++
 		if (filters.startDate) {
-			worksheet.getCell(`A${filterRow}`).value = `Fecha inicio: ${filters.startDate}`
+			worksheet.getCell(`A${filterRow}`).value =
+				`Fecha inicio: ${filters.startDate}`
 			filterRow++
 		}
 		if (filters.endDate) {
@@ -367,20 +380,20 @@ export async function generateSurgeriesExcel(
 	}
 
 	// Data rows
-		data.forEach((row) => {
-			const dataRow = worksheet.addRow([
-				row.id,
-				row.patient_name || "N/A",
-				row.doctor_name || "N/A",
-				new Date(row.surgery_date).toLocaleDateString("es-ES"),
-				row.surgery_type || "N/A",
-				row.status,
-				row.service_name || "N/A",
-				Number(row.price_usd) || 0,
-				row.notes || "",
-			])
-			dataRow.getCell(8).numFmt = "$#,##0.00" // Format price
-		})
+	data.forEach((row) => {
+		const dataRow = worksheet.addRow([
+			row.id,
+			row.patient_name || "N/A",
+			row.doctor_name || "N/A",
+			new Date(row.surgery_date).toLocaleDateString("es-ES"),
+			row.surgery_type || "N/A",
+			row.status,
+			row.service_name || "N/A",
+			Number(row.price_usd) || 0,
+			row.notes || "",
+		])
+		dataRow.getCell(8).numFmt = "$#,##0.00" // Format price
+	})
 
 	// Auto-fit columns
 	worksheet.columns.forEach((column) => {
@@ -388,16 +401,17 @@ export async function generateSurgeriesExcel(
 	})
 
 	// Summary
-		const summaryRow = worksheet.addRow([])
-		summaryRow.getCell(1).value = `Total de cirugías: ${data.length}`
-		summaryRow.getCell(1).font = { bold: true }
-		const totalRevenue = data.reduce(
-			(sum, row) => sum + (Number(row.price_usd) || 0),
-			0,
-		)
+	const summaryRow = worksheet.addRow([])
+	summaryRow.getCell(1).value = `Total de cirugías: ${data.length}`
+	summaryRow.getCell(1).font = { bold: true }
+	const totalRevenue = data.reduce(
+		(sum, row) => sum + (Number(row.price_usd) || 0),
+		0,
+	)
 	if (totalRevenue > 0) {
 		const revenueRow = worksheet.addRow([])
-		revenueRow.getCell(1).value = `Ingresos totales: $${totalRevenue.toFixed(2)} USD`
+		revenueRow.getCell(1).value =
+			`Ingresos totales: $${totalRevenue.toFixed(2)} USD`
 		revenueRow.getCell(1).font = { bold: true }
 	}
 
@@ -408,62 +422,66 @@ export async function generateSurgeriesExcel(
 /**
  * Generate PDF report for patients
  */
-export function generatePatientsPDF(data: PatientReportData[]): Promise<Buffer> {
-	return new Promise((resolve, reject) => {
-		try {
-			const doc = new PDFDocument({ margin: 50 })
-			const chunks: Buffer[] = []
+export async function generatePatientsPDF(
+	data: PatientReportData[],
+): Promise<Buffer> {
+	const doc = new PDFDocument({ margin: 30, size: "A4" })
+	const chunks: Buffer[] = []
 
-			doc.on("data", (chunk) => chunks.push(chunk))
-			doc.on("end", () => resolve(Buffer.concat(chunks)))
-			doc.on("error", reject)
-
-			// Header
-			doc.fontSize(20).text("Reporte de Pacientes", { align: "center" })
-			doc.moveDown()
-
-			// Table header
-			const tableTop = doc.y
-			const rowHeight = 20
-
-			doc.fontSize(10).font("Helvetica-Bold")
-			doc.text("Cédula", 50, tableTop)
-			doc.text("Nombre", 150, tableTop)
-			doc.text("Email", 280, tableTop)
-			doc.text("Teléfono", 400, tableTop)
-			doc.text("Citas", 500, tableTop)
-			doc.text("Cirugías", 550, tableTop)
-
-			// Table rows
-			doc.font("Helvetica").fontSize(9)
-			let y = tableTop + rowHeight
-
-			data.forEach((row) => {
-				if (y > 750) {
-					doc.addPage()
-					y = 50
-				}
-
-				doc.text(row.document_id, 50, y)
-				doc.text(`${row.first_name} ${row.last_name}`, 150, y, { width: 130 })
-				doc.text(row.email || "N/A", 280, y, { width: 120 })
-				doc.text(row.phone || "N/A", 400, y, { width: 100 })
-				doc.text(row.total_appointments.toString(), 500, y)
-				doc.text(row.total_surgeries.toString(), 550, y)
-
-				y += rowHeight
-			})
-
-			// Summary
-			doc.moveDown(2)
-			doc.fontSize(12).font("Helvetica-Bold")
-			doc.text(`Total de pacientes: ${data.length}`, { align: "left" })
-
-			doc.end()
-		} catch (error) {
-			reject(error)
-		}
+	const bufferPromise = new Promise<Buffer>((resolve, reject) => {
+		doc.on("data", (chunk) => chunks.push(chunk))
+		doc.on("end", () => resolve(Buffer.concat(chunks)))
+		doc.on("error", reject)
 	})
+
+	try {
+		// Encabezado
+		doc
+			.fontSize(20)
+			.font("Helvetica-Bold")
+			.text("Reporte de Pacientes", { align: "center" })
+		doc.moveDown()
+
+		// Configuración de la Tabla
+		const tableData = {
+			title: "Listado Maestro de Pacientes",
+			headers: [
+				{ label: "Cédula", property: "document_id", width: 80 },
+				{ label: "Nombre Completo", property: "name", width: 150 },
+				{ label: "Email", property: "email", width: 130 },
+				{ label: "Teléfono", property: "phone", width: 90 },
+				{ label: "Citas", property: "appointments", width: 45 },
+				{ label: "Cirugías", property: "surgeries", width: 45 },
+			],
+			datas: data.map((row) => ({
+				document_id: row.document_id,
+				name: `${row.first_name} ${row.last_name}`,
+				email: row.email || "N/A",
+				phone: row.phone || "N/A",
+				appointments: row.total_appointments.toString(),
+				surgeries: row.total_surgeries.toString(),
+			})),
+		}
+
+		// Renderizado de tabla
+		await (doc as PDFDocument).table(tableData, {
+			prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+			prepareRow: () => doc.font("Helvetica").fontSize(9),
+		})
+
+		// Resumen Final
+		doc.moveDown()
+		doc
+			.fontSize(12)
+			.font("Helvetica-Bold")
+			.text(`Total de pacientes registrados: ${data.length}`)
+
+		doc.end()
+		return await bufferPromise
+	} catch (error) {
+		doc.end()
+		throw error
+	}
 }
 
 /**
@@ -529,99 +547,110 @@ export async function generatePatientsExcel(
 /**
  * Generate PDF report for financial data
  */
-export function generateFinancialPDF(
+export async function generateFinancialPDF(
 	data: FinancialReportData[],
 	filters: { startDate?: string; endDate?: string; status?: string },
 ): Promise<Buffer> {
-	return new Promise((resolve, reject) => {
-		try {
-			const doc = new PDFDocument({ margin: 50 })
-			const chunks: Buffer[] = []
-
-			doc.on("data", (chunk) => chunks.push(chunk))
-			doc.on("end", () => resolve(Buffer.concat(chunks)))
-			doc.on("error", reject)
-
-			// Header
-			doc.fontSize(20).text("Reporte Financiero", { align: "center" })
-			doc.moveDown()
-
-			// Filters info
-			if (filters.startDate || filters.endDate || filters.status) {
-				doc.fontSize(10).text("Filtros aplicados:", { underline: true })
-				if (filters.startDate) {
-					doc.text(`Fecha inicio: ${filters.startDate}`)
-				}
-				if (filters.endDate) {
-					doc.text(`Fecha fin: ${filters.endDate}`)
-				}
-				if (filters.status) {
-					doc.text(`Estado: ${filters.status}`)
-				}
-				doc.moveDown()
-			}
-
-			// Table header
-			const tableTop = doc.y
-			const rowHeight = 20
-
-			doc.fontSize(10).font("Helvetica-Bold")
-			doc.text("Fecha", 50, tableTop)
-			doc.text("Tipo", 120, tableTop)
-			doc.text("Paciente", 180, tableTop)
-			doc.text("Servicio", 320, tableTop)
-			doc.text("Precio USD", 450, tableTop)
-			doc.text("Estado", 550, tableTop)
-
-			// Table rows
-			doc.font("Helvetica").fontSize(9)
-			let y = tableTop + rowHeight
-
-			data.forEach((row) => {
-				if (y > 750) {
-					doc.addPage()
-					y = 50
-				}
-
-				doc.text(
-					new Date(row.date).toLocaleDateString("es-ES"),
-					50,
-					y,
-					{ width: 70 },
-				)
-				doc.text(row.type === "appointment" ? "Cita" : "Cirugía", 120, y, {
-					width: 60,
-				})
-				doc.text(row.patient_name || "N/A", 180, y, { width: 140 })
-				doc.text(row.service_name || "N/A", 320, y, { width: 130 })
-				doc.text(
-					`$${Number(row.price_usd).toFixed(2)}`,
-					450,
-					y,
-					{ width: 100 },
-				)
-				doc.text(row.status, 550, y, { width: 80 })
-
-				y += rowHeight
-			})
-
-			// Summary
-			doc.moveDown(2)
-			doc.fontSize(12).font("Helvetica-Bold")
-			doc.text(`Total de registros: ${data.length}`, { align: "left" })
-			const totalRevenue = data.reduce(
-				(sum, row) => sum + Number(row.price_usd),
-				0,
-			)
-			doc.text(`Ingresos totales: $${totalRevenue.toFixed(2)} USD`, {
-				align: "left",
-			})
-
-			doc.end()
-		} catch (error) {
-			reject(error)
-		}
+	// Usamos Landscape para reportes financieros para mayor claridad en las cifras
+	const doc = new PDFDocument({
+		margin: 30,
+		size: "A4",
+		layout: "landscape",
 	})
+
+	const chunks: Buffer[] = []
+	const bufferPromise = new Promise<Buffer>((resolve, reject) => {
+		doc.on("data", (chunk) => chunks.push(chunk))
+		doc.on("end", () => resolve(Buffer.concat(chunks)))
+		doc.on("error", reject)
+	})
+
+	try {
+		// Cabecera Principal
+		doc
+			.fontSize(22)
+			.font("Helvetica-Bold")
+			.text("Reporte Financiero de Ingresos", { align: "center" })
+		doc
+			.fontSize(10)
+			.font("Helvetica")
+			.text("Consolidado de Citas y Cirugías", { align: "center" })
+		doc.moveDown()
+
+		// Bloque de Filtros
+		if (filters.startDate || filters.endDate || filters.status) {
+			doc
+				.fontSize(10)
+				.font("Helvetica-Bold")
+				.text("Parámetros del reporte:", { underline: true })
+			doc.font("Helvetica").fontSize(9)
+			if (filters.startDate) doc.text(`Desde: ${filters.startDate}`)
+			if (filters.endDate) doc.text(`Hasta: ${filters.endDate}`)
+			if (filters.status)
+				doc.text(`Estado de pago: ${filters.status.toUpperCase()}`)
+			doc.moveDown()
+		}
+
+		// Definición de la Tabla Financiera
+		const tableData = {
+			title: "Desglose de Transacciones",
+			headers: [
+				{ label: "Fecha", property: "date", width: 80 },
+				{ label: "Tipo", property: "type", width: 80 },
+				{ label: "Paciente", property: "patient", width: 180 },
+				{ label: "Servicio/Procedimiento", property: "service", width: 230 },
+				{ label: "Estado", property: "status", width: 80 },
+				{ label: "Monto USD", property: "price", width: 90 },
+			],
+			datas: data.map((row) => ({
+				date: new Date(row.date).toLocaleDateString("es-ES"),
+				type: row.type === "appointment" ? "CITA" : "CIRUGÍA",
+				patient: row.patient_name || "N/A",
+				service: row.service_name || "N/A",
+				status: (row.status || "N/A").toUpperCase(),
+				price: `$ ${Number(row.price_usd).toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+			})),
+		}
+
+		// Renderizado automático
+		await (doc as PDFDocument).table(tableData, {
+			prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+			prepareRow: () => doc.font("Helvetica").fontSize(9),
+		})
+
+		// Sección de Totales
+		doc.moveDown(1.5)
+		const totalRevenue = data.reduce(
+			(sum, row) => sum + Number(row.price_usd),
+			0,
+		)
+
+		// Dibujar un recuadro de resumen
+		const summaryY = doc.y
+		doc
+			.rect(30, summaryY, 250, 60)
+			.strokeColor("#eeeeee")
+			.fillAndStroke("#f9f9f9", "#cccccc")
+
+		doc.fillColor("#000000").font("Helvetica-Bold").fontSize(11)
+		doc.text("RESUMEN GENERAL", 40, summaryY + 10)
+
+		doc.fontSize(10).font("Helvetica")
+		doc.text(`Total de registros: ${data.length}`, 40, summaryY + 25)
+
+		doc.fontSize(12).font("Helvetica-Bold").fillColor("#2e7d32") // Color verde éxito
+		doc.text(
+			`TOTAL NETO: $${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })} USD`,
+			40,
+			summaryY + 40,
+		)
+
+		doc.end()
+		return await bufferPromise
+	} catch (error) {
+		doc.end()
+		throw error
+	}
 }
 
 /**
@@ -647,7 +676,8 @@ export async function generateFinancialExcel(
 		worksheet.getCell(`A${filterRow}`).font = { bold: true }
 		filterRow++
 		if (filters.startDate) {
-			worksheet.getCell(`A${filterRow}`).value = `Fecha inicio: ${filters.startDate}`
+			worksheet.getCell(`A${filterRow}`).value =
+				`Fecha inicio: ${filters.startDate}`
 			filterRow++
 		}
 		if (filters.endDate) {
@@ -679,17 +709,17 @@ export async function generateFinancialExcel(
 	}
 
 	// Data rows
-		data.forEach((row) => {
-			const dataRow = worksheet.addRow([
-				new Date(row.date).toLocaleDateString("es-ES"),
-				row.type === "appointment" ? "Cita" : "Cirugía",
-				row.patient_name || "N/A",
-				row.service_name || "N/A",
-				Number(row.price_usd),
-				row.status,
-			])
-			dataRow.getCell(5).numFmt = "$#,##0.00" // Format price
-		})
+	data.forEach((row) => {
+		const dataRow = worksheet.addRow([
+			new Date(row.date).toLocaleDateString("es-ES"),
+			row.type === "appointment" ? "Cita" : "Cirugía",
+			row.patient_name || "N/A",
+			row.service_name || "N/A",
+			Number(row.price_usd),
+			row.status,
+		])
+		dataRow.getCell(5).numFmt = "$#,##0.00" // Format price
+	})
 
 	// Auto-fit columns
 	worksheet.columns.forEach((column) => {
@@ -697,15 +727,13 @@ export async function generateFinancialExcel(
 	})
 
 	// Summary
-		const summaryRow = worksheet.addRow([])
-		summaryRow.getCell(1).value = `Total de registros: ${data.length}`
-		summaryRow.getCell(1).font = { bold: true }
-		const totalRevenue = data.reduce(
-			(sum, row) => sum + Number(row.price_usd),
-			0,
-		)
+	const summaryRow = worksheet.addRow([])
+	summaryRow.getCell(1).value = `Total de registros: ${data.length}`
+	summaryRow.getCell(1).font = { bold: true }
+	const totalRevenue = data.reduce((sum, row) => sum + Number(row.price_usd), 0)
 	const revenueRow = worksheet.addRow([])
-	revenueRow.getCell(1).value = `Ingresos totales: $${totalRevenue.toFixed(2)} USD`
+	revenueRow.getCell(1).value =
+		`Ingresos totales: $${totalRevenue.toFixed(2)} USD`
 	revenueRow.getCell(1).font = { bold: true }
 
 	const buffer = await workbook.xlsx.writeBuffer()
