@@ -1,12 +1,17 @@
 import { useState } from "react"
-import { FaFilePdf, FaFileExcel, FaDownload, FaCalendarAlt } from "react-icons/fa"
+import {
+	FaCalendarAlt,
+	FaDownload,
+	FaFileExcel,
+	FaFilePdf,
+} from "react-icons/fa"
 import { toast } from "react-toastify"
 import {
+	downloadBlob,
 	generateAppointmentsReport,
 	generateFinancialReport,
 	generatePatientsReport,
 	generateSurgeriesReport,
-	downloadBlob,
 	type ReportFilters,
 } from "../services/ReportsAPI"
 
@@ -14,7 +19,8 @@ type ReportType = "appointments" | "surgeries" | "patients" | "financial"
 type ReportFormat = "pdf" | "excel"
 
 const ReportsSection = () => {
-	const [selectedReport, setSelectedReport] = useState<ReportType>("appointments")
+	const [selectedReport, setSelectedReport] =
+		useState<ReportType>("appointments")
 	const [format, setFormat] = useState<ReportFormat>("pdf")
 	const [loading, setLoading] = useState(false)
 	const [filters, setFilters] = useState<ReportFilters>({
@@ -55,9 +61,7 @@ const ReportsSection = () => {
 		} catch (error) {
 			console.error("Error generating report:", error)
 			toast.error(
-				error instanceof Error
-					? error.message
-					: "Error al generar el reporte",
+				error instanceof Error ? error.message : "Error al generar el reporte",
 			)
 		} finally {
 			setLoading(false)
@@ -105,9 +109,9 @@ const ReportsSection = () => {
 			<div className="bg-white rounded-2xl shadow-lg p-6">
 				{/* Report Type Selection */}
 				<div className="mb-6">
-					<label className="block text-sm font-medium text-gray-700 mb-3">
+					<h3 className="block text-sm font-medium text-gray-700 mb-3">
 						Tipo de Reporte
-					</label>
+					</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{reportOptions.map((option) => (
 							<button
@@ -131,9 +135,9 @@ const ReportsSection = () => {
 
 				{/* Format Selection */}
 				<div className="mb-6">
-					<label className="block text-sm font-medium text-gray-700 mb-3">
+					<h3 className="block text-sm font-medium text-gray-700 mb-3">
 						Formato
-					</label>
+					</h3>
 					<div className="flex gap-4">
 						<button
 							type="button"
@@ -172,10 +176,14 @@ const ReportsSection = () => {
 							{showDateFilters && (
 								<>
 									<div>
-										<label className="block text-xs font-medium text-gray-600 mb-1">
+										<label
+											htmlFor="start_date"
+											className="block text-xs font-medium text-gray-600 mb-1"
+										>
 											Fecha Inicio
 										</label>
 										<input
+											id="start_date"
 											type="date"
 											value={filters.startDate}
 											onChange={(e) =>
@@ -185,10 +193,14 @@ const ReportsSection = () => {
 										/>
 									</div>
 									<div>
-										<label className="block text-xs font-medium text-gray-600 mb-1">
+										<label
+											htmlFor="end_date"
+											className="block text-xs font-medium text-gray-600 mb-1"
+										>
 											Fecha Fin
 										</label>
 										<input
+											id="end_date"
 											type="date"
 											value={filters.endDate}
 											onChange={(e) =>
@@ -201,10 +213,14 @@ const ReportsSection = () => {
 							)}
 							{showStatusFilter && (
 								<div>
-									<label className="block text-xs font-medium text-gray-600 mb-1">
+									<label
+										htmlFor="status"
+										className="block text-xs font-medium text-gray-600 mb-1"
+									>
 										Estado
 									</label>
 									<select
+										id="status"
 										value={filters.status}
 										onChange={(e) =>
 											setFilters({ ...filters, status: e.target.value })
