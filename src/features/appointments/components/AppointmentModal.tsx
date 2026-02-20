@@ -1,25 +1,31 @@
-import type React from "react"
-import { useCallback, useEffect, useState } from "react"
-import { FaCalendar, FaClock, FaSave, FaTimes, FaUser, FaUserMd } from "react-icons/fa"
-import { DatePicker, TimePicker, Select } from "antd"
+import { DatePicker, Select, TimePicker } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import { FaSave, FaTimes, FaUser, FaUserMd } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
+import { api } from "../../../config/axios"
+import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
+import { formatPrice } from "../../../shared"
 import { useAuth } from "../../auth"
+import {
+	type CurrencyRates,
+	getCurrencyRates,
+} from "../../currency/services/CurrencyAPI"
+import { getPatients } from "../../patients"
+import type { DoctorServiceWithType } from "../../services"
+import { getDoctorServices } from "../../services"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
 import {
 	createAppointment,
 	updateAppointmentById,
 } from "../services/AppointmentsAPI"
-import { getPatients } from "../../patients"
-import { getDoctorServices } from "../../services"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
-import { api } from "../../../config/axios"
-import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
-import type { DoctorServiceWithType } from "../../services"
-import { formatPrice } from "../../../shared"
 import { getAvailableTimeSlots } from "../services/DoctorAvailabilityAPI"
 
 dayjs.extend(customParseFormat)
@@ -51,8 +57,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const [loadingData, setLoadingData] = useState(false)
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<any>(null)
-	const [selectedService, setSelectedService] = useState<DoctorServiceWithType | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
+	const [selectedService, setSelectedService] =
+		useState<DoctorServiceWithType | null>(null)
 	const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
 	const [loadingTimeSlots, setLoadingTimeSlots] = useState(false)
 
@@ -90,29 +97,32 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	}, [])
 
 	// Cargar slots disponibles cuando cambia el doctor_id o la fecha
-	const loadAvailableTimeSlots = useCallback(async (doctorId: string, date: string) => {
-		if (!doctorId || !date) {
-			setAvailableTimeSlots([])
-			return
-		}
-		setLoadingTimeSlots(true)
-		try {
-			const data = await getAvailableTimeSlots(doctorId, date)
-			setAvailableTimeSlots(data.availableSlots || [])
-		} catch (error) {
-			console.error("Error loading available time slots:", error)
-			setAvailableTimeSlots([])
-			// Si no hay slots disponibles configurados, permitir cualquier hora (backward compatibility)
-		} finally {
-			setLoadingTimeSlots(false)
-		}
-	}, [])
+	const loadAvailableTimeSlots = useCallback(
+		async (doctorId: string, date: string) => {
+			if (!doctorId || !date) {
+				setAvailableTimeSlots([])
+				return
+			}
+			setLoadingTimeSlots(true)
+			try {
+				const data = await getAvailableTimeSlots(doctorId, date)
+				setAvailableTimeSlots(data.availableSlots || [])
+			} catch (error) {
+				console.error("Error loading available time slots:", error)
+				setAvailableTimeSlots([])
+				// Si no hay slots disponibles configurados, permitir cualquier hora (backward compatibility)
+			} finally {
+				setLoadingTimeSlots(false)
+			}
+		},
+		[],
+	)
 
 	// Cargar pacientes y doctores
 	const loadPatientsAndDoctors = useCallback(async () => {
 		setLoadingData(true)
 		const isDoctorUser = user?.role === "Médico"
-		
+
 		try {
 			// Cargar pacientes solo si el usuario es médico
 			if (isDoctorUser) {
@@ -121,21 +131,23 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 					if (patientsData?.patients) {
 						// No necesitamos convertir birthdate a Date para el modal de citas
 						// Solo necesitamos los datos básicos para mostrar en el select
-						const formattedPatients = patientsData.patients.map((p: Patient) => {
-							let birthdate: Date
-							if (p.birthdate instanceof Date) {
-								birthdate = p.birthdate
-							} else if (p.birthdate) {
-								const date = new Date(p.birthdate)
-								birthdate = Number.isNaN(date.getTime()) ? new Date() : date
-							} else {
-								birthdate = new Date()
-							}
-							return {
-								...p,
-								birthdate,
-							}
-						})
+						const formattedPatients = patientsData.patients.map(
+							(p: Patient) => {
+								let birthdate: Date
+								if (p.birthdate instanceof Date) {
+									birthdate = p.birthdate
+								} else if (p.birthdate) {
+									const date = new Date(p.birthdate)
+									birthdate = Number.isNaN(date.getTime()) ? new Date() : date
+								} else {
+									birthdate = new Date()
+								}
+								return {
+									...p,
+									birthdate,
+								}
+							},
+						)
 						setPatients(formattedPatients)
 					} else {
 						setPatients([])
@@ -211,11 +223,20 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 					...initialValues,
 					doctor_id: user.document_id,
 				})
+				loadServices(user.document_id)
 			} else {
 				setFormData(initialValues)
 			}
 		}
-	}, [editingAppointment, user])
+	}, [editingAppointment, user, loadServices])
+
+	// Añadir este useEffect para manejar cambios globales de ID de doctor y Fecha
+	useEffect(() => {
+		const datePart = formData.appointment_date.split("T")[0]
+		if (formData.doctor_id && datePart) {
+			loadAvailableTimeSlots(formData.doctor_id, datePart)
+		}
+	}, [formData.doctor_id, formData.appointment_date, loadAvailableTimeSlots])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -331,26 +352,31 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									required={!isDoctor}
 									disabled={loadingData}
 									className={inputClass}
-							onChange={(e) => {
-								const doctorId = e.target.value
-								const currentDate = formData.appointment_date.split("T")[0] || ""
-								setFormData({ ...formData, doctor_id: doctorId, service_id: null })
-								loadServices(doctorId)
-								setSelectedService(null)
-								// Cargar slots disponibles si hay fecha seleccionada
-								if (currentDate) {
-									loadAvailableTimeSlots(doctorId, currentDate)
-								}
-							}}
-							>
-								<option value="">Seleccionar médico...</option>
-								{doctors.map((doctor) => (
-									<option key={doctor.document_id} value={doctor.document_id}>
-										{doctor.name} - {doctor.document_id}
-									</option>
-								))}
-							</select>
-						</div>
+									onChange={(e) => {
+										const doctorId = e.target.value
+										const currentDate =
+											formData.appointment_date.split("T")[0] || ""
+										setFormData({
+											...formData,
+											doctor_id: doctorId,
+											service_id: null,
+										})
+										loadServices(doctorId)
+										setSelectedService(null)
+										// Cargar slots disponibles si hay fecha seleccionada
+										if (currentDate) {
+											loadAvailableTimeSlots(doctorId, currentDate)
+										}
+									}}
+								>
+									<option value="">Seleccionar médico...</option>
+									{doctors.map((doctor) => (
+										<option key={doctor.document_id} value={doctor.document_id}>
+											{doctor.name} - {doctor.document_id}
+										</option>
+									))}
+								</select>
+							</div>
 						)}
 
 						{/* Servicio - Solo visible si hay doctor seleccionado */}
@@ -367,7 +393,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									value={formData.service_id?.toString() || ""}
 									className={inputClass}
 									onChange={(e) => {
-										const serviceId = e.target.value ? parseInt(e.target.value, 10) : null
+										const serviceId = e.target.value
+											? parseInt(e.target.value, 10)
+											: null
 										const service = services.find((s) => s.id === serviceId)
 										setFormData({ ...formData, service_id: serviceId })
 										setSelectedService(service || null)
@@ -376,7 +404,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									<option value="">Seleccionar servicio...</option>
 									{services.map((service) => (
 										<option key={service.id} value={service.id}>
-											{service.service_type.name} - ${formatPrice(service.price_usd)} USD
+											{service.service_type.name} - $
+											{formatPrice(service.price_usd)} USD
 										</option>
 									))}
 								</select>
@@ -389,7 +418,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 													${formatPrice(selectedService.price_usd)}
 												</span>
 											</div>
-											{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+											{(settings?.custom_exchange_rate ||
+												currencyRates?.oficial?.promedio) && (
 												<div className="flex justify-between">
 													<span className="text-gray-600">Precio BS:</span>
 													<span className="font-semibold text-green-600">
@@ -411,7 +441,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 						{/* Fecha */}
 						<div>
-							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
+							<label
+								htmlFor="date"
+								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+							>
 								Fecha *
 							</label>
 							<DatePicker
@@ -423,7 +456,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								onChange={(date: Dayjs | null) => {
 									if (date) {
 										const dateStr = date.format("YYYY-MM-DD")
-										const currentTime = formData.appointment_date.split("T")[1] || "09:00"
+										const currentTime =
+											formData.appointment_date.split("T")[1] || "09:00"
 										setFormData({
 											...formData,
 											appointment_date: `${dateStr}T${currentTime}`,
@@ -437,17 +471,25 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								format="DD/MM/YYYY"
 								className="w-full"
 								placeholder="Seleccionar fecha"
-								disabledDate={(current) => current && current < dayjs().startOf("day")}
+								disabledDate={(current) =>
+									current && current < dayjs().startOf("day")
+								}
 							/>
 						</div>
 
 						{/* Hora */}
 						<div>
-							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
+							<label
+								htmlFor="time"
+								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+							>
 								Hora *
 							</label>
-							{formData.doctor_id && formData.appointment_date.split("T")[0] && availableTimeSlots.length > 0 ? (
+							{formData.doctor_id &&
+							formData.appointment_date.split("T")[0] &&
+							availableTimeSlots.length > 0 ? (
 								<Select
+									id="time"
 									value={formData.appointment_date.split("T")[1] || undefined}
 									onChange={(time) => {
 										const date = formData.appointment_date.split("T")[0] || ""
@@ -457,7 +499,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 										})
 									}}
 									className="w-full"
-									placeholder={loadingTimeSlots ? "Cargando..." : "Seleccionar hora disponible"}
+									placeholder={
+										loadingTimeSlots
+											? "Cargando..."
+											: "Seleccionar hora disponible"
+									}
 									loading={loadingTimeSlots}
 									options={availableTimeSlots.map((slot) => ({
 										value: slot,
@@ -485,11 +531,15 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									minuteStep={30}
 								/>
 							)}
-							{formData.doctor_id && formData.appointment_date.split("T")[0] && availableTimeSlots.length === 0 && !loadingTimeSlots && (
-								<p className="text-xs text-gray-500 mt-1">
-									No hay horarios disponibles configurados para este día. Puede seleccionar cualquier hora.
-								</p>
-							)}
+							{formData.doctor_id &&
+								formData.appointment_date.split("T")[0] &&
+								availableTimeSlots.length === 0 &&
+								!loadingTimeSlots && (
+									<p className="text-xs text-gray-500 mt-1">
+										No hay horarios disponibles configurados para este día.
+										Puede seleccionar cualquier hora.
+									</p>
+								)}
 						</div>
 
 						{/* Estado - Solo editable por médicos */}
