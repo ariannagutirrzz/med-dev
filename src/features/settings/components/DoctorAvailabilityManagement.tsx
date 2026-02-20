@@ -1,21 +1,21 @@
-import { useCallback, useEffect, useState } from "react"
-import { FaPlus, FaEdit, FaTrash, FaClock, FaCalendarAlt } from "react-icons/fa"
-import { TimePicker, Select } from "antd"
+import { Select, TimePicker } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import { useCallback, useEffect, useState } from "react"
+import { FaCalendarAlt, FaClock, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
-import { useAuth } from "../../auth"
+import { ConfirmModal } from "../../../shared"
 import {
 	createDoctorAvailability,
+	type DoctorAvailability,
+	type DoctorAvailabilityFormData,
 	deleteDoctorAvailability,
 	getDoctorAvailability,
 	updateDoctorAvailability,
-	type DoctorAvailability,
-	type DoctorAvailabilityFormData,
 } from "../../appointments/services/DoctorAvailabilityAPI"
-import { ConfirmModal } from "../../../shared"
+import { useAuth } from "../../auth"
 
 dayjs.extend(customParseFormat)
 dayjs.locale("es")
@@ -35,7 +35,9 @@ const DoctorAvailabilityManagement: React.FC = () => {
 	const [availability, setAvailability] = useState<DoctorAvailability[]>([])
 	const [loading, setLoading] = useState(true)
 	const [showModal, setShowModal] = useState(false)
-	const [editingSlot, setEditingSlot] = useState<DoctorAvailability | null>(null)
+	const [editingSlot, setEditingSlot] = useState<DoctorAvailability | null>(
+		null,
+	)
 	const [deleteConfirm, setDeleteConfirm] = useState<{
 		isOpen: boolean
 		slot: DoctorAvailability | null
@@ -66,8 +68,17 @@ const DoctorAvailabilityManagement: React.FC = () => {
 		loadAvailability()
 	}, [loadAvailability])
 
-	const handleOpenModal = (slot?: DoctorAvailability | { day_of_week: number; start_time: string; end_time: string; is_active: boolean }) => {
-		if (slot && 'id' in slot) {
+	const handleOpenModal = (
+		slot?:
+			| DoctorAvailability
+			| {
+					day_of_week: number
+					start_time: string
+					end_time: string
+					is_active: boolean
+			  },
+	) => {
+		if (slot && "id" in slot) {
 			// Editing existing slot
 			setEditingSlot(slot)
 			setFormData({
@@ -169,9 +180,9 @@ const DoctorAvailabilityManagement: React.FC = () => {
 						Gestión de Disponibilidad
 					</h3>
 					<p className="text-sm text-gray-600 mt-1">
-						Configura tus horarios de atención para cada día de la semana. Puedes
-						establecer diferentes horarios para cada día. Los pacientes solo podrán
-						agendar citas en estos horarios.
+						Configura tus horarios de atención para cada día de la semana.
+						Puedes establecer diferentes horarios para cada día. Los pacientes
+						solo podrán agendar citas en estos horarios.
 					</p>
 				</div>
 			</div>
@@ -239,24 +250,24 @@ const DoctorAvailabilityManagement: React.FC = () => {
 													)}
 												</div>
 												<div className="flex items-center gap-1 shrink-0">
-												<button
-													type="button"
-													onClick={() => handleOpenModal(slot)}
-													className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
-													title="Editar"
-												>
-													<FaEdit className="text-xs" />
-												</button>
-												<button
-													type="button"
-													onClick={() =>
-														setDeleteConfirm({ isOpen: true, slot })
-													}
-													className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-													title="Eliminar"
-												>
-													<FaTrash className="text-xs" />
-												</button>
+													<button
+														type="button"
+														onClick={() => handleOpenModal(slot)}
+														className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+														title="Editar"
+													>
+														<FaEdit className="text-xs" />
+													</button>
+													<button
+														type="button"
+														onClick={() =>
+															setDeleteConfirm({ isOpen: true, slot })
+														}
+														className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+														title="Eliminar"
+													>
+														<FaTrash className="text-xs" />
+													</button>
 												</div>
 											</div>
 										))}
@@ -280,7 +291,10 @@ const DoctorAvailabilityManagement: React.FC = () => {
 
 						<form onSubmit={handleSubmit} className="p-6 space-y-4">
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label
+									htmlFor="day_of_week"
+									className="block text-sm font-medium text-gray-700 mb-2"
+								>
 									Día de la Semana
 								</label>
 								<Select
@@ -302,11 +316,18 @@ const DoctorAvailabilityManagement: React.FC = () => {
 
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
+									<label
+										htmlFor="start_time"
+										className="block text-sm font-medium text-gray-700 mb-2"
+									>
 										Hora de Inicio
 									</label>
 									<TimePicker
-										value={formData.start_time ? dayjs(formData.start_time, "HH:mm") : null}
+										value={
+											formData.start_time
+												? dayjs(formData.start_time, "HH:mm")
+												: null
+										}
 										onChange={(time: Dayjs | null) =>
 											setFormData({
 												...formData,
@@ -320,11 +341,18 @@ const DoctorAvailabilityManagement: React.FC = () => {
 									/>
 								</div>
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
+									<label
+										htmlFor="end_time"
+										className="block text-sm font-medium text-gray-700 mb-2"
+									>
 										Hora de Fin
 									</label>
 									<TimePicker
-										value={formData.end_time ? dayjs(formData.end_time, "HH:mm") : null}
+										value={
+											formData.end_time
+												? dayjs(formData.end_time, "HH:mm")
+												: null
+										}
 										onChange={(time: Dayjs | null) =>
 											setFormData({
 												...formData,
@@ -388,8 +416,8 @@ const DoctorAvailabilityManagement: React.FC = () => {
 				title="¿Eliminar horario?"
 				message={
 					<p>
-						¿Estás seguro de que deseas eliminar este horario? Los pacientes
-						no podrán agendar citas en este horario después de eliminarlo.
+						¿Estás seguro de que deseas eliminar este horario? Los pacientes no
+						podrán agendar citas en este horario después de eliminarlo.
 					</p>
 				}
 				confirmText="Sí, eliminar"
