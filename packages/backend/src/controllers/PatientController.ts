@@ -167,6 +167,7 @@ export const updatePatient = async (req: Request, res: Response) => {
 		"birthdate",
 		"gender",
 		"address",
+		"blood_type",
 	]
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
