@@ -1,5 +1,5 @@
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
 	FaCalendarAlt,
 	FaClipboardList,
@@ -176,8 +176,8 @@ const ClinicalEvolutionDetailModal = ({
 										<option value={formData.doctor_id}>
 											Médico Actual (ID: {formData.doctor_id})
 										</option>
-										<option value="1">Dr. Juan Pérez</option>
-										<option value="2">Dra. María López</option>
+										<option value="cedula1">Dr. Carlos Mendoza</option>
+										<option value="7695182">Dra. Ninive Azuaje</option>
 									</select>
 								</div>
 							</div>

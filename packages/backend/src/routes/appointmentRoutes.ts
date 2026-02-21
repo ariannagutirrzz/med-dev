@@ -4,6 +4,7 @@ import {
 	deleteAppointment,
 	getAllAppointments,
 	getAppointmentById,
+	getFilteredAppointments,
 	updateAppointment,
 } from "../controllers/AppointmentController"
 import { authenticate } from "../middleware/auth"
@@ -83,6 +84,7 @@ const appointmentRoutes: Router = Router()
 appointmentRoutes.use(authenticate)
 
 appointmentRoutes.post("/", createAppointment)
+appointmentRoutes.get("/filtered", getFilteredAppointments)
 appointmentRoutes.get("/", getAllAppointments)
 appointmentRoutes.get("/:id", getAppointmentById)
 appointmentRoutes.patch("/:id", updateAppointment)

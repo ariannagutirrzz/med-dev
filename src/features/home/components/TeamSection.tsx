@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getDoctors } from "../services/UsersAPI"
+import { getDoctors } from "../../patients/services/UsersAPI"
 import TeamCard from "./TeamCard"
 
 interface Medico {

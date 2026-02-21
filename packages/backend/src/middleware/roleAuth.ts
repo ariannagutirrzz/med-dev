@@ -10,7 +10,7 @@ export const isMedic = (req: Request, res: Response, next: NextFunction) => {
 	}
 
 	// 2. Strict check for the "Medicos" role
-	if (user.role === "Médico") {
+	if (user.role === "Médico" || user.role === "Admin") {
 		next() // User has the role, proceed to the controller
 	} else {
 		res.status(403).json({

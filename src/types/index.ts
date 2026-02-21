@@ -18,6 +18,11 @@ export type Patient = {
 	address: string
 	document_id: string
 }
+export type Doctor = {
+	document_id: string
+	name: string
+	role: string
+}
 
 // PatientFormData hereda todo de Patient EXCEPTO birthdate, que lo definimos como string
 export type PatientFormData = Omit<Patient, "birthdate"> & {
@@ -96,4 +101,9 @@ export type SurgeryFormData = {
 	surgery_type: string
 	status?: string
 	notes?: string | null
+}
+
+export type ExtendedSurgeryFormData = SurgeryFormData & {
+	doctor_id: string
+	service_id: number | null
 }
