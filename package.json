@@ -23,6 +23,7 @@
 	},
 	"dependencies": {
 		"@openrouter/ai-sdk-provider": "^2.1.1",
+		"@supabase/supabase-js": "^2.97.0",
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/pdfkit": "^0.17.5",
@@ -35,6 +36,7 @@
 		"exceljs": "^4.4.0",
 		"jsonwebtoken": "^9.0.3",
 		"jwt-decode": "^4.0.0",
+		"multer": "^2.0.2",
 		"pdfkit": "^0.17.2",
 		"pdfkit-table": "^0.1.99",
 		"react": "^19.2.0",
@@ -44,15 +46,18 @@
 		"react-toastify": "^11.0.5",
 		"swagger-jsdoc": "^6.2.8",
 		"swagger-ui-express": "^5.0.1",
-		"tailwindcss": "^4.1.17"
+		"tailwindcss": "^4.1.17",
+		"uuid": "^13.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.5",
 		"@eslint/js": "^9.39.1",
 		"@tailwindcss/postcss": "^4.1.17",
+		"@types/multer": "^2.0.0",
 		"@types/node": "^24.10.0",
 		"@types/react": "^19.2.2",
 		"@types/react-dom": "^19.2.2",
+		"@types/uuid": "^11.0.0",
 		"@vitejs/plugin-react-swc": "^4.2.1",
 		"autoprefixer": "^10.4.14",
 		"concurrently": "^9.1.2",

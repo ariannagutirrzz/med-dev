@@ -1,5 +1,5 @@
 import type React from "react"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import {
 	FaCalendarAlt,
 	FaClipboardList,
@@ -21,8 +21,8 @@ interface ClinicalEvolutionDetailModalProps {
 	isOpen: boolean
 	onClose: () => void
 	record: MedicalHistory | MedicalHistoryFormData | null
-	onSave: (data: MedicalHistory | MedicalHistoryFormData) => Promise<void>
-	onDelete: (id: number) => Promise<void> // Añadida para la lógica de eliminación
+	onSave: (data: MedicalHistoryFormData) => Promise<void> // Tipado más estricto
+	onDelete: (id: number) => Promise<void>
 }
 
 const ClinicalEvolutionDetailModal = ({
@@ -32,10 +32,10 @@ const ClinicalEvolutionDetailModal = ({
 	onSave,
 	onDelete,
 }: ClinicalEvolutionDetailModalProps) => {
-	const [formData, setFormData] = useState<
-		MedicalHistory | MedicalHistoryFormData | null
-	>(null)
+	// Usamos MedicalHistoryFormData para el estado local
+	const [formData, setFormData] = useState<MedicalHistoryFormData | null>(null)
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+	const [isSaving, setIsSaving] = useState(false)
 
 	useEffect(() => {
 		if (record) {
@@ -45,11 +45,11 @@ const ClinicalEvolutionDetailModal = ({
 				background: record.background || "",
 				physical_exam: record.physical_exam || "",
 				rx_torax: record.rx_torax || "",
-				tomografia: record.tomografia || "",
+				tomography: record.tomography || "",
 				record_date: record.record_date
 					? new Date(record.record_date)
 					: new Date(),
-			})
+			} as MedicalHistoryFormData)
 		}
 	}, [record])
 
@@ -87,20 +87,63 @@ const ClinicalEvolutionDetailModal = ({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		if (formData) {
+		if (!formData) return
+
+		try {
+			setIsSaving(true)
+			// Ya no subimos aquí. Pasamos el formData (que puede tener Files) al padre.
 			await onSave(formData)
+		} finally {
+			setIsSaving(false)
 		}
 	}
 
-	// Lógica idéntica a PatientModalForm
 	const handleDelete = async () => {
-		if (isEditing) {
-			await onDelete((record as MedicalHistory).id)
+		if (isEditing && "id" in record) {
+			await onDelete(record.id as number)
 			setShowDeleteConfirm(false)
 			onClose()
 		}
 	}
 
+	const handleDownload = async (
+		field: string | File | undefined,
+		fileName: string,
+	) => {
+		if (!field) return
+
+		try {
+			let url: string
+			let name: string
+
+			if (field instanceof File) {
+				url = URL.createObjectURL(field)
+				name = field.name
+			} else {
+				// Es un link de Supabase
+				const response = await fetch(field)
+				const blob = await response.blob()
+				url = URL.createObjectURL(blob)
+				name = `${fileName}-${record?.id || "registro"}.jpg`
+			}
+
+			const link = document.createElement("a")
+			link.href = url
+			link.download = name
+			document.body.appendChild(link)
+			link.click()
+
+			// Limpieza
+			document.body.removeChild(link)
+			URL.revokeObjectURL(url)
+		} catch (error) {
+			console.error("Error al descargar:", error)
+			// Si falla el fetch por CORS, abrimos en pestaña nueva como fallback
+			if (typeof field === "string") window.open(field, "_blank")
+		}
+	}
+
+	// Estilos (se mantienen igual para no romper tu UI)
 	const labelClass =
 		"text-xs font-black text-primary uppercase tracking-wider mb-2 flex items-center gap-2"
 	const inputBaseClass =
@@ -142,7 +185,7 @@ const ClinicalEvolutionDetailModal = ({
 
 					<form onSubmit={handleSubmit}>
 						<div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-							{/* ... (Tus campos de formulario se mantienen iguales) ... */}
+							{/* Fecha y Médico */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="record_date" className={labelClass}>
@@ -154,11 +197,7 @@ const ClinicalEvolutionDetailModal = ({
 										required
 										className={inputBaseClass}
 										value={
-											formData.record_date
-												? new Date(formData.record_date)
-														.toISOString()
-														.split("T")[0]
-												: ""
+											formData.record_date?.toISOString().split("T")[0] || ""
 										}
 										onChange={handleInputChange}
 									/>
@@ -174,7 +213,7 @@ const ClinicalEvolutionDetailModal = ({
 										onChange={handleInputChange}
 									>
 										<option value={formData.doctor_id}>
-											Médico Actual (ID: {formData.doctor_id})
+											ID: {formData.doctor_id}
 										</option>
 										<option value="cedula1">Dr. Carlos Mendoza</option>
 										<option value="7695182">Dra. Ninive Azuaje</option>
@@ -182,6 +221,7 @@ const ClinicalEvolutionDetailModal = ({
 								</div>
 							</div>
 
+							{/* Motivo y Antecedentes */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<label htmlFor="reason" className={labelClass}>
@@ -209,6 +249,7 @@ const ClinicalEvolutionDetailModal = ({
 								</div>
 							</div>
 
+							{/* Examen Físico */}
 							<div>
 								<label htmlFor="physical_exam" className={labelClass}>
 									<FaRunning className="text-green-400" /> Examen Físico
@@ -222,6 +263,7 @@ const ClinicalEvolutionDetailModal = ({
 								/>
 							</div>
 
+							{/* Diagnóstico y Tratamiento */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<label htmlFor="diagnosis" className={labelClass}>
@@ -251,6 +293,7 @@ const ClinicalEvolutionDetailModal = ({
 								</div>
 							</div>
 
+							{/* Notas */}
 							<div>
 								<label htmlFor="notes" className={labelClass}>
 									<FaRegEdit className="text-amber-500" /> Notas
@@ -264,6 +307,7 @@ const ClinicalEvolutionDetailModal = ({
 								/>
 							</div>
 
+							{/* Imágenes */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div>
 									<label htmlFor="rx_torax" className={labelClass}>
@@ -282,29 +326,52 @@ const ClinicalEvolutionDetailModal = ({
 											accept="image/*"
 										/>
 									</label>
+
+									{formData.rx_torax && (
+										<button
+											type="button"
+											onClick={() =>
+												handleDownload(formData.rx_torax, "rx-torax")
+											}
+											className="w-full py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+										>
+											<FaSave size={12} /> Descargar Rx de Tórax
+										</button>
+									)}
 								</div>
 								<div>
-									<label htmlFor="tomografia" className={labelClass}>
+									<label htmlFor="tomography" className={labelClass}>
 										<FaFileImage /> Tomografía
 									</label>
 									<label className={fileInputClass}>
 										<FaFileImage className="text-gray-300 text-3xl mb-2" />
 										<span className="text-[10px] text-gray-500 font-black uppercase text-center px-4">
-											{getFileName(formData.tomografia)}
+											{getFileName(formData.tomography)}
 										</span>
 										<input
 											type="file"
-											name="tomografia"
+											name="tomography"
 											className="hidden"
 											onChange={handleFileChange}
 											accept="image/*"
 										/>
 									</label>
+									{formData.tomography && (
+										<button
+											type="button"
+											onClick={() =>
+												handleDownload(formData.tomography, "tomografia")
+											}
+											className="w-full py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+										>
+											<FaSave size={12} /> Descargar Tomografía
+										</button>
+									)}
 								</div>
 							</div>
 						</div>
 
-						{/* Footer - Implementación EXACTA a PatientModalForm */}
+						{/* Footer */}
 						<div className="p-6 bg-gray-50 flex flex-wrap justify-between items-center gap-3 border-t border-gray-100">
 							<div>
 								{isEditing && (
@@ -329,10 +396,15 @@ const ClinicalEvolutionDetailModal = ({
 								</button>
 								<button
 									type="submit"
-									className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg flex items-center gap-2"
+									disabled={isSaving}
+									className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50"
 								>
 									<FaSave />{" "}
-									{isEditing ? "Actualizar Registro" : "Crear Evolución"}
+									{isSaving
+										? "Guardando..."
+										: isEditing
+											? "Actualizar Registro"
+											: "Crear Evolución"}
 								</button>
 							</div>
 						</div>
@@ -340,7 +412,6 @@ const ClinicalEvolutionDetailModal = ({
 				</div>
 			</div>
 
-			{/* Componente Reutilizable de Confirmación */}
 			<ConfirmModal
 				isOpen={showDeleteConfirm}
 				onClose={() => setShowDeleteConfirm(false)}
@@ -349,9 +420,8 @@ const ClinicalEvolutionDetailModal = ({
 				message={
 					<p>
 						Estás a punto de borrar el registro del día{" "}
-						<strong>{formData.record_date?.toLocaleDateString()}</strong>. Los
-						diagnósticos, tratamientos e imágenes adjuntas se perderán
-						permanentemente.
+						<strong>{formData.record_date?.toLocaleDateString()}</strong>.
+						Diagnósticos e imágenes se perderán permanentemente.
 					</p>
 				}
 				confirmText="Sí, eliminar definitivamente"

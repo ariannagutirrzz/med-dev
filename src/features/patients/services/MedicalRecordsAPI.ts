@@ -1,16 +1,12 @@
 import { isAxiosError } from "axios"
 import { api } from "../../../config/axios"
-import type { MedicalHistory, MedicalHistoryFormData } from "../../../shared"
+import type { MedicalHistory } from "../../../shared"
 
-export async function createMedicalRecord(formData: MedicalHistoryFormData) {
-	try {
-		const { data } = await api.post("/medicalRecords", formData)
-		return data
-	} catch (error) {
-		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
-		}
-	}
+export const createMedicalRecord = async (data: FormData) => {
+	const response = await api.post("/medicalRecords", data, {
+		headers: { "Content-Type": "multipart/form-data" },
+	})
+	return response.data
 }
 
 export async function getMedicalRecord(
@@ -37,15 +33,11 @@ export async function getMedicalRecordById(id: MedicalHistory["id"]) {
 	}
 }
 
-export async function updateMedicalRecordById(formData: MedicalHistory) {
-	try {
-		const { data } = await api.patch(`/medicalRecords/${formData.id}`, formData)
-		return data
-	} catch (error) {
-		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
-		}
-	}
+export const updateMedicalRecordById = async (id: number, data: FormData) => {
+	const response = await api.patch(`/medicalRecords/${id}`, data, {
+		headers: { "Content-Type": "multipart/form-data" },
+	})
+	return response.data
 }
 
 export async function deleteMedicalRecordById(id: MedicalHistory["id"]) {

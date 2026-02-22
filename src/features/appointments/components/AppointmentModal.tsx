@@ -6,35 +6,19 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore"
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
-import {
-	FaCalendar,
-	FaClock,
-	FaSave,
-	FaTimes,
-	FaUser,
-	FaUserMd,
-} from "react-icons/fa"
+import { FaSave, FaTimes, FaUser, FaUserMd } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
-import { api } from "../../../config/axios"
 import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
 import { formatPrice } from "../../../shared"
 import type { Doctor } from "../../../types"
 import { useAuth } from "../../auth"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
-import { getPatients } from "../../patients"
-import { getDoctors } from "../../patients/services/UsersAPI"
-import type { DoctorServiceWithType } from "../../services"
-import { getDoctorServices } from "../../services"
-import {
-	getSettings,
-	type UserSettings,
-} from "../../settings/services/SettingsAPI"
 import {
 	type CurrencyRates,
 	getCurrencyRates,
 } from "../../currency/services/CurrencyAPI"
 import { getPatients } from "../../patients"
+import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
 import { getDoctorServices } from "../../services"
 import {
@@ -80,7 +64,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const [loadingData, setLoadingData] = useState(false)
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [selectedService, setSelectedService] =
 		useState<DoctorServiceWithType | null>(null)
 

@@ -4,17 +4,17 @@ import { CiCalendar, CiMedicalCase, CiMedicalClipboard } from "react-icons/ci"
 import { FaQuestion } from "react-icons/fa"
 import { LuPencilLine } from "react-icons/lu"
 import { toast } from "react-toastify"
+import type {
+	MedicalHistory,
+	MedicalHistoryFormData,
+	MyTokenPayload,
+} from "../../../shared"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
 	getMedicalRecord,
 	updateMedicalRecordById,
 } from "../services/MedicalRecordsAPI"
-import type {
-	MedicalHistory,
-	MedicalHistoryFormData,
-	MyTokenPayload,
-} from "../../../shared"
 import ClinicalEvolutionDetailModal from "./ClinicalEvolutionDetailModal"
 
 export default function ClinicalEvolution({
@@ -80,26 +80,42 @@ export default function ClinicalEvolution({
 		setNewEvolution(false)
 	}
 
-	const handleSaveRecord = async (
-		formData: MedicalHistory | MedicalHistoryFormData,
-	) => {
+	const handleSaveRecord = async (formData: MedicalHistoryFormData) => {
 		try {
-			// Verificamos si tiene ID para saber si es update o create
-			if ("id" in formData && formData.id) {
-				await updateMedicalRecordById(formData as MedicalHistory)
-				toast.success("Evolución actualizada")
+			const data = new FormData()
+
+			// Iteramos sobre las llaves de forma segura
+			Object.entries(formData).forEach(([key, value]) => {
+				if (value !== null && value !== undefined) {
+					if (value instanceof File) {
+						// Si es un archivo (Rx o Tomografía)
+						data.append(key, value)
+					} else if (value instanceof Date) {
+						// Convertimos la fecha a string para el backend
+						data.append(key, value.toISOString())
+					} else {
+						// Para strings y números
+						data.append(key, String(value))
+					}
+				}
+			})
+
+			if (formData.id) {
+				// Edición: Usamos el ID del formData
+				await updateMedicalRecordById(formData.id, data)
+				toast.success("Evolución actualizada correctamente")
 			} else {
-				await createMedicalRecord(formData as MedicalHistoryFormData)
+				// Creación
+				await createMedicalRecord(data)
 				toast.success("Nueva evolución registrada")
 			}
+
 			await fetchEvolutions()
 			handleCloseModal()
 		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message || "Error al guardar")
-			} else {
-				toast.error("Error al guardar")
-			}
+			const message =
+				error instanceof Error ? error.message : "Error al guardar"
+			toast.error(message)
 		}
 	}
 
