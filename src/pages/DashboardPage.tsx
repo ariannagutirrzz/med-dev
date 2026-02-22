@@ -4,23 +4,23 @@ import { FaChartBar, FaDollarSign } from "react-icons/fa"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
+import { GenerateAI } from "../features/ai"
+import { AppointmentsSection } from "../features/appointments"
+import { useAuth } from "../features/auth"
 import {
 	Dashboard,
 	DashboardHome,
 	DashboardSearchProvider,
 } from "../features/dashboard"
-import { AppointmentsSection } from "../features/appointments"
-import { GenerateAI } from "../features/ai"
 import { Inventory } from "../features/inventory"
 import { MedicalRecords } from "../features/patients"
 import { ReportsSection } from "../features/reports"
 import { ServicesManagement } from "../features/services"
 import { Settings } from "../features/settings"
 import { SurgeriesSection } from "../features/surgeries"
-import { useAuth } from "../features/auth"
 
 const DashboardPage: React.FC = () => {
-	const { user, logout } = useAuth()
+	const { user, logout, refreshUser } = useAuth()
 	const navigate = useNavigate()
 	const location = useLocation()
 	// En móvil empezar con el menú cerrado; en desktop abierto
@@ -31,6 +31,7 @@ const DashboardPage: React.FC = () => {
 	const userData = {
 		name: user?.name || "Usuario",
 		role: user?.role || "Médico Especialista - Unidad de Pleura",
+		image: user?.image,
 	}
 
 	// Mapeo de rutas a IDs de menú
@@ -209,7 +210,7 @@ const DashboardPage: React.FC = () => {
 		}
 
 		if (currentPath === "/dashboard/configuracion") {
-			return <Settings userData={userData} />
+			return <Settings userData={userData} refreshUser={refreshUser} />
 		}
 
 		// Default: mostrar home si la ruta no coincide
