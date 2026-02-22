@@ -41,7 +41,7 @@ export type MedicalHistory = {
 	background?: string
 	physical_exam?: string
 	rx_torax?: string | File
-	tomografia?: string | File
+	tomography?: string | File
 	created_at: Date
 	updated_at: Date
 }

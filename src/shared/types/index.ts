@@ -37,7 +37,7 @@ export type MedicalHistory = {
 	background?: string
 	physical_exam?: string
 	rx_torax?: string | File
-	tomografia?: string | File
+	tomography?: string | File
 	created_at: Date
 	updated_at: Date
 }
@@ -45,7 +45,9 @@ export type MedicalHistory = {
 export type MedicalHistoryFormData = Omit<
 	MedicalHistory,
 	"created_at" | "updated_at" | "id"
->
+> & {
+	id?: number // Opcional para distinguir entre creación y edición
+}
 
 export type MyTokenPayload = {
 	id: string
