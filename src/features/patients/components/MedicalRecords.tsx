@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 // 1. Importamos el service
-import { getDoctorPatients } from "../services/PatientsAPI"
+import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import type { Patient } from "../../../shared"
 import { calcularEdad } from "../../../shared"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
+import { useAuth } from "../../auth"
 
 export default function MedicalRecords() {
 	// 2. ESTADOS (Iniciamos records vacío)
@@ -18,11 +19,17 @@ export default function MedicalRecords() {
 	const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null)
 	const [records, setRecords] = useState<Patient[]>([])
 	const [searchTerm, setSearchTerm] = useState("")
+	const { user } = useAuth()
 
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
 		try {
-			const data = await getDoctorPatients()
+			let data;
+			if (user?.role === "Admin") {
+				data = await getPatients()
+			} else {
+				data = await getDoctorPatients()
+			}
 			// Transformamos birthdate de string a Date para que calcularEdad no falle
 			const formattedData = data.patients.map((p: Patient) => ({
 				...p,
@@ -32,7 +39,7 @@ export default function MedicalRecords() {
 		} catch (error) {
 			console.error("Error al cargar pacientes:", error)
 		}
-	}, [])
+	}, [user])
 
 	// 4. EFECTO DE CARGA INICIAL
 	useEffect(() => {

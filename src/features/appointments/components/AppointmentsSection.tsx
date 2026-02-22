@@ -1,18 +1,28 @@
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendarCheck, FaClock, FaDollarSign, FaEdit, FaTrash, FaUserMd } from "react-icons/fa"
+import {
+	FaCalendarCheck,
+	FaClock,
+	FaDollarSign,
+	FaEdit,
+	FaTrash,
+	FaUserMd,
+} from "react-icons/fa"
 import { MdAddCircleOutline, MdFilterList, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
+import type { Appointment } from "../../../shared"
+import { ConfirmModal, formatPrice } from "../../../shared"
 import { useAuth } from "../../auth"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
 import {
 	deleteAppointmentById,
-	getAppointments,
+	getAllAppointments,
+	getFilteredAppointments,
 } from "../services/AppointmentsAPI"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
-import type { Appointment } from "../../../shared"
-import { formatPrice } from "../../../shared"
 import AppointmentModal from "./AppointmentModal"
-import { ConfirmModal } from "../../../shared"
 
 const AppointmentsSection = () => {
 	const { user } = useAuth()
@@ -31,10 +41,19 @@ const AppointmentsSection = () => {
 	const [settings, setSettings] = useState<UserSettings | null>(null)
 	const [currencyRates, setCurrencyRates] = useState<any>(null)
 
+	type AppointmentData = {
+		appointments: Appointment[]
+	}
+
 	const loadAppointments = useCallback(async () => {
 		setLoading(true)
 		try {
-			const data = await getAppointments()
+			let data: AppointmentData
+			if (user?.role === "Admin") {
+				data = await getAllAppointments()
+			} else {
+				data = await getFilteredAppointments()
+			}
 			setAppointments(data.appointments || [])
 		} catch (error) {
 			console.error("Error al cargar citas:", error)
@@ -42,7 +61,7 @@ const AppointmentsSection = () => {
 		} finally {
 			setLoading(false)
 		}
-	}, [])
+	}, [user?.role])
 
 	useEffect(() => {
 		loadAppointments()
@@ -154,19 +173,20 @@ const AppointmentsSection = () => {
 
 			switch (dateFilter) {
 				case "today":
-					matchesDate =
-						appointmentDate.toDateString() === today.toDateString()
+					matchesDate = appointmentDate.toDateString() === today.toDateString()
 					break
 				case "week": {
 					const weekFromNow = new Date(today)
 					weekFromNow.setDate(today.getDate() + 7)
-					matchesDate = appointmentDate >= today && appointmentDate <= weekFromNow
+					matchesDate =
+						appointmentDate >= today && appointmentDate <= weekFromNow
 					break
 				}
 				case "month": {
 					const monthFromNow = new Date(today)
 					monthFromNow.setMonth(today.getMonth() + 1)
-					matchesDate = appointmentDate >= today && appointmentDate <= monthFromNow
+					matchesDate =
+						appointmentDate >= today && appointmentDate <= monthFromNow
 					break
 				}
 			}
@@ -176,6 +196,7 @@ const AppointmentsSection = () => {
 	})
 
 	const isDoctor = user?.role === "Médico"
+	const isAdmin = user?.role === "Admin"
 
 	return (
 		<div className="p-6">
@@ -205,9 +226,7 @@ const AppointmentsSection = () => {
 							<input
 								type="text"
 								placeholder={
-									isDoctor
-										? "Buscar paciente..."
-										: "Buscar médico o notas..."
+									isDoctor ? "Buscar paciente..." : "Buscar médico o notas..."
 								}
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
@@ -258,10 +277,13 @@ const AppointmentsSection = () => {
 				) : (
 					<div className="space-y-4">
 						{filteredAppointments.map((appointment) => {
-							const { date, time } = formatDateTime(appointment.appointment_date)
-							const displayName = isDoctor
-								? appointment.patient_name
-								: appointment.doctor_name
+							const { date, time } = formatDateTime(
+								appointment.appointment_date,
+							)
+							const displayName =
+								isDoctor || isAdmin
+									? appointment.patient_name
+									: appointment.doctor_name
 
 							return (
 								<div
@@ -296,10 +318,11 @@ const AppointmentsSection = () => {
 													{appointment.price_usd && (
 														<>
 															<span className="flex items-center gap-1 text-primary font-semibold">
-																<FaDollarSign className="w-4 h-4" />
-																${formatPrice(appointment.price_usd)} USD
+																<FaDollarSign className="w-4 h-4" />$
+																{formatPrice(appointment.price_usd)} USD
 															</span>
-															{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+															{(settings?.custom_exchange_rate ||
+																currencyRates?.oficial?.promedio) && (
 																<span className="flex items-center gap-1 text-green-600 font-semibold">
 																	Bs.{" "}
 																	{formatPrice(
@@ -326,21 +349,22 @@ const AppointmentsSection = () => {
 												>
 													<FaEdit className="w-4 h-4" />
 												</button>
-												{isDoctor && (
-													<button
-														type="button"
-														onClick={() =>
-															setDeleteConfirm({
-																isOpen: true,
-																appointment,
-															})
-														}
-														className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-														title="Eliminar cita"
-													>
-														<FaTrash className="w-4 h-4" />
-													</button>
-												)}
+												{isDoctor ||
+													(isAdmin && (
+														<button
+															type="button"
+															onClick={() =>
+																setDeleteConfirm({
+																	isOpen: true,
+																	appointment,
+																})
+															}
+															className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+															title="Eliminar cita"
+														>
+															<FaTrash className="w-4 h-4" />
+														</button>
+													))}
 											</div>
 										</div>
 									</div>
@@ -369,9 +393,7 @@ const AppointmentsSection = () => {
 			{/* Modal de confirmación de eliminación */}
 			<ConfirmModal
 				isOpen={deleteConfirm.isOpen}
-				onClose={() =>
-					setDeleteConfirm({ isOpen: false, appointment: null })
-				}
+				onClose={() => setDeleteConfirm({ isOpen: false, appointment: null })}
 				onConfirm={handleDeleteAppointment}
 				title="Eliminar Cita"
 				message="¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer."

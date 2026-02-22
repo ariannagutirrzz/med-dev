@@ -14,9 +14,21 @@ export async function createAppointment(formData: AppointmentFormData) {
 	}
 }
 
-export async function getAppointments() {
+export async function getAllAppointments() {
 	try {
 		const { data } = await api.get("/appointments")
+		return data
+	} catch (error) {
+		if (isAxiosError(error) && error.response) {
+			throw new Error(error.response.data.error)
+		}
+		throw error
+	}
+}
+
+export async function getFilteredAppointments() {
+	try {
+		const { data } = await api.get("/appointments/filtered")
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {

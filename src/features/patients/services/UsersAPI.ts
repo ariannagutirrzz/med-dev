@@ -7,8 +7,7 @@ export async function getDoctors() {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error || "Error al crear la cirugía")
+			throw new Error(error.response.data.error || "Error al obtener médicos")
 		}
-		throw new Error("Error al conectar con el servidor")
 	}
 }
