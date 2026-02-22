@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { HiOutlineBellAlert } from "react-icons/hi2"
 import { toast } from "react-toastify"
 import {
+	deleteNotification,
 	getNotifications,
 	getUnreadCount,
-	markAsRead,
 	markAllAsRead,
-	deleteNotification,
+	markAsRead,
 	type Notification,
 } from "../services/NotificationsAPI"
 
@@ -84,9 +84,7 @@ export default function NotificationBell() {
 	const handleMarkAllAsRead = async () => {
 		try {
 			await markAllAsRead()
-			setNotifications((prev) =>
-				prev.map((n) => ({ ...n, read: true })),
-			)
+			setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
 			setUnreadCount(0)
 			toast.success("Todas las notificaciones marcadas como leídas")
 		} catch (error) {
@@ -108,7 +106,6 @@ export default function NotificationBell() {
 			if (deleted && !deleted.read) {
 				setUnreadCount((prev) => Math.max(0, prev - 1))
 			}
-			toast.success("Notificación eliminada")
 		} catch (error) {
 			console.error("Error deleting notification:", error)
 			toast.error("Error al eliminar la notificación")
@@ -180,9 +177,7 @@ export default function NotificationBell() {
 					{/* Notifications List */}
 					<div className="overflow-y-auto flex-1">
 						{loading ? (
-							<div className="p-4 text-center text-gray-500">
-								Cargando...
-							</div>
+							<div className="p-4 text-center text-gray-500">Cargando...</div>
 						) : notifications.length === 0 ? (
 							<div className="p-8 text-center text-gray-500">
 								<p>No tienes notificaciones</p>
