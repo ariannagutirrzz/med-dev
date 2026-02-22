@@ -1,13 +1,13 @@
-import { getAppointments } from "../../appointments"
+import type { Appointment, Patient, Surgery } from "../../../shared"
+import { getFilteredAppointments } from "../../appointments"
 import { getDoctorPatients } from "../../patients"
 import { getSurgeries } from "../../surgeries"
-import type { Appointment, Patient, Surgery } from "../../../shared"
+import type { DashboardStats } from "../types/dashboard.types"
 import { getTodayRange } from "../utils/dateUtils"
 import {
 	convertSurgeriesToCalendarFormat,
 	filterSurgeriesByDoctor,
 } from "../utils/surgeryUtils"
-import type { DashboardStats } from "../types/dashboard.types"
 
 export interface DashboardDataResult {
 	appointments: Appointment[]
@@ -26,7 +26,7 @@ export const fetchDashboardData = async (
 	// Fetch appointments
 	let appointments: Appointment[] = []
 	try {
-		const appointmentsData = await getAppointments()
+		const appointmentsData = await getFilteredAppointments()
 		appointments = appointmentsData.appointments || []
 	} catch (error) {
 		console.error("Error cargando citas:", error)
@@ -49,10 +49,7 @@ export const fetchDashboardData = async (
 		try {
 			const surgeriesData = await getSurgeries()
 			if (doctorId && surgeriesData.surgeries) {
-				surgeries = filterSurgeriesByDoctor(
-					surgeriesData.surgeries,
-					doctorId,
-				)
+				surgeries = filterSurgeriesByDoctor(surgeriesData.surgeries, doctorId)
 			} else {
 				surgeries = surgeriesData.surgeries || []
 			}
