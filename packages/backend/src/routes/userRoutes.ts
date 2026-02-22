@@ -8,6 +8,7 @@ import {
 	updateUser,
 } from "../controllers/UserController"
 import { authenticate } from "../middleware/auth"
+import { upload } from "../middleware/multer"
 
 /**
  * @swagger
@@ -91,7 +92,7 @@ userRoutes.get("/me", getCurrentUser)
 // Rutas que requieren permisos específicos
 userRoutes.get("/", getAllUsers) // Solo para administradores o médicos (si es necesario)
 userRoutes.get("/:id", getUserById)
-userRoutes.patch("/:id", updateUser)
+userRoutes.patch("/:id", upload.single("image"), updateUser)
 userRoutes.delete("/:id", deleteUser)
 
 export default userRoutes

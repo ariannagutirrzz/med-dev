@@ -96,7 +96,7 @@ export const login = async (req: Request, res: Response) => {
 
 		// Find user by email
 		const result = await query(
-			"SELECT id, email, password, name, role, document_id FROM users WHERE email = $1",
+			"SELECT id, email, password, name, role, document_id, image FROM users WHERE email = $1",
 			[email.toLowerCase()],
 		)
 
@@ -124,6 +124,7 @@ export const login = async (req: Request, res: Response) => {
 				email: user.email,
 				role: user.role || "Médico",
 				document_id: user.document_id,
+				image: user.image,
 			},
 			token: token,
 		})
@@ -155,10 +156,9 @@ export const changePassword = async (req: Request, res: Response) => {
 		}
 
 		// Get user's current password from database
-		const result = await query(
-			"SELECT id, password FROM users WHERE id = $1",
-			[userId],
-		)
+		const result = await query("SELECT id, password FROM users WHERE id = $1", [
+			userId,
+		])
 
 		if (result.rows.length === 0) {
 			return res.status(404).json({ error: "User not found" })
@@ -167,7 +167,10 @@ export const changePassword = async (req: Request, res: Response) => {
 		const user = result.rows[0]
 
 		// Verify current password
-		const isPasswordValid = await comparePassword(currentPassword, user.password)
+		const isPasswordValid = await comparePassword(
+			currentPassword,
+			user.password,
+		)
 
 		if (!isPasswordValid) {
 			return res.status(401).json({ error: "Current password is incorrect" })

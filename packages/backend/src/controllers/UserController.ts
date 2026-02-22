@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
+import { uploadToSupabase } from "../utils/uploadImage"
 
 export const getCurrentUser = async (req: Request, res: Response) => {
 	try {
@@ -114,29 +115,39 @@ export const getAllDoctors = async (_req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
 	const { id } = req.params
-	const updates = req.body // e.g., { name: "New Name", description: "New Bio" }
-	// Delete role in case it's sent in the request
+	const updates = { ...req.body } // Copiamos el body
+
+	// Eliminar el role para que no se actualice por error
 	delete updates.role
 
-	const keys = Object.keys(updates)
-	if (keys.length === 0) {
-		return res.status(400).json({ error: "No fields provided for update" })
-	}
-
-	// Build the SET clause dynamically: "SET name=$1, description=$2"
-	const setClause = keys
-		.map((key, index) => `${key} = $${index + 1}`)
-		.join(", ")
-
-	const values = Object.values(updates)
-	values.push(parseInt(id)) // Add ID as the last parameter, parse to integer
-
 	try {
+		// --- LÓGICA DE IMAGEN ---
+		// Si Multer detectó un archivo en el campo "image"
+		if (req.file) {
+			// Subimos a Supabase en la carpeta 'profile_pictures'
+			const imageUrl = await uploadToSupabase(req.file, "profile_pictures")
+			// Añadimos la URL al objeto de actualizaciones para que el SQL lo incluya
+			updates.image = imageUrl
+		}
+
+		const keys = Object.keys(updates)
+		if (keys.length === 0) {
+			return res.status(400).json({ error: "No fields provided for update" })
+		}
+
+		// Construcción dinámica del SET clause
+		const setClause = keys
+			.map((key, index) => `${key} = $${index + 1}`)
+			.join(", ")
+
+		const values = Object.values(updates)
+		values.push(parseInt(id)) // El ID será el último parámetro
+
 		const result = await query(
 			`UPDATE users 
-       SET ${setClause} 
-       WHERE id = $${values.length} 
-       RETURNING *`,
+             SET ${setClause} 
+             WHERE id = $${values.length} 
+             RETURNING *`,
 			values,
 		)
 
