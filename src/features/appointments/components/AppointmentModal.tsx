@@ -4,13 +4,30 @@ import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
-import { FaSave, FaTimes, FaUser, FaUserMd } from "react-icons/fa"
+import {
+	FaCalendar,
+	FaClock,
+	FaSave,
+	FaTimes,
+	FaUser,
+	FaUserMd,
+} from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
 import { api } from "../../../config/axios"
 import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
 import { formatPrice } from "../../../shared"
+import type { Doctor } from "../../../types"
 import { useAuth } from "../../auth"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import { getPatients } from "../../patients"
+import { getDoctors } from "../../patients/services/UsersAPI"
+import type { DoctorServiceWithType } from "../../services"
+import { getDoctorServices } from "../../services"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
 import {
 	type CurrencyRates,
 	getCurrencyRates,
@@ -28,20 +45,11 @@ import {
 } from "../services/AppointmentsAPI"
 import { getAvailableTimeSlots } from "../services/DoctorAvailabilityAPI"
 
-dayjs.extend(customParseFormat)
-dayjs.locale("es")
-
 interface AppointmentModalProps {
 	isOpen: boolean
 	onClose: () => void
 	onSuccess: () => void
 	editingAppointment?: Appointment | null
-}
-
-interface Doctor {
-	document_id: string
-	name: string
-	role: string
 }
 
 const AppointmentModal: React.FC<AppointmentModalProps> = ({
@@ -57,9 +65,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const [loadingData, setLoadingData] = useState(false)
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
+	const [currencyRates, setCurrencyRates] = useState<any>(null)
 	const [selectedService, setSelectedService] =
 		useState<DoctorServiceWithType | null>(null)
+
+	const isDoctor = user?.role === "Médico"
+	const isAdmin = user?.role === "Admin"
 	const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
 	const [loadingTimeSlots, setLoadingTimeSlots] = useState(false)
 
@@ -118,74 +129,37 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 		[],
 	)
 
-	// Cargar pacientes y doctores
 	const loadPatientsAndDoctors = useCallback(async () => {
 		setLoadingData(true)
-		const isDoctorUser = user?.role === "Médico"
 
 		try {
-			// Cargar pacientes solo si el usuario es médico
-			if (isDoctorUser) {
-				try {
-					const patientsData = await getPatients()
-					if (patientsData?.patients) {
-						// No necesitamos convertir birthdate a Date para el modal de citas
-						// Solo necesitamos los datos básicos para mostrar en el select
-						const formattedPatients = patientsData.patients.map(
-							(p: Patient) => {
-								let birthdate: Date
-								if (p.birthdate instanceof Date) {
-									birthdate = p.birthdate
-								} else if (p.birthdate) {
-									const date = new Date(p.birthdate)
-									birthdate = Number.isNaN(date.getTime()) ? new Date() : date
-								} else {
-									birthdate = new Date()
-								}
-								return {
-									...p,
-									birthdate,
-								}
-							},
-						)
-						setPatients(formattedPatients)
-					} else {
-						setPatients([])
-					}
-				} catch (patientsError) {
-					console.error("Error cargando pacientes:", patientsError)
-					setPatients([])
-					// No mostramos error si el usuario no es médico, es esperado
+			// Cargar pacientes si es Médico O Admin
+			if (isDoctor || isAdmin) {
+				const patientsData = await getPatients()
+				if (patientsData?.patients) {
+					const formattedPatients = patientsData.patients.map((p: Patient) => ({
+						...p,
+						birthdate: p.birthdate ? new Date(p.birthdate) : new Date(),
+					}))
+					setPatients(formattedPatients)
 				}
-			} else {
-				// Si no es médico, no necesita cargar pacientes
-				setPatients([])
 			}
 
-			// Cargar doctores (disponible para todos los usuarios autenticados)
-			try {
-				const { data: doctorsData } = await api.get("/users/medicos")
+			// Cargar doctores (Admin siempre los necesita, Paciente también)
+			// Solo el Médico se salta esto porque ya es "él mismo"
+			if (!isDoctor || isAdmin) {
+				const doctorsData = await getDoctors()
 				if (doctorsData?.doctors) {
 					setDoctors(doctorsData.doctors)
-				} else {
-					setDoctors([])
 				}
-			} catch (doctorsError) {
-				console.error("Error cargando doctores:", doctorsError)
-				setDoctors([])
-				toast.error("No se pudo cargar la lista de médicos")
 			}
 		} catch (error) {
 			console.error("Error cargando datos:", error)
-			const errorMessage =
-				error instanceof Error ? error.message : "Error desconocido"
-			toast.error(`Error al cargar datos: ${errorMessage}`)
-			setPatients([])
-			setDoctors([])
+			toast.error("Error al cargar las listas de selección")
 		} finally {
 			setLoadingData(false)
 		}
-	}, [user?.role])
+	}, [isAdmin, isDoctor])
 
 	useEffect(() => {
 		if (isOpen) {
@@ -278,8 +252,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const inputClass =
 		"w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
 
-	const isDoctor = user?.role === "Médico"
-
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
 			<div className="bg-gray-100 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -302,8 +274,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 				{/* Formulario */}
 				<form onSubmit={handleSubmit} className="p-6 space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-3xl shadow-lg">
-						{/* Paciente - Solo visible si es médico */}
-						{isDoctor && (
+						{/* Paciente - Visible para Médicos y Admins */}
+						{(isDoctor || isAdmin) && (
 							<div className="md:col-span-2 relative">
 								<label
 									htmlFor="patient_id"
@@ -315,7 +287,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								<select
 									id="patient_id"
 									value={formData.patient_id}
-									required={isDoctor}
+									required
 									disabled={loadingData}
 									className={inputClass}
 									onChange={(e) =>
@@ -543,32 +515,33 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 						</div>
 
 						{/* Estado - Solo editable por médicos */}
-						{isDoctor && (
-							<div className="relative">
-								<label
-									htmlFor="status"
-									className="text-xs font-bold text-gray-700 mb-1 block ml-1"
-								>
-									Estado
-								</label>
-								<select
-									id="status"
-									value={formData.status}
-									className={inputClass}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											status: e.target.value as AppointmentFormData["status"],
-										})
-									}
-								>
-									<option value="pending">Pendiente</option>
-									<option value="scheduled">Programada</option>
-									<option value="cancelled">Cancelada</option>
-									<option value="completed">Completada</option>
-								</select>
-							</div>
-						)}
+						{isDoctor ||
+							(isAdmin && (
+								<div className="relative">
+									<label
+										htmlFor="status"
+										className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+									>
+										Estado
+									</label>
+									<select
+										id="status"
+										value={formData.status}
+										className={inputClass}
+										onChange={(e) =>
+											setFormData({
+												...formData,
+												status: e.target.value as AppointmentFormData["status"],
+											})
+										}
+									>
+										<option value="pending">Pendiente</option>
+										<option value="scheduled">Programada</option>
+										<option value="cancelled">Cancelada</option>
+										<option value="completed">Completada</option>
+									</select>
+								</div>
+							))}
 
 						{/* Caso/Motivo */}
 						<div className="md:col-span-2">

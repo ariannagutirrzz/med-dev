@@ -1,15 +1,15 @@
 import { useAuth } from "../../auth"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
+import { useDashboardData } from "../hooks/useDashboardData"
+import { useSearchFilter } from "../hooks/useSearchFilter"
 import { AppointmentsTodayCard } from "./cards/AppointmentsTodayCard"
 import { CurrencyCard } from "./cards/CurrencyCard"
 import { GeneralStatsCard } from "./cards/GeneralStatsCard"
 import { SurgeryCalendarCard } from "./cards/SurgeryCalendarCard"
 import { UpcomingAppointmentsCard } from "./cards/UpcomingAppointmentsCard"
+import DashboardHeader from "./DashboardHeader"
 import { SearchResults } from "./search/SearchResults"
 import { WelcomeSection } from "./welcome/WelcomeSection"
-import DashboardHeader from "./DashboardHeader"
-import { useDashboardData } from "../hooks/useDashboardData"
-import { useSearchFilter } from "../hooks/useSearchFilter"
 
 const DashboardHome = () => {
 	const { user } = useAuth()
@@ -27,7 +27,9 @@ const DashboardHome = () => {
 			<div className="p-4 sm:p-6">
 				<DashboardHeader />
 				<div className="flex items-center justify-center min-h-screen">
-					<div className="animate-pulse text-gray-400">Cargando dashboard...</div>
+					<div className="animate-pulse text-gray-400">
+						Cargando dashboard...
+					</div>
 				</div>
 			</div>
 		)
@@ -50,7 +52,10 @@ const DashboardHome = () => {
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6">
 				<WelcomeSection userName={user?.name} />
 
-				<AppointmentsTodayCard count={data.stats.appointmentsToday} loading={loading} />
+				<AppointmentsTodayCard
+					count={data.stats.appointmentsToday}
+					loading={loading}
+				/>
 
 				<CurrencyCard />
 			</div>
@@ -60,7 +65,10 @@ const DashboardHome = () => {
 				{user?.role === "Médico" && (
 					<>
 						<GeneralStatsCard stats={data.stats} loading={loading} />
-						<SurgeryCalendarCard surgeries={data.calendarSurgeries} loading={loading} />
+						<SurgeryCalendarCard
+							surgeries={data.calendarSurgeries}
+							loading={loading}
+						/>
 						<UpcomingAppointmentsCard
 							appointments={data.appointments}
 							loading={loading}

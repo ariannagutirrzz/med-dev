@@ -1,10 +1,11 @@
 import type { Request, Response } from "express"
+import { Query, type QueryResult } from "pg"
 import { query } from "../db"
-import { sendWhatsApp } from "../utils/twilio"
 import {
 	notifyAppointmentCreated,
 	notifyAppointmentUpdated,
 } from "../utils/notificationHelpers"
+import { sendWhatsApp } from "../utils/twilio"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
@@ -26,21 +27,35 @@ export const createAppointment = async (req: Request, res: Response) => {
 	let patient_id: string
 	let doctor_id: string
 
-	// Logic to switch ID assignment based on Role
+	// Lógica de asignación basada en el Rol
 	if (role === "Médico") {
 		doctor_id = userId
-		patient_id = bodyPatientId // Doctor must specify which patient this is for
-		if (!patient_id)
+		patient_id = bodyPatientId
+		if (!patient_id) {
 			return res
 				.status(400)
-				.json({ error: "patient_id is required for doctors." })
+				.json({ error: "El ID del paciente es requerido para médicos." })
+		}
+	} else if (role === "Admin") {
+		// El administrador debe proveer ambos IDs manualmente
+		doctor_id = bodyDoctorId
+		patient_id = bodyPatientId
+
+		if (!doctor_id || !patient_id) {
+			return res.status(400).json({
+				error:
+					"Como administrador, debes especificar tanto el doctor_id como el patient_id.",
+			})
+		}
 	} else {
+		// Caso para el Rol de Paciente
 		patient_id = userId
-		doctor_id = bodyDoctorId // Patient must specify which doctor they are booking
-		if (!doctor_id)
+		doctor_id = bodyDoctorId
+		if (!doctor_id) {
 			return res
 				.status(400)
-				.json({ error: "doctor_id is required for patients." })
+				.json({ error: "El ID del doctor es requerido para pacientes." })
+		}
 	}
 
 	if (!appointment_date || !status || !notes) {
@@ -189,10 +204,9 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 		try {
 			const [patientResult, doctorResult] = await Promise.all([
-				query(
-					`SELECT name, phone FROM users WHERE document_id = $1`,
-					[patient_id],
-				),
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					patient_id,
+				]),
 				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
 					doctor_id,
 				]),
@@ -275,8 +289,8 @@ Por favor, confirma tu disponibilidad.`
 	}
 }
 
-// 2. Get all appointments (Filtered by whichever role the user has)
-export const getAllAppointments = async (req: Request, res: Response) => {
+// 2. Get filtered appointments (Filtered by whichever role the user has)
+export const getFilteredAppointments = async (req: Request, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}
@@ -311,36 +325,72 @@ export const getAllAppointments = async (req: Request, res: Response) => {
 	}
 }
 
-// 3. Get a specific appointment by ID (Secured for both roles)
-export const getAppointmentById = async (req: Request, res: Response) => {
-	const { id } = req.params
+export const getAllAppointments = async (req: Request, res: Response) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}
-	const { document_id: userId, role } = req.user
 
-	// Determine if we should check the ID against the doctor_id or patient_id column
-	const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
+	const { role } = req.user
+
+	if (role !== "Admin") {
+		return res.status(401).json({
+			error: "Solo un usuario administrativo puede hacer esta solicitud.",
+		})
+	}
 
 	try {
+		// Realizamos el JOIN para traer el nombre del doctor desde la tabla users
 		const result = await query(
-			`SELECT a.* 
-       FROM appointments a
-       LEFT JOIN users u ON (
-         CASE 
-           WHEN $2 = 'Médico' THEN a.patient_id = u.document_id 
-           ELSE a.doctor_id = u.document_id 
-         END
-       )
-       WHERE a.id = $1 AND a.${roleConstraint} = $3`,
-			[id, role, userId],
+			`SELECT 
+                a.*, 
+                p.first_name || ' ' || p.last_name as patient_name 
+             FROM appointments a
+             INNER JOIN patients p ON a.patient_id = p.document_id
+             ORDER BY a.appointment_date DESC`,
 		)
 
+		res.json({
+			appointments: result.rows,
+			message: "Appointments fetched successfully",
+		})
+	} catch (error) {
+		console.error("Error fetching appointments:", error)
+		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+// 3. Get a specific appointment by ID (Secured for both roles)
+export const getAppointmentById = async (req: Request, res: Response) => {
+	const { id } = req.params
+	if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
+	const { document_id: userId, role } = req.user
+
+	try {
+		let result: QueryResult
+		if (role === "Admin") {
+			// El Admin ve todo sin filtrar por userId
+			result = await query(
+				`SELECT a.*, u_pat.name as patient_name, u_doc.name as doctor_name
+                 FROM appointments a
+                 LEFT JOIN users u_pat ON a.patient_id = u_pat.document_id
+                 LEFT JOIN users u_doc ON a.doctor_id = u_doc.document_id
+                 WHERE a.id = $1`,
+				[id],
+			)
+		} else {
+			// Médicos y Pacientes mantienen su restricción
+			const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
+			result = await query(
+				`SELECT a.* FROM appointments a WHERE a.id = $1 AND a.${roleConstraint} = $2`,
+				[id, userId],
+			)
+		}
+
 		if (result.rowCount === 0) {
-			return res.status(404).json({
-				error:
-					"Appointment not found or you do not have permission to view it.",
-			})
+			return res
+				.status(404)
+				.json({ error: "Cita no encontrada o sin permisos." })
 		}
 
 		res.json(result.rows[0])
@@ -353,113 +403,67 @@ export const getAppointmentById = async (req: Request, res: Response) => {
 // 4. Update an appointment
 export const updateAppointment = async (req: Request, res: Response) => {
 	const { id } = req.params
-	if (!req.user) {
-		return res.status(401).json({ error: "Unauthorized: User not found" })
-	}
+	if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
 	const { document_id: userId, role } = req.user
 	const updates = req.body
 
-	const allowedFields = ["appointment_date", "status", "notes"]
+	const allowedFields = ["appointment_date", "status", "notes", "doctor_id"]
 	const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
-	// 1. Identify which fields the user is trying to update
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
-
 	if (keys.length === 0)
-		return res.status(400).json({ error: "No valid fields provided" })
+		return res.status(400).json({ error: "No valid fields" })
 
-	// 2. NEW LOGIC: Field-Level Authorization
-	// Check if 'status' is being updated by someone who is NOT a Médico
-	if (keys.includes("status") && role !== "Médico") {
-		return res.status(403).json({
-			error:
-				"Only doctors (Médicos) are authorized to update the appointment status.",
-		})
+	// Corrección de validación de status: Solo Médicos y Admins pueden cambiarlo
+	if (keys.includes("status") && role !== "Médico" && role !== "Admin") {
+		return res
+			.status(403)
+			.json({ error: "No tienes permiso para cambiar el estado." })
 	}
 
-	// 3. Validation Loop
+	// Validaciones de valores
 	for (const key of keys) {
-		const value = updates[key]
-
-		// Prevent empty mandatory fields
-		if (key !== "notes" && (value === "" || value === null)) {
-			return res.status(400).json({ error: `Field '${key}' cannot be empty.` })
+		if (
+			key === "status" &&
+			!allowedStatuses.includes(updates[key].toLowerCase())
+		) {
+			return res.status(400).json({ error: "Estado inválido." })
 		}
-		// Validate timedate value
-		if (key === "appointment_date") {
-			if (Number.isNaN(new Date(value).getTime())) {
-				return res.status(400).json({ error: "Invalid date-time format." })
-			}
-		}
-
-		// Validate status values
-		if (key === "status") {
-			if (!allowedStatuses.includes(value.toLowerCase())) {
-				return res.status(400).json({ error: "Invalid status value." })
-			}
+		if (
+			key === "appointment_date" &&
+			Number.isNaN(new Date(updates[key]).getTime())
+		) {
+			return res.status(400).json({ error: "Fecha inválida." })
 		}
 	}
 
-	// 4. Prepare SQL Query
 	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
-	const values = keys.map((key) =>
-		key === "status" ? updates[key].toLowerCase() : updates[key],
+	const values = keys.map((k) =>
+		k === "status" ? updates[k].toLowerCase() : updates[k],
 	)
 
-	const idPos = values.length + 1
-	const userIdPos = values.length + 2
-	values.push(id, userId)
-
-	// Security constraint to ensure users only edit their OWN appointments
-	const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
-
 	try {
-		const result = await query(
-			`UPDATE appointments 
-       SET ${setClause}
-       WHERE id = $${idPos} AND ${roleConstraint} = $${userIdPos}
-       RETURNING *,
-       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at, 
-       TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') as updated_at`,
-			values,
-		)
+		let queryStr = ""
+		const queryParams = [...values, id]
 
-		if (result.rowCount === 0)
-			return res
-				.status(404)
-				.json({ error: "Appointment not found or unauthorized" })
-
-		const updatedAppointment = result.rows[0]
-
-		// Create notification for appointment update
-		if (role === "Médico") {
-			try {
-				const patientResult = await query(
-					`SELECT name FROM users WHERE document_id = $1`,
-					[updatedAppointment.patient_id],
-				)
-				const patient = patientResult.rows[0]
-
-				if (patient?.name) {
-					await notifyAppointmentUpdated(
-						userId,
-						patient.name,
-						new Date(updatedAppointment.appointment_date),
-						updatedAppointment.id,
-						updatedAppointment.status,
-					)
-				}
-			} catch (notifError) {
-				console.error("Error creating update notification:", notifError)
-			}
+		if (role === "Admin") {
+			// Admin edita cualquier cita por ID
+			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length} RETURNING *`
+		} else {
+			// Otros editan solo si les pertenece
+			const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
+			queryParams.push(userId)
+			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length - 1} AND ${roleConstraint} = $${queryParams.length} RETURNING *`
 		}
 
-		res.json({
-			appointment: updatedAppointment,
-			message: "Appointment updated successfully",
-		})
+		const result = await query(queryStr, queryParams)
+		if (result.rowCount === 0)
+			return res.status(404).json({ error: "No encontrado o no autorizado" })
+
+		res.json({ appointment: result.rows[0], message: "Actualizado con éxito" })
 	} catch (error) {
-		console.error("Error updating appointment:", error)
+		console.error(error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 }
@@ -467,26 +471,34 @@ export const updateAppointment = async (req: Request, res: Response) => {
 // 5. Delete remains restricted to Doctors (as per your request)
 export const deleteAppointment = async (req: Request, res: Response) => {
 	const { id } = req.params
-	if (!req.user) {
-		return res.status(401).json({ error: "Unauthorized: User not found" })
-	}
+	if (!req.user) return res.status(401).json({ error: "Unauthorized" })
+
 	const { document_id: userId, role } = req.user
 
-	if (role !== "Médico") {
+	// Bloquear si es Paciente
+	if (role !== "Médico" && role !== "Admin") {
 		return res
 			.status(403)
-			.json({ error: "Only doctors are authorized to delete appointments." })
+			.json({ error: "Solo médicos o administradores pueden eliminar citas." })
 	}
 
 	try {
-		const result = await query(
-			`DELETE FROM appointments WHERE id = $1 AND doctor_id = $2`,
-			[id, userId],
-		)
+		let result: QueryResult
+		if (role === "Admin") {
+			// Borrado directo
+			result = await query(`DELETE FROM appointments WHERE id = $1`, [id])
+		} else {
+			// Borrado restringido a sus propias citas
+			result = await query(
+				`DELETE FROM appointments WHERE id = $1 AND doctor_id = $2`,
+				[id, userId],
+			)
+		}
 
 		if (result.rowCount === 0)
-			return res.status(404).json({ error: "Appointment not found" })
-		res.json({ message: "Appointment deleted successfully" })
+			return res.status(404).json({ error: "Cita no encontrada" })
+
+		res.json({ message: "Cita eliminada exitosamente" })
 	} catch (error) {
 		console.error("Error deleting appointment:", error)
 		res.status(500).json({ error: "Internal server error" })

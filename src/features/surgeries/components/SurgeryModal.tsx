@@ -1,19 +1,28 @@
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendar, FaClock, FaSave, FaTimes, FaUser, FaStethoscope } from "react-icons/fa"
-import { toast } from "react-toastify"
-import { useAuth } from "../../auth"
 import {
-	createSurgery,
-	updateSurgeryById,
-} from "../services/SurgeriesAPI"
-import { getPatients } from "../../patients"
-import { getMyServices } from "../../services"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
-import type { Surgery, SurgeryFormData, Patient } from "../../../shared"
-import type { DoctorServiceWithType } from "../../services"
+	FaCalendar,
+	FaClock,
+	FaSave,
+	FaStethoscope,
+	FaTimes,
+	FaUser,
+} from "react-icons/fa"
+import { toast } from "react-toastify"
+import type { Patient, Surgery, SurgeryFormData } from "../../../shared"
 import { formatPrice } from "../../../shared"
+import type { Doctor, ExtendedSurgeryFormData } from "../../../types"
+import { useAuth } from "../../auth"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import { getPatients } from "../../patients"
+import { getDoctors } from "../../patients/services/UsersAPI"
+import type { DoctorServiceWithType } from "../../services"
+import { getMyServices } from "../../services"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
+import { createSurgery, updateSurgeryById } from "../services/SurgeriesAPI"
 
 interface SurgeryModalProps {
 	isOpen: boolean
@@ -29,16 +38,20 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	editingSurgery,
 }) => {
 	const { user } = useAuth()
+	const isAdmin = user?.role === "Admin"
 	const [loading, setLoading] = useState(false)
 	const [patients, setPatients] = useState<Patient[]>([])
+	const [doctors, setDoctors] = useState<Doctor[]>()
 	const [loadingData, setLoadingData] = useState(false)
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
 	const [settings, setSettings] = useState<UserSettings | null>(null)
 	const [currencyRates, setCurrencyRates] = useState<any>(null)
-	const [selectedService, setSelectedService] = useState<DoctorServiceWithType | null>(null)
+	const [selectedService, setSelectedService] =
+		useState<DoctorServiceWithType | null>(null)
 
-	const initialValues: SurgeryFormData = {
+	const initialValues: ExtendedSurgeryFormData = {
 		patient_id: "",
+		doctor_id: "",
 		surgery_date: "",
 		surgery_type: "",
 		status: "scheduled",
@@ -46,7 +59,8 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 		service_id: null,
 	}
 
-	const [formData, setFormData] = useState<SurgeryFormData>(initialValues)
+	const [formData, setFormData] =
+		useState<ExtendedSurgeryFormData>(initialValues)
 
 	// Cargar servicios del médico
 	const loadServices = useCallback(async () => {
@@ -65,76 +79,63 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 		}
 	}, [])
 
-	// Cargar pacientes
-	const loadPatients = useCallback(async () => {
+	// Cargar Pacientes y Médicos
+	const loadInitialData = useCallback(async () => {
 		setLoadingData(true)
 		try {
-			const patientsData = await getPatients()
-			if (patientsData?.patients) {
-				const formattedPatients = patientsData.patients.map((p: Patient) => {
-					let birthdate: Date
-					if (p.birthdate instanceof Date) {
-						birthdate = p.birthdate
-					} else if (p.birthdate) {
-						const date = new Date(p.birthdate)
-						birthdate = Number.isNaN(date.getTime()) ? new Date() : date
-					} else {
-						birthdate = new Date()
-					}
-					return {
-						...p,
-						birthdate,
-					}
-				})
-				setPatients(formattedPatients)
-			} else {
-				setPatients([])
+			const promises: any[] = [getPatients()]
+			if (isAdmin) {
+				promises.push(getDoctors()) // O la función que traiga solo médicos
+			}
+
+			const [patientsData, usersData] = await Promise.all(promises)
+
+			if (patientsData?.patients) setPatients(patientsData.patients)
+			if (isAdmin && usersData) {
+				// Filtrar solo usuarios con rol médico
+				setDoctors(usersData.doctors)
 			}
 		} catch (error) {
-			console.error("Error cargando pacientes:", error)
-			setPatients([])
+			console.error("Error cargando datos iniciales:", error)
 		} finally {
 			setLoadingData(false)
 		}
-	}, [])
+	}, [isAdmin])
 
 	useEffect(() => {
 		if (isOpen) {
-			loadPatients()
-			loadServices()
+			loadInitialData()
+			if (!isAdmin) loadServices()
 		}
-	}, [isOpen, loadPatients, loadServices])
+	}, [isOpen, loadInitialData, loadServices, isAdmin])
 
 	// Cargar datos de la cirugía si es edición
 	useEffect(() => {
 		if (editingSurgery) {
-			// Convertir surgery_date de ISO string a formato datetime-local
 			const surgeryDate = new Date(editingSurgery.surgery_date)
 			const localDateTime = new Date(
 				surgeryDate.getTime() - surgeryDate.getTimezoneOffset() * 60000,
 			)
 				.toISOString()
-				.slice(0, 16) // Formato YYYY-MM-DDTHH:mm
+				.slice(0, 16)
 
 			setFormData({
 				patient_id: editingSurgery.patient_id,
+				doctor_id: editingSurgery.doctor_id, // Mapear doctor_id existente
 				surgery_date: localDateTime,
 				surgery_type: editingSurgery.surgery_type,
 				status: editingSurgery.status,
 				notes: editingSurgery.notes || "",
 				service_id: editingSurgery.service_id || null,
 			})
-			// Cargar servicios y seleccionar el servicio si existe
-			loadServices().then(() => {
-				if (editingSurgery.service_id) {
-					const service = services.find((s) => s.id === editingSurgery.service_id)
-					setSelectedService(service || null)
-				}
-			})
+
+			if (editingSurgery) {
+				loadServices()
+			}
 		} else {
 			setFormData(initialValues)
 		}
-	}, [editingSurgery])
+	}, [editingSurgery, loadServices])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -218,6 +219,40 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 				{/* Formulario */}
 				<form onSubmit={handleSubmit} className="p-6 space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-3xl shadow-lg">
+						{isAdmin && (
+							<div className="md:col-span-2 relative">
+								<label
+									htmlFor="doctor_id"
+									className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+								>
+									Médico Asignado *
+								</label>
+								<div className="relative">
+									<FaStethoscope className="absolute left-3 top-3 text-gray-400" />
+									<select
+										id="doctor_id"
+										value={formData.doctor_id}
+										required={isAdmin}
+										className={inputClass}
+										onChange={(e) => {
+											setFormData({
+												...formData,
+												doctor_id: e.target.value,
+												service_id: null, // Resetear servicio si cambia el médico
+											})
+											setSelectedService(null)
+										}}
+									>
+										<option value="">Seleccionar médico...</option>
+										{(doctors ?? []).map((doc) => (
+											<option key={doc.document_id} value={doc.document_id}>
+												{doc.name}
+											</option>
+										))}
+									</select>
+								</div>
+							</div>
+						)}
 						{/* Paciente */}
 						<div className="md:col-span-2 relative">
 							<label
@@ -239,10 +274,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							>
 								<option value="">Seleccionar paciente...</option>
 								{patients.map((patient) => (
-									<option
-										key={patient.document_id}
-										value={patient.document_id}
-									>
+									<option key={patient.document_id} value={patient.document_id}>
 										{patient.first_name} {patient.last_name} -{" "}
 										{patient.document_id}
 									</option>
@@ -264,12 +296,15 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 									value={formData.service_id?.toString() || ""}
 									className={inputClass}
 									onChange={(e) => {
-										const serviceId = e.target.value ? parseInt(e.target.value, 10) : null
+										const serviceId = e.target.value
+											? parseInt(e.target.value, 10)
+											: null
 										const service = services.find((s) => s.id === serviceId)
 										setFormData({
 											...formData,
 											service_id: serviceId,
-											surgery_type: service?.service_type.name || formData.surgery_type,
+											surgery_type:
+												service?.service_type.name || formData.surgery_type,
 										})
 										setSelectedService(service || null)
 									}}
@@ -277,7 +312,8 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 									<option value="">Seleccionar servicio...</option>
 									{services.map((service) => (
 										<option key={service.id} value={service.id}>
-											{service.service_type.name} - ${formatPrice(service.price_usd)} USD
+											{service.service_type.name} - $
+											{formatPrice(service.price_usd)} USD
 										</option>
 									))}
 								</select>
@@ -290,7 +326,8 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 													${formatPrice(selectedService.price_usd)}
 												</span>
 											</div>
-											{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+											{(settings?.custom_exchange_rate ||
+												currencyRates?.oficial?.promedio) && (
 												<div className="flex justify-between">
 													<span className="text-gray-600">Precio BS:</span>
 													<span className="font-semibold text-green-600">
@@ -452,7 +489,8 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								"Guardando..."
 							) : (
 								<>
-									<FaSave /> {editingSurgery ? "Actualizar" : "Programar"} Cirugía
+									<FaSave /> {editingSurgery ? "Actualizar" : "Programar"}{" "}
+									Cirugía
 								</>
 							)}
 						</button>
