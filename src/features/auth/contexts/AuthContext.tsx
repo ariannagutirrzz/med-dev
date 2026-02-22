@@ -1,11 +1,13 @@
 import type { ReactNode } from "react"
 import { createContext, useContext, useEffect, useState } from "react"
+import { api } from "../../../config/axios"
 
 export interface User {
 	name: string
 	email: string
 	role?: string
 	document_id?: string
+	image: string
 }
 
 interface AuthContextType {
@@ -14,6 +16,7 @@ interface AuthContextType {
 	login: (email: string, password: string) => Promise<void>
 	logout: () => void
 	loading: boolean
+	refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		const storedUser = localStorage.getItem("user")
 		const storedToken = localStorage.getItem("AUTH_TOKEN")
-		
+
 		// Only set user if both user data and token exist
 		if (storedUser && storedToken) {
 			setUser(JSON.parse(storedUser))
@@ -38,6 +41,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}
 		setLoading(false)
 	}, [])
+
+	const refreshUser = async () => {
+		const response = await api.get("/users/me")
+		if (response.data?.user) {
+			// ✅ CREAMOS UN NUEVO OBJETO (Inmutabilidad)
+			setUser({ ...response.data.user })
+		}
+	}
 
 	const login = async (email: string, password: string) => {
 		const response = await fetch("http://localhost:3001/api/auth/login", {
@@ -57,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			email: data.user?.email || email,
 			role: data.user?.role || "Paciente",
 			document_id: data.user?.document_id,
+			image: data.user?.image,
 		}
 		setUser(userData)
 		localStorage.setItem("AUTH_TOKEN", data.token)
@@ -78,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				login,
 				logout,
 				loading,
+				refreshUser,
 			}}
 		>
 			{children}
