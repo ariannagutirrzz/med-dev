@@ -415,43 +415,124 @@ export const updateAppointment = async (req: Request, res: Response) => {
 	if (keys.length === 0)
 		return res.status(400).json({ error: "No valid fields" })
 
-	// Corrección de validación de status: Solo Médicos y Admins pueden cambiarlo
+	// 1. Authorization check for status
 	if (keys.includes("status") && role !== "Médico" && role !== "Admin") {
 		return res
 			.status(403)
 			.json({ error: "No tienes permiso para cambiar el estado." })
 	}
 
-	// Validaciones de valores
-	for (const key of keys) {
-		if (
-			key === "status" &&
-			!allowedStatuses.includes(updates[key].toLowerCase())
-		) {
-			return res.status(400).json({ error: "Estado inválido." })
-		}
-		if (
-			key === "appointment_date" &&
-			Number.isNaN(new Date(updates[key]).getTime())
-		) {
-			return res.status(400).json({ error: "Fecha inválida." })
-		}
-	}
-
-	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
-	const values = keys.map((k) =>
-		k === "status" ? updates[k].toLowerCase() : updates[k],
-	)
-
 	try {
-		let queryStr = ""
+		// 2. Fetch current appointment to get doctor_id and current date if not provided in updates
+		const currentApptRes = await query(
+			`SELECT * FROM appointments WHERE id = $1`,
+			[id],
+		)
+		if (currentApptRes.rowCount === 0)
+			return res.status(404).json({ error: "Cita no encontrada" })
+
+		const currentAppt = currentApptRes.rows[0]
+		const doctor_id = updates.doctor_id || currentAppt.doctor_id
+		const appointment_date =
+			updates.appointment_date || currentAppt.appointment_date
+
+		// 3. Validation Logic (Date/Status format)
+		for (const key of keys) {
+			if (
+				key === "status" &&
+				!allowedStatuses.includes(updates[key].toLowerCase())
+			) {
+				return res.status(400).json({ error: "Estado inválido." })
+			}
+			if (
+				key === "appointment_date" &&
+				Number.isNaN(new Date(updates[key]).getTime())
+			) {
+				return res.status(400).json({ error: "Fecha inválida." })
+			}
+		}
+
+		// --- DOCTOR AVAILABILITY VALIDATION (Only if date or doctor changes) ---
+		if (keys.includes("appointment_date") || keys.includes("doctor_id")) {
+			const appointmentDate = new Date(appointment_date)
+			const appointmentDateOnly = appointmentDate.toISOString().split("T")[0]
+
+			// A. Check Unavailability (Vacations/Holidays)
+			const unavailabilityResult = await query(
+				`SELECT reason FROM doctor_unavailability 
+                 WHERE doctor_id = $1 AND is_active = TRUE
+                 AND ((end_date IS NULL AND start_date = $2::date)
+                 OR (end_date IS NOT NULL AND $2::date BETWEEN start_date AND end_date))`,
+				[doctor_id, appointmentDateOnly],
+			)
+
+			if (unavailabilityResult.rows.length > 0) {
+				const reason = unavailabilityResult.rows[0].reason
+					? ` (${unavailabilityResult.rows[0].reason})`
+					: ""
+				return res
+					.status(400)
+					.json({
+						error: `El doctor no está disponible en esta fecha${reason}.`,
+					})
+			}
+
+			// B. Check Weekly Schedule Slots
+			const dayOfWeek = appointmentDate.getDay()
+			const appointmentTime = appointmentDate.toTimeString().slice(0, 5)
+
+			const availabilityResult = await query(
+				`SELECT start_time, end_time FROM doctor_availability 
+                 WHERE doctor_id = $1 AND day_of_week = $2 AND is_active = TRUE`,
+				[doctor_id, dayOfWeek],
+			)
+
+			if (availabilityResult.rows.length > 0) {
+				const isTimeAvailable = availabilityResult.rows.some((slot) => {
+					const slotStart = slot.start_time.slice(0, 5)
+					const slotEnd = slot.end_time.slice(0, 5)
+					return appointmentTime >= slotStart && appointmentTime < slotEnd
+				})
+
+				if (!isTimeAvailable) {
+					return res
+						.status(400)
+						.json({
+							error:
+								"La hora seleccionada no está dentro del horario del doctor.",
+						})
+				}
+			}
+
+			// C. Check Double Booking (Exclude the current appointment being updated!)
+			const existingAppointmentResult = await query(
+				`SELECT id FROM appointments 
+                 WHERE doctor_id = $1 
+                 AND appointment_date = $2::timestamp
+                 AND id != $3
+                 AND status NOT IN ('cancelled', 'completed')`,
+				[doctor_id, appointment_date, id],
+			)
+
+			if (existingAppointmentResult.rows.length > 0) {
+				return res
+					.status(400)
+					.json({ error: "Este horario ya está reservado por otra cita." })
+			}
+		}
+		// --- END OF AVAILABILITY VALIDATION ---
+
+		// 4. Build and Execute Update
+		const values = keys.map((k) =>
+			k === "status" ? updates[k].toLowerCase() : updates[k],
+		)
+		const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
 		const queryParams = [...values, id]
 
+		let queryStr = ""
 		if (role === "Admin") {
-			// Admin edita cualquier cita por ID
 			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length} RETURNING *`
 		} else {
-			// Otros editan solo si les pertenece
 			const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
 			queryParams.push(userId)
 			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length - 1} AND ${roleConstraint} = $${queryParams.length} RETURNING *`
@@ -463,7 +544,7 @@ export const updateAppointment = async (req: Request, res: Response) => {
 
 		res.json({ appointment: result.rows[0], message: "Actualizado con éxito" })
 	} catch (error) {
-		console.error(error)
+		console.error("Error updating appointment:", error)
 		res.status(500).json({ error: "Internal server error" })
 	}
 }

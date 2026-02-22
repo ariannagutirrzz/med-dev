@@ -483,11 +483,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								onChange={(date: Dayjs | null) => {
 									if (date) {
 										const dateStr = date.format("YYYY-MM-DD")
-										const currentTime =
-											formData.appointment_date.split("T")[1] || "09:00"
 										setFormData({
 											...formData,
-											appointment_date: `${dateStr}T${currentTime}`,
+											appointment_date: `${dateStr}T`,
 										})
 										// Cargar slots disponibles cuando cambia la fecha
 										if (formData.doctor_id) {
@@ -626,7 +624,13 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 					<div className="flex gap-3 pt-4">
 						<button
 							type="button"
-							onClick={onClose}
+							onClick={() => {
+								onClose()
+								setFormData({
+									...initialValues,
+									doctor_id: user?.document_id,
+								})
+							}}
 							className="flex-1 py-3 border-2 cursor-pointer border-gray-300 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition-colors"
 						>
 							Cancelar
