@@ -1,4 +1,5 @@
 import { Router } from "express"
+import multer from "multer"
 import {
 	createMedicalRecord,
 	deleteMedicalRecord,
@@ -69,13 +70,29 @@ const medicalRecordsRoutes: Router = Router()
  *
  */
 
+const upload = multer({ storage: multer.memoryStorage() })
+
 medicalRecordsRoutes.use(authenticate)
 medicalRecordsRoutes.use(isMedic)
 
-medicalRecordsRoutes.post("/", createMedicalRecord)
+medicalRecordsRoutes.post(
+	"/",
+	upload.fields([
+		{ name: "rx_torax", maxCount: 1 },
+		{ name: "tomography", maxCount: 1 },
+	]),
+	createMedicalRecord,
+)
 medicalRecordsRoutes.get("/patient/:patientId", getPatientHistory)
 medicalRecordsRoutes.get("/:id", getRecordById)
-medicalRecordsRoutes.patch("/:id", updateMedicalRecord)
+medicalRecordsRoutes.patch(
+	"/:id",
+	upload.fields([
+		{ name: "rx_torax", maxCount: 1 },
+		{ name: "tomography", maxCount: 1 },
+	]),
+	updateMedicalRecord,
+)
 medicalRecordsRoutes.delete("/:id", deleteMedicalRecord)
 
 export default medicalRecordsRoutes
