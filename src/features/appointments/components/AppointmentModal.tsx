@@ -29,6 +29,17 @@ import {
 	type UserSettings,
 } from "../../settings/services/SettingsAPI"
 import {
+	type CurrencyRates,
+	getCurrencyRates,
+} from "../../currency/services/CurrencyAPI"
+import { getPatients } from "../../patients"
+import type { DoctorServiceWithType } from "../../services"
+import { getDoctorServices } from "../../services"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
+import {
 	createAppointment,
 	updateAppointmentById,
 } from "../services/AppointmentsAPI"
@@ -186,11 +197,20 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 					...initialValues,
 					doctor_id: user.document_id,
 				})
+				loadServices(user.document_id)
 			} else {
 				setFormData(initialValues)
 			}
 		}
-	}, [editingAppointment, loadServices, user])
+	}, [editingAppointment, user, loadServices])
+
+	// Añadir este useEffect para manejar cambios globales de ID de doctor y Fecha
+	useEffect(() => {
+		const datePart = formData.appointment_date.split("T")[0]
+		if (formData.doctor_id && datePart) {
+			loadAvailableTimeSlots(formData.doctor_id, datePart)
+		}
+	}, [formData.doctor_id, formData.appointment_date, loadAvailableTimeSlots])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -393,7 +413,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 						{/* Fecha */}
 						<div>
-							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
+							<label
+								htmlFor="date"
+								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+							>
 								Fecha *
 							</label>
 							<DatePicker
@@ -428,13 +451,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 						{/* Hora */}
 						<div>
-							<label className="text-xs font-bold text-gray-700 mb-1 block ml-1">
+							<label
+								htmlFor="time"
+								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+							>
 								Hora *
 							</label>
 							{formData.doctor_id &&
 							formData.appointment_date.split("T")[0] &&
 							availableTimeSlots.length > 0 ? (
 								<Select
+									id="time"
 									value={formData.appointment_date.split("T")[1] || undefined}
 									onChange={(time) => {
 										const date = formData.appointment_date.split("T")[0] || ""
