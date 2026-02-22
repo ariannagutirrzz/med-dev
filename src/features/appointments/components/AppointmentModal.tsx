@@ -2,6 +2,8 @@ import { DatePicker, Select, TimePicker } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter"
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore"
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
 import {
@@ -43,7 +45,20 @@ import {
 	createAppointment,
 	updateAppointmentById,
 } from "../services/AppointmentsAPI"
-import { getAvailableTimeSlots } from "../services/DoctorAvailabilityAPI"
+import {
+	type DoctorAvailability,
+	getAvailableTimeSlots,
+	getDoctorAvailability,
+} from "../services/DoctorAvailabilityAPI"
+import {
+	type DoctorUnavailability,
+	getDoctorUnavailability,
+} from "../services/DoctorUnavailabilityAPI"
+
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrAfter) // Activa el plugin
+dayjs.extend(isSameOrBefore) // Activa el plugin
+dayjs.locale("es")
 
 interface AppointmentModalProps {
 	isOpen: boolean
@@ -72,6 +87,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	const isDoctor = user?.role === "Médico"
 	const isAdmin = user?.role === "Admin"
 	const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
+	const [availability, setAvailability] = useState<DoctorAvailability[]>([])
+	const [unavailability, setUnavailability] = useState<DoctorUnavailability[]>(
+		[],
+	)
 	const [loadingTimeSlots, setLoadingTimeSlots] = useState(false)
 
 	const initialValues: AppointmentFormData = {
@@ -84,6 +103,26 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 	}
 
 	const [formData, setFormData] = useState<AppointmentFormData>(initialValues)
+
+	const loadDoctorSchedule = useCallback(async (doctorId: string) => {
+		try {
+			const [availRes, unavailRes] = await Promise.all([
+				getDoctorAvailability(doctorId), // Ajusta la ruta a tu API
+				getDoctorUnavailability(doctorId),
+			])
+			setAvailability(availRes.availability)
+			setUnavailability(unavailRes.unavailability || [])
+		} catch (error) {
+			console.error("Error cargando horarios:", error)
+		}
+	}, [])
+
+	// Ejecutar cuando cambie el doctor_id
+	useEffect(() => {
+		if (formData.doctor_id) {
+			loadDoctorSchedule(formData.doctor_id)
+		}
+	}, [formData.doctor_id, loadDoctorSchedule])
 
 	// Cargar servicios cuando cambia el doctor_id
 	const loadServices = useCallback(async (doctorId: string) => {
@@ -178,6 +217,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 				.toISOString()
 				.slice(0, 16) // Formato YYYY-MM-DDTHH:mm
 
+			const justDate = localDateTime.split("T")[0]
+			loadAvailableTimeSlots(editingAppointment.doctor_id, justDate)
 			setFormData({
 				patient_id: editingAppointment.patient_id,
 				doctor_id: editingAppointment.doctor_id,
@@ -202,28 +243,58 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 				setFormData(initialValues)
 			}
 		}
-	}, [editingAppointment, user, loadServices])
+	}, [editingAppointment, user, loadServices, loadAvailableTimeSlots])
 
-	// Añadir este useEffect para manejar cambios globales de ID de doctor y Fecha
-	useEffect(() => {
-		const datePart = formData.appointment_date.split("T")[0]
-		if (formData.doctor_id && datePart) {
-			loadAvailableTimeSlots(formData.doctor_id, datePart)
-		}
-	}, [formData.doctor_id, formData.appointment_date, loadAvailableTimeSlots])
+	const isDateDisabled = (current: Dayjs) => {
+		// 1. Bloquear fechas pasadas
+		if (current && current < dayjs().startOf("day")) return true
+
+		// Si no hay médico seleccionado, bloqueamos todo para forzar la selección del médico primero
+		if (!formData.doctor_id) return true
+
+		// Si aún está cargando o no hay disponibilidad configurada, bloqueamos por seguridad
+		if (availability.length === 0) return true
+
+		// 2. Bloquear si el día de la semana no está en la disponibilidad
+		// dayjs.day() retorna: 0 (Dom), 1 (Lun), 2 (Mar), 3 (Mie), 4 (Jue), 5 (Vie), 6 (Sab)
+		const dayOfWeek = current.day()
+
+		const isAvailableDay = availability.some(
+			(a) => Number(a.day_of_week) === dayOfWeek,
+		)
+
+		if (!isAvailableDay) return true
+
+		// 3. Bloquear si cae en un rango de No Disponibilidad (vacaciones/bajas)
+		const isInsideUnavailability = unavailability.some((u) => {
+			// 1. Forzamos la creación de objetos dayjs sin que la zona horaria afecte el día
+			// Usamos el formato exacto que viene de tu DB
+			const start = dayjs(u.start_date).startOf("day")
+			const end = dayjs(u.end_date).endOf("day")
+
+			// 2. Comparamos solo por el componente 'day' para ignorar horas/minutos
+			// Esto es equivalente a isSameOrAfter pero más estricto con la granularidad
+			const isAfterOrEqual =
+				current.isAfter(start, "day") || current.isSame(start, "day")
+			const isBeforeOrEqual =
+				current.isBefore(end, "day") || current.isSame(end, "day")
+
+			return isAfterOrEqual && isBeforeOrEqual
+		})
+
+		return isInsideUnavailability
+	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		setLoading(true)
 
 		try {
-			// Convertir fecha local a ISO string para el backend
-			const dateTime = new Date(formData.appointment_date)
-			const isoDateTime = dateTime.toISOString()
-
 			const appointmentData: AppointmentFormData = {
 				...formData,
-				appointment_date: isoDateTime,
+				appointment_date: dayjs(formData.appointment_date).format(
+					"YYYY-MM-DD HH:mm:ss",
+				),
 			}
 
 			if (editingAppointment) {
@@ -443,9 +514,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								format="DD/MM/YYYY"
 								className="w-full"
 								placeholder="Seleccionar fecha"
-								disabledDate={(current) =>
-									current && current < dayjs().startOf("day")
-								}
+								disabled={!formData.doctor_id} // No dejar elegir fecha sin médico
+								disabledDate={isDateDisabled}
 							/>
 						</div>
 
@@ -500,6 +570,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									format="HH:mm"
 									className="w-full"
 									placeholder="Seleccionar hora"
+									disabled={
+										!formData.appointment_date ||
+										availableTimeSlots.length === 0
+									}
 									minuteStep={30}
 								/>
 							)}
@@ -508,8 +582,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								availableTimeSlots.length === 0 &&
 								!loadingTimeSlots && (
 									<p className="text-xs text-gray-500 mt-1">
-										No hay horarios disponibles configurados para este día.
-										Puede seleccionar cualquier hora.
+										No hay horarios disponibles para este día.
 									</p>
 								)}
 						</div>

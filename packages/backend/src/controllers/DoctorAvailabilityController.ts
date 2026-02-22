@@ -107,6 +107,23 @@ export const getAvailableTimeSlots = async (req: Request, res: Response) => {
 		})
 	}
 
+	const dateString = (date as string).split("T")[0]
+	const [year, month, day] = dateString.split("-").map(Number)
+	const safeDate = new Date(year, month - 1, day)
+	const dayOfWeek = safeDate.getDay()
+
+	if (Number.isNaN(dayOfWeek)) {
+		return res.status(400).json({ error: "Invalid date format" })
+	}
+
+	const now = new Date()
+	const isToday =
+		now.getFullYear() === year &&
+		now.getMonth() + 1 === month &&
+		now.getDate() === day
+
+	const currentTotalMinutes = now.getHours() * 60 + now.getMinutes()
+
 	try {
 		// Check if doctor is unavailable for this date
 		const unavailabilityResult = await query(
@@ -131,7 +148,11 @@ export const getAvailableTimeSlots = async (req: Request, res: Response) => {
 
 		// Get day of week (0 = Sunday, 6 = Saturday)
 		const targetDate = new Date(date as string)
-		const dayOfWeek = targetDate.getDay()
+		let dayOfWeek = targetDate.getDay()
+
+		const [year, month, day] = (date as string).split("-").map(Number)
+		const safeDate = new Date(year, month - 1, day) // Mes es 0-indexed
+		dayOfWeek = safeDate.getDay()
 
 		// Get doctor's availability for this day
 		const availabilityResult = await query(
@@ -185,6 +206,8 @@ export const getAvailableTimeSlots = async (req: Request, res: Response) => {
 				minutes < endMinutes;
 				minutes += slotDuration
 			) {
+				if (isToday && minutes <= currentTotalMinutes) continue
+
 				const hours = Math.floor(minutes / 60)
 				const mins = minutes % 60
 				const timeSlot = `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`
