@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { FaMagic, FaPaperPlane, FaRobot } from "react-icons/fa"
 import { FaUserDoctor } from "react-icons/fa6"
 import { toast } from "react-toastify"
+import { Button } from "../../../shared"
 import { generateAIResponse } from "../services/AiAPI"
 
 interface Message {
@@ -184,20 +185,17 @@ export default function GenerateAI() {
 							className="flex-1 bg-transparent px-5 py-3 outline-none text-gray-700 text-sm font-medium"
 							disabled={isLoading}
 						/>
-						<button
+						<Button
 							type="submit"
 							disabled={!prompt.trim() || isLoading}
-							className={`p-3.5 rounded-2xl transition-all flex items-center justify-center ${
+							loading={isLoading}
+							icon={<FaPaperPlane size={16} className={isLoading ? "animate-pulse" : ""} />}
+							className={`!p-3.5 !rounded-2xl !min-w-0 ${
 								prompt.trim() && !isLoading
-									? "bg-primary text-white shadow-lg hover:scale-105 cursor-pointer"
-									: "bg-gray-100 text-gray-400 cursor-not-allowed"
+									? "shadow-lg hover:scale-105"
+									: "!bg-gray-100 !text-gray-400 !border-0"
 							}`}
-						>
-							<FaPaperPlane
-								size={16}
-								className={isLoading ? "animate-pulse" : ""}
-							/>
-						</button>
+						/>
 					</div>
 				</form>
 				<p className="text-[10px] text-center text-gray-400 mt-3 uppercase tracking-widest font-bold">

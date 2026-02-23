@@ -3,7 +3,7 @@ import { FaBoxOpen } from "react-icons/fa"
 import { toast } from "react-toastify"
 import { deleteSupplyById, getSupplies } from "../services/SuppliesAPI"
 import type { Supply } from "../../../shared"
-import { ConfirmModal } from "../../../shared"
+import { Button, ConfirmModal } from "../../../shared"
 import CreateSupplyModal from "./CreateSupplyModal" // Asegúrate de importarlo
 import InventoryHeader from "./InventoryHeader"
 import InventoryRow from "./InventoryRow"
@@ -92,13 +92,13 @@ const Inventory = () => {
 					setCategoryFilter={setCategoryFilter}
 					categoryFilter={categoryFilter}
 				/>
-				<button
+				<Button
 					type="button"
 					onClick={() => setIsModalOpen(true)}
-					className="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md whitespace-nowrap cursor-pointer"
+					className="!px-6 !py-3 !rounded-xl font-bold whitespace-nowrap"
 				>
 					+ Nuevo Insumo
-				</button>
+				</Button>
 			</div>
 
 			<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

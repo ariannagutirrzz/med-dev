@@ -1,6 +1,7 @@
 import { FaEdit, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa"
 import { MdOutlineMedicalServices } from "react-icons/md"
 import type { Supply } from "../../../shared"
+import { Button } from "../../../shared"
 
 const InventoryRow = ({
 	item,
@@ -58,22 +59,23 @@ const InventoryRow = ({
 			</td>
 			<td className="px-6 py-4 text-right">
 				<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-					<button
+					<Button
 						type="button"
+						variant="text"
 						onClick={onEdit}
-						className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all cursor-pointer"
+						icon={<FaEdit size={16} />}
+						className="!p-2 !min-w-0 text-blue-600 hover:!bg-blue-100"
 						title="Editar"
-					>
-						<FaEdit size={16} />
-					</button>
-					<button
+					/>
+					<Button
 						type="button"
+						variant="text"
+						danger
 						onClick={() => onDelete(item.id)}
-						className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-all cursor-pointer"
+						icon={<FaTrashAlt size={14} />}
+						className="!p-2 !min-w-0 hover:!bg-red-100"
 						title="Eliminar"
-					>
-						<FaTrashAlt size={14} />
-					</button>
+					/>
 				</div>
 			</td>
 		</tr>

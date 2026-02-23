@@ -6,6 +6,7 @@ import {
 	FaFilePdf,
 } from "react-icons/fa"
 import { toast } from "react-toastify"
+import { Button } from "../../../shared"
 import {
 	downloadBlob,
 	generateAppointmentsReport,
@@ -132,21 +133,22 @@ const ReportsSection = () => {
 					</h3>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{reportOptions.map((option) => (
-							<button
+							<Button
 								key={option.value}
 								type="button"
+								variant="default"
 								onClick={() => setSelectedReport(option.value)}
-								className={`p-4 border-2 rounded-xl text-left transition-all cursor-pointer ${
+								className={`!p-4 !h-auto !border-2 !rounded-xl text-left block ${
 									selectedReport === option.value
-										? "border-primary bg-primary/5"
-										: "border-gray-200 hover:border-gray-300"
+										? "!border-primary !bg-primary/5"
+										: "!border-gray-200 hover:!border-gray-300"
 								}`}
 							>
 								<h3 className="font-semibold text-gray-800 mb-1">
 									{option.label}
 								</h3>
 								<p className="text-sm text-gray-600">{option.description}</p>
-							</button>
+							</Button>
 						))}
 					</div>
 				</div>
@@ -157,30 +159,32 @@ const ReportsSection = () => {
 						Formato
 					</h3>
 					<div className="flex gap-4">
-						<button
+						<Button
 							type="button"
+							variant={format === "pdf" ? "primary" : "default"}
 							onClick={() => setFormat("pdf")}
-							className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all cursor-pointer ${
+							icon={<FaFilePdf className="w-5 h-5" />}
+							className={
 								format === "pdf"
-									? "border-primary bg-primary text-white"
-									: "border-gray-300 text-gray-700 hover:border-gray-400"
-							}`}
+									? "!border-2 !border-primary"
+									: "!border-2 !border-gray-300 text-gray-700 hover:!border-gray-400"
+							}
 						>
-							<FaFilePdf className="w-5 h-5" />
 							PDF
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
+							variant={format === "excel" ? "primary" : "default"}
 							onClick={() => setFormat("excel")}
-							className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all cursor-pointer ${
+							icon={<FaFileExcel className="w-5 h-5" />}
+							className={
 								format === "excel"
-									? "border-primary bg-primary text-white"
-									: "border-gray-300 text-gray-700 hover:border-gray-400"
-							}`}
+									? "!border-2 !border-primary"
+									: "!border-2 !border-gray-300 text-gray-700 hover:!border-gray-400"
+							}
 						>
-							<FaFileExcel className="w-5 h-5" />
 							Excel
-						</button>
+						</Button>
 					</div>
 				</div>
 
@@ -283,24 +287,17 @@ const ReportsSection = () => {
 				)}
 
 				{/* Generate Button */}
-				<button
+				<Button
 					type="button"
 					onClick={handleGenerateReport}
 					disabled={loading}
-					className="w-full bg-primary text-white px-6 py-3 rounded-xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+					loading={loading}
+					icon={<FaDownload className="w-5 h-5" />}
+					block
+					className="!px-6 !py-3 !rounded-xl"
 				>
-					{loading ? (
-						<>
-							<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-							Generando...
-						</>
-					) : (
-						<>
-							<FaDownload className="w-5 h-5" />
-							Generar y Descargar Reporte
-						</>
-					)}
-				</button>
+					Generar y Descargar Reporte
+				</Button>
 			</div>
 		</div>
 	)

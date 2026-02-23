@@ -4,7 +4,7 @@ import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 // 1. Importamos el service
 import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import type { Patient } from "../../../shared"
-import { calcularEdad, formatPhoneDisplay } from "../../../shared"
+import { Button, calcularEdad, formatPhoneDisplay } from "../../../shared"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
@@ -96,23 +96,24 @@ export default function MedicalRecords() {
 									{selectedPatient.first_name} {selectedPatient.last_name}
 								</span>
 							</h3>
-							<button
+							<Button
 								type="button"
+								variant="default"
 								onClick={handleBack}
-								className="cursor-pointer flex items-center gap-2 text-primary font-bold hover:bg-primary/10 px-4 py-2 rounded-xl transition-all"
+								icon={<LuArrowLeft className="w-5 h-5" />}
+								className="!font-bold !px-4 !py-2 !rounded-xl border-primary text-primary hover:!bg-primary/10"
 							>
-								<LuArrowLeft className="w-5 h-5" />
 								Volver
-							</button>
+							</Button>
 						</div>
-						<button
+						<Button
 							type="button"
 							onClick={() => setNewEvolution(true)}
-							className="flex items-center gap-2 cursor-pointer bg-primary text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all shadow-lg font-bold text-sm"
+							icon={<LuPlus className="w-5 h-5" />}
+							className="!px-6 !py-3 !rounded-2xl !font-bold !text-sm"
 						>
-							<LuPlus className="w-5 h-5" />
 							REGISTRAR EVOLUCIÓN
-						</button>
+						</Button>
 					</div>
 
 					<ClinicalEvolution
@@ -144,16 +145,17 @@ export default function MedicalRecords() {
 				</h3>
 
 				<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-2">
-					<button
+					<Button
 						type="button"
+						variant="default"
 						onClick={handleCreatePatient}
-						className="group relative w-full h-100 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-4 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer shadow-sm"
+						className="!w-full !h-100 !rounded-[2.5rem] !border-2 !border-dashed border-gray-300 !flex !flex-col !items-center !justify-center !p-4 hover:!border-primary hover:!bg-primary/5 !bg-white !shadow-sm group"
 					>
 						<CiSquarePlus className="text-primary w-14 h-14 transition-transform duration-300 group-hover:scale-110" />
 						<span className="text-gray-400 mt-2 font-black uppercase text-xs tracking-widest group-hover:text-primary">
 							Nuevo Registro
 						</span>
-					</button>
+					</Button>
 
 					{filteredRecords.map((record) => (
 						<div key={record.document_id} className="relative group">
@@ -227,14 +229,14 @@ export default function MedicalRecords() {
 								</div>
 							</button>
 
-							<button
+							<Button
 								type="button"
+								variant="text"
 								onClick={(e) => handleEditPatient(e, record)}
-								className="absolute bottom-7 right-4 p-2 bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary hover:shadow-lg hover:scale-110 rounded-2xl transition-all cursor-pointer z-10 shadow-md"
+								icon={<LuPencilLine className="h-6 w-6" />}
+								className="absolute bottom-7 right-4 !p-2 !min-w-0 bg-white border border-gray-100 text-gray-400 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl z-10 shadow-md"
 								title="Editar información del paciente"
-							>
-								<LuPencilLine className="h-6 w-6" />
-							</button>
+							/>
 						</div>
 					))}
 

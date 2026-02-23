@@ -1,3 +1,5 @@
+import { Button } from "../../../shared"
+
 interface SelectionButtonsProps {
 	isLogin: boolean
 	onAuthToggle: (isLoginMode: boolean) => void
@@ -5,29 +7,25 @@ interface SelectionButtonsProps {
 
 const SelectionButtons = ({ isLogin, onAuthToggle }: SelectionButtonsProps) => {
 	return (
-		<div className="flex gap-2 rounded-3xl p-1.5 bg-muted/30 max-w-xl mx-auto">
-			<button
+		<div className="flex gap-2 rounded-xl p-1.5 bg-muted/30 max-w-xl mx-auto shadow-md border border-gray-200/80">
+			<Button
 				type="button"
+				variant={isLogin ? "primary" : "default"}
 				onClick={() => onAuthToggle(true)}
-				className={`w-full font-semibold py-3.5 px-16 rounded-2xl text-base transition-all duration-300 whitespace-nowrap cursor-pointer ${
-					isLogin
-						? "bg-primary text-white shadow-lg"
-						: "text-muted hover:text-text"
-				}`}
+				block
+				className="rounded-lg py-4 px-6 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg min-h-14"
 			>
 				Iniciar Sesión
-			</button>
-			<button
+			</Button>
+			<Button
 				type="button"
+				variant={!isLogin ? "primary" : "default"}
 				onClick={() => onAuthToggle(false)}
-				className={`w-full font-semibold py-3.5 px-16 rounded-2xl text-base transition-all duration-300 whitespace-nowrap cursor-pointer ${
-					!isLogin
-						? "bg-primary text-white shadow-lg"
-						: "text-muted hover:text-text"
-				}`}
+				block
+				className="rounded-lg py-4 px-6 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg text-muted hover:text-text min-h-14"
 			>
 				Registrarse
-			</button>
+			</Button>
 		</div>
 	)
 }

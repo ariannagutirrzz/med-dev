@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { HiOutlineBars3 } from "react-icons/hi2"
 import { useLocation } from "react-router-dom"
-import { Sidebar } from "../../../shared"
+import { Button, Sidebar } from "../../../shared"
 import { DashboardLayoutProvider } from "../contexts/DashboardLayoutContext"
 import { useIsMobile } from "../hooks/useIsMobile"
 
@@ -90,14 +90,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 					{/* En páginas que no son home, barra con solo hamburger para abrir menú */}
 					{isMobile && location.pathname !== "/dashboard/home" && (
 						<div className="flex items-center shrink-0 h-10 px-3 border-b border-gray-200 bg-white/95">
-							<button
+							<Button
 								type="button"
+								variant="text"
 								onClick={onToggleSidebar}
 								aria-label="Abrir menú"
-								className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 cursor-pointer"
+								className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center text-gray-600 hover:!bg-gray-100 !rounded-md"
 							>
 								<HiOutlineBars3 className="w-5 h-5" />
-							</button>
+							</Button>
 						</div>
 					)}
 					{children}

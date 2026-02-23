@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Supply } from "../../../shared"
+import { Button } from "../../../shared"
 import { createSupply, updateSupplyById } from "../services/SuppliesAPI"
 
 interface CreateSupplyModalProps {
@@ -97,13 +98,14 @@ const CreateSupplyModal = ({
 								: "Nuevo Insumo Médico"}
 						</h2>
 					</div>
-					<button
+					<Button
 						type="button"
+						variant="text"
 						onClick={onClose}
-						className="hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
+						className="hover:bg-white/20 !p-2 rounded-full"
 					>
 						<FaTimes size={20} />
-					</button>
+					</Button>
 				</div>
 
 				{/* Formulario */}
@@ -262,26 +264,23 @@ const CreateSupplyModal = ({
 
 					{/* Botones de Acción */}
 					<div className="flex gap-3 pt-4">
-						<button
+						<Button
 							type="button"
+							variant="default"
 							onClick={onClose}
-							className="flex-1 py-3 border-2 cursor-pointer border-muted-light text-muted font-bold rounded-2xl hover:bg-muted-light/30 transition-colors"
+							className="flex-1 !py-3 border-2 border-muted-light text-muted font-bold rounded-2xl"
 						>
 							Cancelar
-						</button>
-						<button
+						</Button>
+						<Button
 							type="submit"
 							disabled={loading}
-							className="flex-1 py-3 cursor-pointer bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+							loading={loading}
+							icon={<FaSave />}
+							className="flex-1 !py-3 font-bold rounded-2xl"
 						>
-							{loading ? (
-								"Guardando..."
-							) : (
-								<>
-									<FaSave /> Guardar Insumo
-								</>
-							)}
-						</button>
+							Guardar Insumo
+						</Button>
 					</div>
 				</form>
 			</div>
