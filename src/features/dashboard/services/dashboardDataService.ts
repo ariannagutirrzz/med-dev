@@ -1,4 +1,4 @@
-import type { Appointment, Patient, Supply, Surgery } from "../../../shared"
+import type { Appointment, Patient, Surgery } from "../../../shared"
 import { getFilteredAppointments } from "../../appointments"
 import { getLowStockSupplies } from "../../inventory"
 import { getDoctorPatients } from "../../patients"
@@ -44,7 +44,7 @@ export const fetchDashboardData = async (
 		}
 	}
 
-	// Fetch surgeries (only for doctors)
+	// Fetch surgeries (for Médico: all/filtered by doctor; for Paciente: only their own via API)
 	let surgeries: Surgery[] = []
 	if (userRole === "Médico") {
 		try {
@@ -56,6 +56,13 @@ export const fetchDashboardData = async (
 			}
 		} catch (error) {
 			console.error("Error cargando cirugías:", error)
+		}
+	} else if (userRole === "Paciente") {
+		try {
+			const surgeriesData = await getSurgeries()
+			surgeries = surgeriesData.surgeries || []
+		} catch (error) {
+			console.error("Error cargando cirugías del paciente:", error)
 		}
 	}
 

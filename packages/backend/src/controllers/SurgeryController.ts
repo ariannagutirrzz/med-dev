@@ -193,20 +193,37 @@ Por favor, confirma tu disponibilidad.`
 	}
 }
 
-// 2. Get All Surgeries
-export const getAllSurgeries = async (_req: Request, res: Response) => {
+// 2. Get All Surgeries (Médico/Admin: all; Paciente: only their own)
+export const getAllSurgeries = async (req: Request, res: Response) => {
 	try {
-		// Joining with patients and users to show names instead of just IDs
-		const result = await query(
-			`SELECT s.*, 
-                    p.first_name as patient_first_name, p.last_name as patient_last_name,
-                    u.name as doctor_name
-             FROM surgeries s
-             JOIN patients p ON s.patient_id = p.document_id
-             JOIN users u ON s.doctor_id = u.document_id
-             ORDER BY s.surgery_date ASC`,
-			[],
-		)
+		const role = req.user?.role
+		const documentId = req.user?.document_id
+
+		let result: Awaited<ReturnType<typeof query>>
+		if (role === "Paciente" && documentId) {
+			result = await query(
+				`SELECT s.*, 
+						p.first_name as patient_first_name, p.last_name as patient_last_name,
+						u.name as doctor_name
+				 FROM surgeries s
+				 JOIN patients p ON s.patient_id = p.document_id
+				 JOIN users u ON s.doctor_id = u.document_id
+				 WHERE s.patient_id = $1
+				 ORDER BY s.surgery_date ASC`,
+				[documentId],
+			)
+		} else {
+			result = await query(
+				`SELECT s.*, 
+						p.first_name as patient_first_name, p.last_name as patient_last_name,
+						u.name as doctor_name
+				 FROM surgeries s
+				 JOIN patients p ON s.patient_id = p.document_id
+				 JOIN users u ON s.doctor_id = u.document_id
+				 ORDER BY s.surgery_date ASC`,
+				[],
+			)
+		}
 		res.json({ surgeries: result.rows })
 	} catch (error) {
 		console.error("Error fetching surgeries:", error)
@@ -214,17 +231,34 @@ export const getAllSurgeries = async (_req: Request, res: Response) => {
 	}
 }
 
-// 3. Get Surgery By ID
+// 3. Get Surgery By ID (Paciente can only read their own)
 export const getSurgeryById = async (req: Request, res: Response) => {
 	const { id } = req.params
+	const role = req.user?.role
+	const documentId = req.user?.document_id
+
 	try {
-		const result = await query(`SELECT * FROM surgeries WHERE id = $1`, [id])
+		const result = await query(
+			`SELECT s.*, 
+					p.first_name as patient_first_name, p.last_name as patient_last_name,
+					u.name as doctor_name
+			 FROM surgeries s
+			 LEFT JOIN patients p ON s.patient_id = p.document_id
+			 LEFT JOIN users u ON s.doctor_id = u.document_id
+			 WHERE s.id = $1`,
+			[id],
+		)
 
 		if (result.rowCount === 0) {
 			return res.status(404).json({ error: "Surgery record not found." })
 		}
 
-		res.json(result.rows[0])
+		const surgery = result.rows[0]
+		if (role === "Paciente" && surgery.patient_id !== documentId) {
+			return res.status(403).json({ error: "Forbidden: You can only view your own surgeries." })
+		}
+
+		res.json(surgery)
 	} catch (error) {
 		console.error("Error fetching surgery:", error)
 		res.status(500).json({ error: "Internal server error" })
