@@ -66,10 +66,27 @@ export const createSurgery = async (req: Request, res: Response) => {
 			)
 			const patient = patientResult.rows[0]
 
-			if (patient) {
+			const doctorResult = await query(
+				`SELECT name FROM users WHERE document_id = $1`,
+				[doctor_id],
+			)
+			const doctor = doctorResult.rows[0]
+
+			if (patient && doctor) {
 				const patientName = `${patient.first_name} ${patient.last_name}`
+				// Notificación para el medico
 				await notifySurgeryCreated(
 					doctor_id,
+					patientName,
+					doctor.name,
+					new Date(surgery_date),
+					surgery_type,
+					surgery.id,
+				)
+				// Notificación para el paciente
+				await notifySurgeryCreated(
+					patient_id,
+					doctor.name,
 					patientName,
 					new Date(surgery_date),
 					surgery_type,
@@ -208,11 +225,27 @@ export const updateSurgery = async (req: Request, res: Response) => {
 			)
 			const patient = patientResult.rows[0]
 
-			if (patient) {
+			const doctorResult = await query(
+				`SELECT name FROM users WHERE document_id = $1`,
+				[updatedSurgery.doctor_id],
+			)
+			const doctor = doctorResult.rows[0]
+
+			if (patient && doctor) {
 				const patientName = `${patient.first_name} ${patient.last_name}`
+				// Notificación para el médico
 				await notifySurgeryUpdated(
 					updatedSurgery.doctor_id, // Usamos el doctor actual de la cirugía
 					patientName,
+					new Date(updatedSurgery.surgery_date),
+					updatedSurgery.surgery_type,
+					updatedSurgery.id,
+					updatedSurgery.status,
+				)
+				// Notificación para el paciente
+				await notifySurgeryUpdated(
+					updatedSurgery.patient_id, // Usamos el doctor actual de la cirugía
+					doctor.name,
 					new Date(updatedSurgery.surgery_date),
 					updatedSurgery.surgery_type,
 					updatedSurgery.id,

@@ -572,33 +572,32 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 						</div>
 
 						{/* Estado - Solo editable por médicos */}
-						{isDoctor ||
-							(isAdmin && (
-								<div className="relative">
-									<label
-										htmlFor="status"
-										className="text-xs font-bold text-gray-700 mb-1 block ml-1"
-									>
-										Estado
-									</label>
-									<select
-										id="status"
-										value={formData.status}
-										className={inputClass}
-										onChange={(e) =>
-											setFormData({
-												...formData,
-												status: e.target.value as AppointmentFormData["status"],
-											})
-										}
-									>
-										<option value="pending">Pendiente</option>
-										<option value="scheduled">Programada</option>
-										<option value="cancelled">Cancelada</option>
-										<option value="completed">Completada</option>
-									</select>
-								</div>
-							))}
+						{(isDoctor || isAdmin) && (
+							<div className="relative">
+								<label
+									htmlFor="status"
+									className="text-xs font-bold text-gray-700 mb-1 block ml-1"
+								>
+									Estado
+								</label>
+								<select
+									id="status"
+									value={formData.status}
+									className={inputClass}
+									onChange={(e) =>
+										setFormData({
+											...formData,
+											status: e.target.value as AppointmentFormData["status"],
+										})
+									}
+								>
+									<option value="pending">Pendiente</option>
+									<option value="scheduled">Programada</option>
+									<option value="cancelled">Cancelada</option>
+									<option value="completed">Completada</option>
+								</select>
+							</div>
+						)}
 
 						{/* Caso/Motivo */}
 						<div className="md:col-span-2">
