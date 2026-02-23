@@ -1,6 +1,7 @@
+import { Button as AntButton, Checkbox, Input } from "antd"
 import { useState } from "react"
 import { FaEnvelope, FaLock } from "react-icons/fa"
-import { Button, InputField } from "../../../shared"
+import { Button } from "../../../shared" // Mantengo tu botón personalizado si prefieres
 
 interface LoginFormProps {
 	onLogin: (data: { email: string; password: string }) => void
@@ -11,66 +12,74 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 	const [password, setPassword] = useState("")
 	const [rememberDevice, setRememberDevice] = useState(false)
 
-	const handleRememberDevice = () => {
-		setRememberDevice(!rememberDevice)
-	}
-
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 		onLogin({ email, password })
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="py-6">
+		<form onSubmit={handleSubmit} className="py-6 space-y-5">
 			{/* Email Field */}
-			<InputField
-				type="email"
-				icon={<FaEnvelope size={20} />}
-				placeholder="correo@ejemplo.com"
-				value={email}
-				label="Correo Electrónico"
-				onChange={(e) => setEmail(e.target.value)}
-			/>
-
-			<div className="my-6"></div>
+			<div className="flex flex-col gap-1">
+				<label
+					htmlFor="email"
+					className="text-sm font-semibold text-gray-700 ml-1"
+				>
+					Correo Electrónico
+				</label>
+				<Input
+					id="email"
+					type="email"
+					size="large"
+					placeholder="correo@ejemplo.com"
+					prefix={<FaEnvelope className="text-gray-400 mr-2" />}
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
+					className="rounded-xl h-12"
+				/>
+			</div>
 
 			{/* Password Field */}
-			<InputField
-				label="Contraseña"
-				type="password"
-				placeholder="Ingresa tu contraseña"
-				value={password}
-				onChange={(e) => setPassword(e.target.value)}
-				icon={<FaLock size={20} />}
-			/>
+			<div className="flex flex-col gap-1">
+				<label
+					htmlFor="password"
+					className="text-sm font-semibold text-gray-700 ml-1"
+				>
+					Contraseña
+				</label>
+				<Input.Password
+					id="password"
+					placeholder="Ingresa tu contraseña"
+					prefix={<FaLock className="text-gray-400 mr-2" />}
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					className="rounded-xl h-12"
+				/>
+			</div>
 
-			{/* "Remember this device" */}
+			{/* "Remember this device" & Forgot Password */}
 			<div className="flex items-center justify-between mt-4">
-				<div className="flex items-center">
-					<input
-						type="checkbox"
-						id="rememberDevice"
-						checked={rememberDevice}
-						onChange={handleRememberDevice}
-						className="mr-2 h-4 w-4 border-2 border-muted rounded checked:bg-primary checked:border-primary focus:ring-primary focus:ring-2 transition-all"
-					/>
-					<label
-						htmlFor="rememberDevice"
-						className="text-sm text-text cursor-pointer"
-					>
-						Recordar este dispositivo
-					</label>
-				</div>
+				<Checkbox
+					id="rememberDevice"
+					checked={rememberDevice}
+					onChange={(e) => setRememberDevice(e.target.checked)}
+					className="text-sm text-gray-600"
+				>
+					Recordar este dispositivo
+				</Checkbox>
+
 				<a
 					href="/"
-					className="text-primary hover:text-primary-dark text-sm transition-colors"
+					className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
 				>
 					¿Olvidaste tu contraseña?
 				</a>
 			</div>
 
 			{/* Login Button */}
-			<Button text="Acceder" onClick={() => {}} type="submit" />
+			<div className="pt-4">
+				<Button text="Acceder" onClick={() => {}} type="submit" />
+			</div>
 		</form>
 	)
 }

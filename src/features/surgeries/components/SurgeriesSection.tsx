@@ -1,3 +1,4 @@
+import { Input, Select } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import {
 	FaClock,
@@ -273,41 +274,49 @@ const SurgeriesSection = () => {
 
 			{/* Filtros y búsqueda */}
 			<div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-				<div className="flex flex-wrap gap-4">
+				<div className="flex flex-wrap gap-4 items-center">
+					{/* Input de Búsqueda */}
 					<div className="flex-1 min-w-[200px]">
-						<div className="relative">
-							<MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-							<input
-								type="text"
-								placeholder="Buscar por paciente, médico, tipo o notas..."
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							/>
-						</div>
+						<Input
+							placeholder="Buscar por paciente, médico, tipo o notas..."
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							className='"w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"'
+							prefix={<MdSearch className="text-gray-400 w-5 h-5 mr-2" />}
+							allowClear
+							style={{ height: "45px", display: "flex", alignItems: "center" }}
+						/>
 					</div>
-					<select
+
+					{/* Select de Estado */}
+					<Select
 						value={statusFilter}
-						onChange={(e) => setStatusFilter(e.target.value)}
-						className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-					>
-						<option value="all">Todos los estados</option>
-						<option value="scheduled">Programada</option>
-						<option value="in_progress">En Progreso</option>
-						<option value="completed">Completada</option>
-						<option value="cancelled">Cancelada</option>
-						<option value="postponed">Aplazada</option>
-					</select>
-					<select
+						onChange={(value) => setStatusFilter(value)}
+						className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" // !p-0 para que AntD maneje el padding interno
+						style={{ height: "45px" }}
+						options={[
+							{ value: "all", label: "Todos los estados" },
+							{ value: "scheduled", label: "Programada" },
+							{ value: "in_progress", label: "En Progreso" },
+							{ value: "completed", label: "Completada" },
+							{ value: "cancelled", label: "Cancelada" },
+							{ value: "postponed", label: "Aplazada" },
+						]}
+					/>
+
+					{/* Select de Fecha */}
+					<Select
 						value={dateFilter}
-						onChange={(e) => setDateFilter(e.target.value)}
+						onChange={(value) => setDateFilter(value)}
 						className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-					>
-						<option value="all">Todas las fechas</option>
-						<option value="today">Hoy</option>
-						<option value="week">Esta semana</option>
-						<option value="month">Este mes</option>
-					</select>
+						style={{ height: "45px" }}
+						options={[
+							{ value: "all", label: "Todas las fechas" },
+							{ value: "today", label: "Hoy" },
+							{ value: "week", label: "Esta semana" },
+							{ value: "month", label: "Este mes" },
+						]}
+					/>
 				</div>
 			</div>
 
@@ -339,9 +348,9 @@ const SurgeriesSection = () => {
 									key={surgery.id}
 									className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
 								>
-									<div className="flex justify-between items-start">
+									<div className="flex justify-between items-center">
 										<div className="flex gap-4 flex-1">
-											<div className="bg-primary/10 p-3 rounded-lg">
+											<div className="bg-primary/10 p-3 flex items-center rounded-lg">
 												<FaStethoscope className="w-6 h-6 text-primary" />
 											</div>
 											<div className="flex-1">
