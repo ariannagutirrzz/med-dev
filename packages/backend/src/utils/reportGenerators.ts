@@ -3,6 +3,7 @@ import PDFDocument from "pdfkit-table"
 import type {
 	AppointmentReportData,
 	FinancialReportData,
+	InventoryReportData,
 	PatientReportData,
 	SurgeryReportData,
 } from "../services/ReportService"
@@ -735,6 +736,172 @@ export async function generateFinancialExcel(
 	revenueRow.getCell(1).value =
 		`Ingresos totales: $${totalRevenue.toFixed(2)} USD`
 	revenueRow.getCell(1).font = { bold: true }
+
+	const buffer = await workbook.xlsx.writeBuffer()
+	return Buffer.from(buffer)
+}
+
+/**
+ * Generate PDF report for inventory
+ */
+export async function generateInventoryPDF(
+	data: InventoryReportData[],
+	filters: { status?: string },
+): Promise<Buffer> {
+	const doc = new PDFDocument({
+		margin: 30,
+		size: "A4",
+		layout: "portrait", // El inventario suele caber bien en vertical
+	})
+
+	const chunks: Buffer[] = []
+	const bufferPromise = new Promise<Buffer>((resolve, reject) => {
+		doc.on("data", (chunk) => chunks.push(chunk))
+		doc.on("end", () => resolve(Buffer.concat(chunks)))
+		doc.on("error", reject)
+	})
+
+	try {
+		// Cabecera
+		doc
+			.fontSize(20)
+			.font("Helvetica-Bold")
+			.text("Reporte de Inventario de Insumos", { align: "center" })
+		doc.moveDown()
+
+		// Filtros
+		if (filters.status) {
+			doc
+				.fontSize(10)
+				.font("Helvetica-Bold")
+				.text(`Filtro de estado: ${filters.status.toUpperCase()}`, {
+					underline: true,
+				})
+			doc.moveDown()
+		}
+
+		// Configuración de la Tabla
+		const tableData = {
+			headers: [
+				{ label: "Producto", property: "name", width: 180 },
+				{ label: "Categoría", property: "category", width: 100 },
+				{ label: "Cant.", property: "quantity", width: 60 },
+				{ label: "Mín.", property: "min_stock", width: 60 },
+				{ label: "Unidad", property: "unit", width: 70 },
+				{ label: "Estado", property: "status", width: 80 },
+			],
+			datas: data.map((row) => ({
+				name: row.name,
+				category: row.category,
+				quantity: row.quantity.toString(),
+				min_stock: row.min_stock.toString(),
+				unit: row.unit || "unidad",
+				status:
+					row.status === "available"
+						? "Disponible"
+						: row.status === "low stock"
+							? "Cantidad baja"
+							: "Agotado",
+			})),
+		}
+
+		// Renderizar tabla con lógica de color para el estado
+		await (doc as any).table(tableData, {
+			prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+			prepareRow: (row: any, index: number, column: any, value: any) => {
+				doc.font("Helvetica").fontSize(9).fillColor("black")
+				// Si la columna es 'status' y no es 'OK', pintar en rojo
+				if (column.property === "status" && value !== "available") {
+					doc.fillColor("#e63946").font("Helvetica-Bold")
+				}
+				return doc
+			},
+		})
+
+		// Resumen Final
+		doc.moveDown(2).fillColor("black")
+		const totalItems = data.length
+		const lowStockItems = data.filter((i) => i.status !== "available").length
+
+		doc.fontSize(12).font("Helvetica-Bold").text("Resumen de Almacén:")
+		doc.fontSize(10).font("Helvetica").text(`Total de artículos: ${totalItems}`)
+
+		if (lowStockItems > 0) {
+			doc
+				.fillColor("#e63946")
+				.text(`Artículos en alerta (Bajo/Agotado): ${lowStockItems}`)
+		} else {
+			doc
+				.fillColor("#2d5a27")
+				.text("Todos los artículos tienen stock suficiente.")
+		}
+
+		doc.end()
+		return await bufferPromise
+	} catch (error) {
+		doc.end()
+		throw error
+	}
+}
+
+/**
+ * Generate Excel report for inventory
+ */
+export async function generateInventoryExcel(
+	data: InventoryReportData[],
+	filters: { status?: string },
+): Promise<Buffer> {
+	const workbook = new ExcelJS.Workbook()
+	const worksheet = workbook.addWorksheet("Inventario")
+
+	// Título
+	worksheet.mergeCells("A1:F1")
+	worksheet.getCell("A1").value = "Reporte de Inventario de Insumos Médicos"
+	worksheet.getCell("A1").font = { size: 16, bold: true }
+	worksheet.getCell("A1").alignment = { horizontal: "center" }
+
+	// Table headers
+	const headerRow = 3
+	worksheet.getRow(headerRow).values = [
+		"Producto",
+		"Categoría",
+		"Stock Actual",
+		"Stock Mínimo",
+		"Unidad",
+		"Estado",
+		"Última Actualización",
+	]
+
+	worksheet.getRow(headerRow).font = { bold: true, color: { argb: "FFFFFFFF" } }
+	worksheet.getRow(headerRow).fill = {
+		type: "pattern",
+		pattern: "solid",
+		fgColor: { argb: "FF2D5A27" }, // Verde institucional
+	}
+
+	// Data rows
+	data.forEach((row) => {
+		const dataRow = worksheet.addRow([
+			row.name,
+			row.category,
+			row.quantity,
+			row.min_stock,
+			row.unit,
+			row.status.toUpperCase(),
+			row.last_updated,
+		])
+
+		// Formato condicional básico: si el stock es bajo, resaltar la celda de Estado
+		const statusCell = dataRow.getCell(6)
+		if (row.status !== "available") {
+			statusCell.font = { bold: true, color: { argb: "FFFF0000" } }
+		}
+	})
+
+	// Auto-ajuste de columnas
+	worksheet.columns.forEach((column) => {
+		column.width = 20
+	})
 
 	const buffer = await workbook.xlsx.writeBuffer()
 	return Buffer.from(buffer)

@@ -20,9 +20,12 @@ export async function generateAppointmentsReport(
 		if (filters.endDate) params.append("endDate", filters.endDate)
 		if (filters.status) params.append("status", filters.status)
 
-		const response = await api.get(`/reports/appointments?${params.toString()}`, {
-			responseType: "blob",
-		})
+		const response = await api.get(
+			`/reports/appointments?${params.toString()}`,
+			{
+				responseType: "blob",
+			},
+		)
 
 		return response.data
 	} catch (error) {
@@ -99,6 +102,31 @@ export async function generateFinancialReport(
 	} catch (error) {
 		console.error("Error generating financial report:", error)
 		throw new Error("Failed to generate financial report")
+	}
+}
+
+/**
+ * Generate inventory report
+ */
+export async function generateInventoryReport(
+	format: "pdf" | "excel",
+	filters: ReportFilters = {},
+): Promise<Blob> {
+	try {
+		const params = new URLSearchParams()
+		params.append("format", format)
+
+		// El inventario suele filtrarse por estado (ej: 'low', 'out_of_stock')
+		if (filters.status) params.append("status", filters.status)
+
+		const response = await api.get(`/reports/inventory?${params.toString()}`, {
+			responseType: "blob",
+		})
+
+		return response.data
+	} catch (error) {
+		console.error("Error generating inventory report:", error)
+		throw new Error("Failed to generate inventory report")
 	}
 }
 

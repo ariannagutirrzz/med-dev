@@ -55,6 +55,18 @@ export interface FinancialReportData {
 	status: string
 }
 
+export interface InventoryReportData {
+	id: number
+	name: string
+	description: string | null
+	category: string
+	quantity: number
+	min_stock: number
+	status: "available" | "low stock" | "out of stock"
+	unit: string
+	last_updated: string
+}
+
 /**
  * Get appointments report data
  */
@@ -335,5 +347,50 @@ export async function getFinancialReport(
 	} catch (error) {
 		console.error("Error fetching financial report:", error)
 		throw new Error("Failed to fetch financial report")
+	}
+}
+
+/**
+ * Get inventory report data
+ */
+export async function getInventoryReport(
+	filters: ReportFilters = {},
+): Promise<InventoryReportData[]> {
+	try {
+		let whereClause = "WHERE 1=1"
+		const params: any[] = []
+		let paramIndex = 1
+
+		// Filtro por estado: Usamos los valores exactos que maneja tu base de datos
+		if (filters.status) {
+			whereClause += ` AND status = $${paramIndex}`
+			params.push(filters.status)
+			paramIndex++
+		}
+
+		const result = await query(
+			`SELECT 
+                id,
+                name,
+                category,
+                quantity,
+                min_stock,
+                status, -- Traemos directamente la columna gestionada por tu trigger
+                unit,
+                TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') as last_updated
+            FROM medical_supplies
+            ${whereClause}
+            ORDER BY category ASC, name ASC`,
+			params,
+		)
+
+		return result.rows.map((row) => ({
+			...row,
+			quantity: Number(row.quantity),
+			min_stock: Number(row.min_stock),
+		})) as InventoryReportData[]
+	} catch (error) {
+		console.error("Error fetching inventory report:", error)
+		throw new Error("Failed to fetch inventory report")
 	}
 }
