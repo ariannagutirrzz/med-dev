@@ -13,7 +13,10 @@ import type { Patient, Surgery, SurgeryFormData } from "../../../shared"
 import { formatPrice } from "../../../shared"
 import type { Doctor, ExtendedSurgeryFormData } from "../../../types"
 import { useAuth } from "../../auth"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import {
+	type CurrencyRates,
+	getCurrencyRates,
+} from "../../currency/services/CurrencyAPI"
 import { getPatients } from "../../patients"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
@@ -45,7 +48,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	const [loadingData, setLoadingData] = useState(false)
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [selectedService, setSelectedService] =
 		useState<DoctorServiceWithType | null>(null)
 
@@ -143,12 +146,13 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 
 		try {
 			// Convertir fecha local a ISO string para el backend
-			const dateTime = new Date(formData.surgery_date)
-			const isoDateTime = dateTime.toISOString()
+			const localDateTime = formData.surgery_date
+
+			const sqlFormattedDate = `${localDateTime.replace("T", " ")}:00`
 
 			const surgeryData: SurgeryFormData = {
 				...formData,
-				surgery_date: isoDateTime,
+				surgery_date: sqlFormattedDate,
 			}
 
 			if (editingSurgery) {
