@@ -38,7 +38,7 @@ export async function getCurrencyRates(): Promise<CurrencyRates> {
 			throw new Error(`DolarAPI responded with status: ${response.status}`)
 		}
 
-		const data: DolarAPIResponse[] = await response.json()
+		const data = (await response.json()) as DolarAPIResponse[]
 
 		// Find official rate (BCV) - first object
 		const oficial = data.find((rate) => rate.fuente === "oficial")

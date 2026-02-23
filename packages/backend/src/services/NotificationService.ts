@@ -195,3 +195,42 @@ export async function deleteNotification(
 		throw new Error("Failed to delete notification")
 	}
 }
+
+/** Test/utility: send appointment reminder. Used by test routes. */
+export async function sendAppointmentReminder(
+	_userDocumentId: string,
+	userName: string,
+	appointmentDate: Date,
+	doctorName: string,
+	opts: { email?: string; phone?: string; userDocumentId: string },
+) {
+	await createNotification({
+		user_id: opts.userDocumentId,
+		title: "Recordatorio de cita",
+		message: `Hola ${userName}, tienes una cita el ${appointmentDate.toLocaleDateString("es-ES")} con ${doctorName}.`,
+		type: "info",
+	})
+	return { email: opts.email, phone: opts.phone }
+}
+
+/** Test/utility: send inventory alert. Used by test routes. */
+export async function sendInventoryAlert(
+	userDocumentId: string,
+	itemName: string,
+	quantity: number,
+	minStock: number,
+	opts: { email?: string; phone?: string; userDocumentId: string },
+) {
+	await createNotification({
+		user_id: userDocumentId,
+		title: "Alerta de inventario",
+		message: `El insumo "${itemName}" tiene stock bajo: ${quantity} (mínimo ${minStock}).`,
+		type: "warning",
+	})
+	return { email: opts.email, phone: opts.phone }
+}
+
+export const notificationService = {
+	sendAppointmentReminder,
+	sendInventoryAlert,
+}
