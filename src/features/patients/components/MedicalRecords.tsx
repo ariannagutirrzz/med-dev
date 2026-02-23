@@ -9,6 +9,7 @@ import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
 import { useAuth } from "../../auth"
+import { Pagination } from "antd"
 
 export default function MedicalRecords() {
 	// 2. ESTADOS (Iniciamos records vacío)
@@ -20,6 +21,9 @@ export default function MedicalRecords() {
 	const [records, setRecords] = useState<Patient[]>([])
 	const [searchTerm, setSearchTerm] = useState("")
 	const { user } = useAuth()
+	const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 8; // Número de pacientes por página
+
 
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
@@ -82,6 +86,16 @@ export default function MedicalRecords() {
 			record.document_id.toString().includes(search)
 		)
 	})
+
+	// Lógica de paginación
+const indexOfLastRecord = currentPage * pageSize;
+const indexOfFirstRecord = indexOfLastRecord - pageSize;
+const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+
+// IMPORTANTE: Resetear a la página 1 cuando el usuario busca algo
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm]);
 
 	// 6. VISTA DETALLE
 	if (view === "details" && selectedPatient) {
@@ -157,7 +171,7 @@ export default function MedicalRecords() {
 						</span>
 					</Button>
 
-					{filteredRecords.map((record) => (
+					{currentRecords.map((record) => (
 						<div key={record.document_id} className="relative group">
 							{/* Card is a div so the edit Button can live inside without nested buttons */}
 							{/* biome-ignore lint/a11y/useSemanticElements: card contains edit Button; nested <button> is invalid */}
@@ -193,7 +207,7 @@ export default function MedicalRecords() {
 								</div>
 
 								<div className="flex-1 space-y-4 w-full">
-									<div className="grid grid-cols-2 gap-4">
+									<div className="flex flex-col">
 										<div>
 											<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
 												Identificación
@@ -212,7 +226,7 @@ export default function MedicalRecords() {
 										</div>
 									</div>
 
-									<div className="pt-4 border-t border-gray-100 space-y-2.5">
+									<div className="border-t border-gray-100">
 										<p className="text-gray-500 text-[13px] flex items-center italic truncate">
 											<CiMail className="mr-3 text-primary w-5 h-5" />
 											{record.email}
@@ -224,33 +238,29 @@ export default function MedicalRecords() {
 									</div>
 								</div>
 
-								<div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-end w-full gap-3">
-									<div className="flex flex-col min-w-0">
-										<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
-											Fecha de Nacimiento
-										</p>
-										<p className="text-xs text-gray-600 flex items-center font-bold">
-											<CiCalendar className="mr-2 text-primary w-5 h-5 shrink-0" />
-											{record.birthdate.toLocaleDateString("es-ES", {
-												day: "2-digit",
-												month: "long",
-												year: "numeric",
-											})}
-										</p>
-									</div>
-									<Button
-										type="button"
-										variant="text"
-										onClick={(e) => {
-											e.stopPropagation()
-											handleEditPatient(e, record)
-										}}
-										icon={<LuPencilLine className="h-6 w-6" />}
-										className="!p-2 !min-w-0 shrink-0 bg-white border border-gray-100 text-gray-400 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl shadow-md"
-										title="Editar información del paciente"
-									/>
+								<div className="mt-2 pt-2 border-t border-gray-100 flex flex-col w-full">
+									<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
+										Fecha de Nacimiento
+									</p>
+									<p className="text-xs text-gray-600 flex items-center font-bold">
+										<CiCalendar className="mr-2 text-primary w-5 h-5" />
+										{record.birthdate.toLocaleDateString("es-ES", {
+											day: "2-digit",
+											month: "long",
+											year: "numeric",
+										})}
+									</p>
 								</div>
-							</div>
+							</button>
+
+							<button
+								type="button"
+								onClick={(e) => handleEditPatient(e, record)}
+								className="absolute bottom-7 right-4 p-2 bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary hover:shadow-lg hover:scale-110 rounded-2xl transition-all cursor-pointer z-10 shadow-md"
+								title="Editar información del paciente"
+							>
+								<LuPencilLine className="h-6 w-6" />
+							</button>
 						</div>
 					))}
 
@@ -261,6 +271,17 @@ export default function MedicalRecords() {
 						</div>
 					)}
 				</div>
+
+				<div className="flex justify-center mt-8 pb-4">
+    <Pagination
+        current={currentPage}
+        total={filteredRecords.length}
+        pageSize={pageSize}
+        onChange={(page) => setCurrentPage(page)}
+        showSizeChanger={false} // Para mantenerlo simple
+        className="custom-pagination"
+    />
+</div>
 			</div>
 
 			<PatientModalForm

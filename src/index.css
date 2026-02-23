@@ -43,6 +43,12 @@ aside nav button:focus {
 	box-shadow: none !important;
 }
 
+/* El campo de texto del document_id en el patient form */
+.custom-ant-group .ant-input {
+    height: 42px !important;
+    border-radius: 0 0.75rem 0.75rem 0 !important;
+}
+
 /* Sidebar: oculto en móvil cuando está cerrado (evita que se vea antes de hidratar o por conflictos con Tailwind) */
 @media (max-width: 767px) {
 	[data-dashboard-sidebar][data-sidebar-closed] {

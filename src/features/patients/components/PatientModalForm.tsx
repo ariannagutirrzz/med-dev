@@ -276,37 +276,50 @@ const PatientModalForm = ({
 							{/* 2. Documento y Género */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
-									<label htmlFor="document_id" className={labelClass}>
-										<FaIdCard /> Documento de Identidad
-									</label>
-									<Input
-										name="document_id"
-										required
-										disabled={loading || !!patient}
-										placeholder="12345678"
-										className={inputBaseClass}
-										style={{ height: "42px" }}
-										// IMPORTANTE: Mostramos el valor del estado, pero sin el "V-"
-										// (solo por si acaso el estado llegara a tenerlo, lo removemos para la vista)
-										value={formData.document_id.replace(/^V-/, "")}
-										// El prefijo visual de AntD (fuera del flujo del texto del input)
-										prefix={
-											<span className="text-gray-400 font-medium">V-</span>
-										}
-										onChange={(e) => {
-											// 1. Tomamos el valor y eliminamos TODO lo que no sea número
-											const onlyNumbers = e.target.value.replace(/[^\d]/g, "")
-
-											// 2. Mandamos al estado el valor formateado como tú lo quieres para el submit: "V-" + números
-											handleInputChange({
-												target: {
-													name: "document_id",
-													value: `V-${onlyNumbers}`,
-												},
-											} as React.ChangeEvent<HTMLInputElement>)
-										}}
-									/>
-								</div>
+    <label htmlFor="document_id" className={labelClass}>
+        <FaIdCard /> Documento de Identidad
+    </label>
+    <Input
+        name="document_id"
+        required
+        disabled={loading || !!patient}
+        placeholder="12345678"
+        // Eliminamos el style inline de height y usamos una clase custom
+        className="custom-ant-group" 
+        maxLength={8}
+        value={formData.document_id.split('-')[1] || formData.document_id.replace(/^[VJE]-/, "")}
+        addonBefore={
+            <Select
+                value={formData.document_id.split('-')[0] || "V"}
+                disabled={loading || !!patient}
+                className="w-15" // Un poco más ancho para que el prefijo respire
+                onChange={(prefix) => {
+                    const currentNumbers = formData.document_id.split('-')[1] || "";
+                    handleInputChange({
+                        target: {
+                            name: "document_id",
+                            value: `${prefix}-${currentNumbers}`,
+                        },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                }}
+            >
+                <Select.Option value="V">V-</Select.Option>
+                <Select.Option value="J">J-</Select.Option>
+                <Select.Option value="E">E-</Select.Option>
+            </Select>
+        }
+        onChange={(e) => {
+            const onlyNumbers = e.target.value.replace(/[^\d]/g, "").slice(0, 8);
+            const currentPrefix = formData.document_id.split('-')[0] || "V";
+            handleInputChange({
+                target: {
+                    name: "document_id",
+                    value: `${currentPrefix}-${onlyNumbers}`,
+                },
+            } as React.ChangeEvent<HTMLInputElement>);
+        }}
+    />
+</div>
 								<div className="flex flex-col">
 									<label htmlFor="gender" className={labelClass}>
 										<FaVenusMars /> Género
