@@ -141,13 +141,10 @@ export default function ClinicalEvolution({
 		}
 	}
 	return (
-		<div className="bg-white rounded-2xl shadow-lg p-6 mb-6 min-h-screen">
-			<div className="flex justify-between items-center mb-8">
-				<h2 className="text-2xl font-black text-gray-800">
-					Paciente:{" "}
-					<span className="text-primary underline">{patientName}</span>
-				</h2>
-			</div>
+		<div
+			className="bg-white rounded-xl border border-gray-200 p-6 mb-6 min-h-screen"
+			aria-label={`Historial clínico de ${patientName}`}
+		>
 
 			{isLoading ? (
 				<div className="flex flex-col items-center justify-center py-20">
@@ -167,43 +164,42 @@ export default function ClinicalEvolution({
 					{evolutions.map((evo) => (
 						<div
 							key={evo.id}
-							className="group bg-gray-100 rounded-3xl border-2 border-gray-300 p-6 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col"
+							className="group bg-gray-50 rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col"
 						>
 							{/* Header de la Card */}
-							<div className="flex justify-between items-center mb-5">
-								<div className="bg-primary/10 text-primary px-3 py-1.5 rounded-xl flex items-center gap-2">
-									<CiCalendar className="w-5 h-5 font-bold" />
-									<span className="text-sm font-black">
+							<div className="flex justify-between items-center mb-4">
+								<div className="flex items-center gap-2 text-gray-600">
+									<CiCalendar className="w-4 h-4" />
+									<span className="text-sm font-medium">
 										{new Date(evo.record_date).toLocaleDateString()}
 									</span>
 								</div>
-								<span className="text-lg font-black text-gray-700 uppercase">
-									# {evo.id}
+								<span className="text-xs font-medium text-gray-400">
+									#{evo.id}
 								</span>
 							</div>
 
 							{/* Contenido */}
-							<div className="space-y-4 flex-1">
-								<div className="bg-purple-50/50 p-3 rounded-2xl border border-purple-100/50">
-									<p className="text-[10px] text-purple-400 font-black uppercase mb-1 flex items-center gap-1">
-										<FaQuestion className="w-3 h-3" /> Mótivo de Consulta
+							<div className="space-y-3 flex-1">
+								<div className="bg-white p-3 rounded-lg border border-gray-100">
+									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<FaQuestion className="w-3 h-3 text-gray-400" /> Motivo de consulta
 									</p>
-									<p className="text-gray-800 font-bold text-sm line-clamp-1">
+									<p className="text-gray-800 text-sm line-clamp-1">
 										{evo.reason}
 									</p>
 								</div>
-								<div className="bg-red-50/50 p-3 rounded-2xl border border-red-100/50">
-									<p className="text-[10px] text-red-400 font-black uppercase mb-1 flex items-center gap-1">
-										<CiMedicalCase className="w-3 h-3" /> Diagnóstico
+								<div className="bg-white p-3 rounded-lg border border-gray-100">
+									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<CiMedicalCase className="w-3 h-3 text-gray-400" /> Diagnóstico
 									</p>
-									<p className="text-gray-800 font-bold text-sm line-clamp-1">
+									<p className="text-gray-800 text-sm line-clamp-1">
 										{evo.diagnosis}
 									</p>
 								</div>
-
-								<div className="bg-blue-50/50 p-3 rounded-2xl border border-blue-100/50">
-									<p className="flex items-center gap-1 text-[10px] text-blue-400 font-black uppercase mb-1">
-										<CiMedicalClipboard className="w-3 h-3" /> Tratamiento
+								<div className="bg-white p-3 rounded-lg border border-gray-100">
+									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<CiMedicalClipboard className="w-3 h-3 text-gray-400" /> Tratamiento
 									</p>
 									<p className="text-gray-700 text-sm line-clamp-2">
 										{evo.treatment}
@@ -212,16 +208,16 @@ export default function ClinicalEvolution({
 							</div>
 
 							{/* Acciones */}
-							<div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-end">
-								<div className="text-[9px] text-gray-400">
-									<p>Creado: {new Date(evo.created_at).toLocaleDateString()}</p>
+							<div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-end">
+								<div className="text-xs text-gray-400">
+									Creado: {new Date(evo.created_at).toLocaleDateString()}
 								</div>
 								<Button
 									type="button"
 									variant="text"
 									onClick={() => handleOpenDetail(evo)}
-									icon={<LuPencilLine className="w-5 h-5" />}
-									className="!p-2.5 !min-w-0 rounded-xl group-hover:!bg-primary group-hover:!text-white"
+									icon={<LuPencilLine className="w-4 h-4 text-gray-500" />}
+									className="!p-2 !min-w-0 rounded-lg text-gray-500 hover:!bg-gray-200 hover:!text-gray-700"
 								/>
 							</div>
 						</div>
