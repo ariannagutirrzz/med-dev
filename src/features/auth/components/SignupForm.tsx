@@ -1,6 +1,13 @@
+import { DatePicker, Input, Select, Space, Tag } from "antd"
+import TextArea from "antd/es/input/TextArea"
+import dayjs from "dayjs"
 import { useState } from "react"
+import { FaEnvelope, FaPlus } from "react-icons/fa"
 import { Button, InputField, PhoneInput } from "../../../shared"
-import { isValidPhone, parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
+import {
+	isValidPhone,
+	parsePhoneToE164,
+} from "../../../shared/utils/phoneFormat"
 
 export interface SignupFormData {
 	name: string
@@ -59,7 +66,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	}
 
 	const validateDocumentId = (docId: string): boolean => {
-		return /^[A-Za-z0-9]{6,12}$/.test(docId)
+		// ^V- : Empieza con V- (2 chars)
+		// [0-9]{4,8} : Seguido de 4 a 8 números
+		// $ : Fin de la cadena. Total: 6 a 10 caracteres.
+		return /^V-[0-9]{4,8}$/.test(docId)
 	}
 
 	const addAllergy = (e: React.KeyboardEvent) => {
@@ -196,41 +206,102 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	return (
 		<form onSubmit={handleSubmit} className="py-6">
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<InputField
-					label="Nombre Completo"
-					type="text"
-					placeholder="Ingresa tu nombre completo"
-					value={formData.name}
-					onChange={handleChange("name")}
-					error={errors.name}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+				{/* Name */}
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="name"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Nombre Completo <span className="text-red-500">*</span>
+					</label>
+					<Input
+						id="name"
+						placeholder="Ingresa tu nombre completo"
+						size="large"
+						value={formData.name}
+						onChange={handleChange("name")}
+						status={errors.name ? "error" : ""}
+						className="rounded-xl! h-12"
+					/>
+					{errors.name && (
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+							{errors.name}
+						</span>
+					)}
+				</div>
 
-				<InputField
-					label="Cédula/Documento de Identidad"
-					type="text"
-					placeholder="Ej: V12345678"
-					value={formData.document_id}
-					onChange={handleChange("document_id")}
-					error={errors.document_id}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+				{/* Document ID */}
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="document_id"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Cédula/Documento de Identidad{" "}
+						<span className="text-red-500">*</span>
+					</label>
+					<Input
+						id="document_id"
+						name="document_id"
+						size="large"
+						placeholder="12345678"
+						className="rounded-xl h-12"
+						status={errors.document_id ? "error" : ""}
+						// maxLength de 8 porque el prefijo "V-" no cuenta para el valor del input físico
+						maxLength={8}
+						value={formData.document_id.replace(/^V-/, "")}
+						prefix={
+							<span className="text-gray-400 font-medium border-r pr-2 mr-1">
+								V-
+							</span>
+						}
+						onChange={(e) => {
+							// 1. Solo números y máximo 8 dígitos (para que el total con V- sea 10)
+							const onlyNumbers = e.target.value
+								.replace(/[^\d]/g, "")
+								.slice(0, 8)
 
-				<InputField
-					label="Correo Electrónico"
-					type="email"
-					placeholder="correo@ejemplo.com"
-					value={formData.email}
-					onChange={handleChange("email")}
-					error={errors.email}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+							// 2. Actualizamos el estado
+							const syntheticEvent = {
+								target: {
+									name: "document_id",
+									value: `V-${onlyNumbers}`,
+								},
+							} as React.ChangeEvent<HTMLInputElement>
+
+							handleChange("document_id")(syntheticEvent)
+						}}
+					/>
+					{errors.document_id && (
+						<span className="text-red-500 text-xs ml-1 mt-1">
+							{errors.document_id}
+						</span>
+					)}
+				</div>
+				{/* Email */}
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="email"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Correo Electrónico <span className="text-red-500">*</span>
+					</label>
+					<Input
+						id="email"
+						type="email"
+						placeholder="correo@ejemplo.com"
+						size="large"
+						value={formData.email}
+						onChange={handleChange("email")}
+						status={errors.email ? "error" : ""}
+						prefix={<FaEnvelope className="text-gray-400 mr-2" />}
+						className="rounded-xl h-12"
+					/>
+					{errors.email && (
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+							{errors.email}
+						</span>
+					)}
+				</div>
 
 				<div>
 					<label
@@ -259,174 +330,268 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 					)}
 				</div>
 
-				<div>
+				{/* Birthdate */}
+				<div className="flex flex-col gap-1">
 					<label
 						htmlFor="birthdate"
-						className="text-sm text-text ml-1 mb-1 flex justify-start"
+						className="text-sm font-semibold text-gray-700 ml-1"
 					>
-						Fecha de Nacimiento
-						<span className="text-red-500 ml-1">*</span>
+						Fecha de Nacimiento <span className="text-red-500">*</span>
 					</label>
-					<input
+					<DatePicker
 						id="birthdate"
-						type="date"
-						value={formData.birthdate}
-						onChange={handleChange("birthdate")}
-						className={`w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text ${
-							errors.birthdate
-								? "border-red-500 focus:border-red-500"
-								: "border-muted hover:border-primary focus:border-primary"
-						} focus:outline-none transition-colors`}
-						max={new Date().toISOString().split("T")[0]}
+						size="large"
+						placeholder="Selecciona tu fecha"
+						className="w-full rounded-xl h-12"
+						status={errors.birthdate ? "error" : ""}
+						// Antd usa objetos dayjs, por lo que convertimos el string del estado
+						value={formData.birthdate ? dayjs(formData.birthdate) : null}
+						// Al cambiar, convertimos el objeto dayjs de vuelta a string YYYY-MM-DD para tu estado
+						onChange={(date) => {
+							const dateString = date ? date.format("YYYY-MM-DD") : ""
+							const syntheticEvent = {
+								target: { value: dateString },
+							} as React.ChangeEvent<HTMLInputElement>
+
+							handleChange("birthdate")(syntheticEvent)
+						}}
+						// Deshabilitar fechas futuras
+						disabledDate={(current) =>
+							current && current > dayjs().endOf("day")
+						}
+						// Configuración regional y de formato
+						format="DD/MM/YYYY"
 					/>
 					{errors.birthdate && (
-						<p
-							className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1"
-							role="alert"
-						>
-							<span className="text-red-500">•</span>
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
 							{errors.birthdate}
-						</p>
+						</span>
 					)}
 				</div>
 
-				<div>
+				{/* Gender */}
+				<div className="flex flex-col gap-1">
 					<label
 						htmlFor="gender"
-						className="text-sm text-text ml-1 mb-1 flex justify-start"
+						className="text-sm font-semibold text-gray-700 ml-1"
 					>
-						Género
-						<span className="text-red-500 ml-1">*</span>
+						Género <span className="text-red-500">*</span>
 					</label>
-					<select
+					<Select
 						id="gender"
-						value={formData.gender}
-						onChange={handleChange("gender")}
-						className={`w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text ${
-							errors.gender
-								? "border-red-500 focus:border-red-500"
-								: "border-muted hover:border-primary focus:border-primary"
-						} focus:outline-none transition-colors`}
-					>
-						<option value="">Selecciona un género</option>
-						<option value="M">Masculino</option>
-						<option value="F">Femenino</option>
-						<option value="O">Otro</option>
-					</select>
+						size="large"
+						placeholder="Selecciona un género"
+						className="w-full h-12 rounded-xl"
+						status={errors.gender ? "error" : ""}
+						value={formData.gender || undefined} // 'undefined' muestra el placeholder
+						onChange={(value) => {
+							const syntheticEvent = {
+								target: { value },
+							} as React.ChangeEvent<HTMLSelectElement>
+
+							handleChange("gender")(syntheticEvent)
+						}}
+						options={[
+							{ value: "M", label: "Masculino" },
+							{ value: "F", label: "Femenino" },
+							{ value: "O", label: "Otro" },
+						]}
+					/>
 					{errors.gender && (
-						<p
-							className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1"
-							role="alert"
-						>
-							<span className="text-red-500">•</span>
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
 							{errors.gender}
-						</p>
+						</span>
 					)}
 				</div>
 
-				<div className="md:col-span-2">
+				{/* Blood Type */}
+				<div className="md:col-span-2 flex flex-col gap-1">
 					<label
 						htmlFor="blood_type"
-						className="text-sm text-text ml-1 mb-1 flex justify-start"
+						className="text-sm font-semibold text-gray-700 ml-1"
 					>
 						Tipo de Sangre
 					</label>
-					<select
+					<Select
 						id="blood_type"
-						value={formData.blood_type || ""}
-						onChange={handleChange("blood_type")}
-						className="w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text border-muted hover:border-primary focus:border-primary focus:outline-none transition-colors"
-					>
-						<option value="">Seleccionar...</option>
-						<option value="A+">A+</option>
-						<option value="A-">A-</option>
-						<option value="B+">B+</option>
-						<option value="B-">B-</option>
-						<option value="AB+">AB+</option>
-						<option value="AB-">AB-</option>
-						<option value="O+">O+</option>
-						<option value="O-">O-</option>
-					</select>
+						size="large"
+						placeholder="Seleccionar tipo de sangre..."
+						className="w-full h-12 rounded-xl"
+						status={errors.blood_type ? "error" : ""}
+						value={formData.blood_type || undefined}
+						onChange={(value) => {
+							const syntheticEvent = {
+								target: { value },
+							} as React.ChangeEvent<HTMLSelectElement>
+
+							handleChange("blood_type")(syntheticEvent)
+						}}
+						allowClear // Permite deseleccionar si el usuario se equivoca
+						options={[
+							{ value: "A+", label: "A+" },
+							{ value: "A-", label: "A-" },
+							{ value: "B+", label: "B+" },
+							{ value: "B-", label: "B-" },
+							{ value: "AB+", label: "AB+" },
+							{ value: "AB-", label: "AB-" },
+							{ value: "O+", label: "O+" },
+							{ value: "O-", label: "O-" },
+						]}
+					/>
+					{errors.blood_type && (
+						<span className="text-red-500 text-xs ml-1 mt-1">
+							{errors.blood_type}
+						</span>
+					)}
 				</div>
 
 				<div className="md:col-span-2 flex flex-col gap-2">
 					<label
 						htmlFor="allergies"
-						className="text-sm text-text ml-1 flex justify-start items-center gap-2"
+						className="text-sm font-semibold text-gray-700 ml-1 flex justify-start items-center gap-2"
 					>
 						Alergias (Presiona Enter para agregar)
 					</label>
-					<input
+
+					<Input
 						id="allergies"
-						type="text"
+						size="large"
 						placeholder="Ej: Penicilina, Maní..."
 						value={allergyInput}
 						onChange={(e) => setAllergyInput(e.target.value)}
 						onKeyDown={addAllergy}
-						className="w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text border-muted hover:border-primary focus:border-primary focus:outline-none transition-colors"
+						className="rounded-xl h-12"
+						// Añadimos un botón al final del input para que sea más intuitivo
+						suffix={
+							<button
+								type="button"
+								onClick={(e: any) =>
+									addAllergy({ ...e, key: "Enter", preventDefault: () => {} })
+								}
+								className="text-primary hover:scale-110 transition-transform"
+							>
+								<FaPlus />
+							</button>
+						}
 					/>
-					<div className="flex flex-wrap gap-2 mt-2">
+
+					{/* Contenedor de Tags de Ant Design */}
+					<div className="flex flex-wrap gap-2 mt-1 min-h-8">
 						{formData.allergies.length === 0 ? (
 							<span className="text-xs text-gray-400 italic ml-1">
 								No se han agregado alergias.
 							</span>
 						) : (
-							formData.allergies.map((allergy, index) => (
-								<div
-									key={`${allergy}`}
-									className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-xl border border-red-100 text-sm font-medium animate-in fade-in zoom-in duration-200"
-								>
-									{allergy}
-									<button
-										type="button"
-										onClick={() => removeAllergy(index)}
-										className="hover:text-red-900 transition-colors p-0.5"
+							<Space size={[0, 8]} wrap>
+								{formData.allergies.map((allergy, index) => (
+									<Tag
+										key={`${allergy}`}
+										closable
+										onClose={() => removeAllergy(index)}
+										color="error" // Esto le da el tono rojizo que tenías
+										className="px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-1 border-none bg-red-50 text-red-600"
+										closeIcon={
+											<span className="text-red-400 hover:text-red-600">✕</span>
+										}
 									>
-										✕
-									</button>
-								</div>
-							))
+										{allergy}
+									</Tag>
+								))}
+							</Space>
 						)}
 					</div>
 				</div>
 
-				<div className="md:col-span-2">
-					<InputField
-						label="Dirección"
-						type="text"
-						placeholder="Ingresa tu dirección completa"
+				{/* Address */}
+				<div className="md:col-span-2 flex flex-col gap-1">
+					<label
+						htmlFor="address"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Dirección <span className="text-red-500">*</span>
+					</label>
+					<TextArea
+						id="address"
+						placeholder="Ingresa tu dirección completa..."
 						value={formData.address}
-						onChange={handleChange("address")}
-						error={errors.address}
-						required
-						showIcon={false}
-						showSeparator={false}
+						status={errors.address ? "error" : ""}
+						className="rounded-xl p-3"
+						autoSize={{ minRows: 2, maxRows: 4 }}
+						onChange={(e) => {
+							// En lugar de intentar castear el evento completo,
+							// creamos el objeto que tu handleChange espera.
+							const value = e.target.value
+
+							// Invocamos handleChange pasando un objeto sintético compatible
+							handleChange("address")({
+								target: { value },
+							} as React.ChangeEvent<HTMLInputElement>)
+						}}
 					/>
+					{errors.address && (
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+							{errors.address}
+						</span>
+					)}
 				</div>
 
-				<InputField
-					label="Contraseña"
-					type="password"
-					placeholder="Crea una contraseña segura (mín. 8 caracteres)"
-					value={formData.password}
-					onChange={handleChange("password")}
-					error={errors.password}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+				{/* Password */}
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="password"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Contraseña <span className="text-red-500">*</span>
+					</label>
+					<Input.Password
+						id="password"
+						placeholder="Mínimo 8 caracteres"
+						size="large"
+						className="rounded-xl h-12"
+						value={formData.password}
+						status={errors.password ? "error" : ""}
+						onChange={(e) => {
+							const value = e.target.value
+							handleChange("password")({
+								target: { value },
+							} as React.ChangeEvent<HTMLInputElement>)
+						}}
+					/>
+					{errors.password && (
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+							{errors.password}
+						</span>
+					)}
+				</div>
 
-				<InputField
-					label="Confirmar Contraseña"
-					type="password"
-					placeholder="Confirma tu contraseña"
-					value={formData.confirmPassword}
-					onChange={handleChange("confirmPassword")}
-					error={errors.confirmPassword}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+				{/* Confirm Password */}
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="confirmPassword"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Confirmar Contraseña <span className="text-red-500">*</span>
+					</label>
+					<Input.Password
+						id="confirmPassword"
+						placeholder="Repite tu contraseña"
+						size="large"
+						className="rounded-xl h-12"
+						value={formData.confirmPassword}
+						status={errors.confirmPassword ? "error" : ""}
+						onChange={(e) => {
+							const value = e.target.value
+							handleChange("confirmPassword")({
+								target: { value },
+							} as React.ChangeEvent<HTMLInputElement>)
+						}}
+					/>
+					{errors.confirmPassword && (
+						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+							{errors.confirmPassword}
+						</span>
+					)}
+				</div>
 			</div>
 
 			<div className="mt-6">

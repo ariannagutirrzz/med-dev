@@ -1,7 +1,7 @@
-import { StrictMode } from "react"
-import { createRoot } from "react-dom/client"
 import { ConfigProvider } from "antd"
 import esES from "antd/locale/es_ES"
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
 import "antd/dist/reset.css"
 import "./index.css"
 import App from "./App.tsx"
@@ -18,7 +18,14 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
 	<StrictMode>
-		<ConfigProvider locale={esES}>
+		<ConfigProvider
+			locale={esES}
+			theme={{
+				token: {
+					colorPrimary: "#789a61",
+				},
+			}}
+		>
 			<AuthProvider>
 				<App />
 			</AuthProvider>

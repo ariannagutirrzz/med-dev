@@ -1,6 +1,9 @@
+import { DatePicker, Select, TimePicker } from "antd"
+import dayjs from "dayjs"
 import type React from "react"
 import { useCallback, useEffect, useState } from "react"
 import {
+	FaBriefcaseMedical,
 	FaCalendar,
 	FaClock,
 	FaSave,
@@ -233,27 +236,29 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								</label>
 								<div className="relative">
 									<FaStethoscope className="absolute left-3 top-3 text-gray-400" />
-									<select
+									<Select
 										id="doctor_id"
-										value={formData.doctor_id}
-										required={isAdmin}
-										className={inputClass}
-										onChange={(e) => {
+										showSearch
+										placeholder="Seleccionar médico..."
+										className="w-full h-10"
+										optionFilterProp="label"
+										// Esta es la forma oficial de Antd para agregar el icono al inicio
+										suffixIcon={null} // Quitamos la flecha default si prefieres el estilo limpio
+										prefix={<FaStethoscope className="text-gray-400 mr-2" />}
+										value={formData.doctor_id || undefined}
+										onChange={(value) => {
 											setFormData({
 												...formData,
-												doctor_id: e.target.value,
-												service_id: null, // Resetear servicio si cambia el médico
+												doctor_id: value,
+												service_id: null,
 											})
 											setSelectedService(null)
 										}}
-									>
-										<option value="">Seleccionar médico...</option>
-										{(doctors ?? []).map((doc) => (
-											<option key={doc.document_id} value={doc.document_id}>
-												{doc.name}
-											</option>
-										))}
-									</select>
+										options={(doctors ?? []).map((doc) => ({
+											value: doc.document_id,
+											label: doc.name,
+										}))}
+									/>
 								</div>
 							</div>
 						)}
@@ -266,24 +271,24 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								Paciente *
 							</label>
 							<FaUser className="absolute left-3 bottom-3 text-gray-400" />
-							<select
+							<Select
 								id="patient_id"
-								value={formData.patient_id}
-								required
+								showSearch
+								loading={loadingData}
 								disabled={loadingData}
-								className={inputClass}
-								onChange={(e) =>
-									setFormData({ ...formData, patient_id: e.target.value })
+								placeholder="Seleccionar paciente..."
+								className="w-full h-10"
+								optionFilterProp="label"
+								prefix={<FaUser className="text-gray-400 mr-2" />}
+								value={formData.patient_id || undefined}
+								onChange={(value) =>
+									setFormData({ ...formData, patient_id: value })
 								}
-							>
-								<option value="">Seleccionar paciente...</option>
-								{patients.map((patient) => (
-									<option key={patient.document_id} value={patient.document_id}>
-										{patient.first_name} {patient.last_name} -{" "}
-										{patient.document_id}
-									</option>
-								))}
-							</select>
+								options={patients.map((patient) => ({
+									value: patient.document_id,
+									label: `${patient.first_name} ${patient.last_name} - ${patient.document_id}`,
+								}))}
+							/>
 						</div>
 
 						{/* Servicio - Opcional, pero si se selecciona, actualiza el tipo de cirugía */}
@@ -295,15 +300,19 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								>
 									Servicio (Opcional)
 								</label>
-								<select
+								<Select
 									id="service_id"
-									value={formData.service_id?.toString() || ""}
-									className={inputClass}
-									onChange={(e) => {
-										const serviceId = e.target.value
-											? parseInt(e.target.value, 10)
-											: null
+									showSearch
+									allowClear
+									placeholder="Seleccionar servicio..."
+									className="w-full h-10"
+									optionFilterProp="label"
+									prefix={<FaBriefcaseMedical className="text-gray-400 mr-2" />}
+									value={formData.service_id || undefined}
+									onChange={(value) => {
+										const serviceId = value ? Number(value) : null
 										const service = services.find((s) => s.id === serviceId)
+
 										setFormData({
 											...formData,
 											service_id: serviceId,
@@ -312,29 +321,26 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 										})
 										setSelectedService(service || null)
 									}}
-								>
-									<option value="">Seleccionar servicio...</option>
-									{services.map((service) => (
-										<option key={service.id} value={service.id}>
-											{service.service_type.name} - $
-											{formatPrice(service.price_usd)} USD
-										</option>
-									))}
-								</select>
+									options={services.map((service) => ({
+										value: service.id,
+										label: `${service.service_type.name} - $${formatPrice(service.price_usd)} USD`,
+									}))}
+								/>
+
 								{selectedService && (
-									<div className="mt-2 p-3 bg-blue-50 rounded-lg">
-										<div className="text-sm">
-											<div className="flex justify-between mb-1">
+									<div className="mt-2 p-3 bg-blue-50 rounded-2xl border border-blue-100 animate-in fade-in slide-in-from-top-1 duration-200">
+										<div className="text-sm space-y-1">
+											<div className="flex justify-between">
 												<span className="text-gray-600">Precio USD:</span>
-												<span className="font-semibold text-primary">
+												<span className="font-bold text-primary">
 													${formatPrice(selectedService.price_usd)}
 												</span>
 											</div>
 											{(settings?.custom_exchange_rate ||
 												currencyRates?.oficial?.promedio) && (
-												<div className="flex justify-between">
+												<div className="flex justify-between border-t border-blue-200/50 pt-1 mt-1">
 													<span className="text-gray-600">Precio BS:</span>
-													<span className="font-semibold text-green-600">
+													<span className="font-bold text-green-600">
 														Bs.{" "}
 														{formatPrice(
 															selectedService.price_usd *
@@ -359,23 +365,24 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							>
 								Tipo de Cirugía *
 							</label>
-							<FaStethoscope className="absolute left-3 bottom-3 text-gray-400" />
-							<select
+							<Select
 								id="surgery_type"
-								value={formData.surgery_type}
-								required
-								className={inputClass}
-								onChange={(e) =>
-									setFormData({ ...formData, surgery_type: e.target.value })
+								showSearch
+								placeholder="Seleccionar tipo de cirugía..."
+								className="w-full h-10"
+								optionFilterProp="label"
+								// Mantenemos el icono como prefijo
+								prefix={<FaStethoscope className="text-gray-400 mr-2" />}
+								value={formData.surgery_type || undefined}
+								onChange={(value) =>
+									setFormData({ ...formData, surgery_type: value })
 								}
-							>
-								<option value="">Seleccionar tipo de cirugía...</option>
-								{surgeryTypes.map((type) => (
-									<option key={type} value={type}>
-										{type}
-									</option>
-								))}
-							</select>
+								// Asumiendo que surgeryTypes es tu array de strings
+								options={surgeryTypes.map((type) => ({
+									value: type,
+									label: type,
+								}))}
+							/>
 						</div>
 
 						{/* Fecha */}
@@ -386,19 +393,27 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							>
 								Fecha *
 							</label>
-							<FaCalendar className="absolute left-3 bottom-3 text-gray-400" />
-							<input
+							<DatePicker
 								id="surgery_date"
-								type="date"
-								value={formData.surgery_date.split("T")[0] || ""}
-								required
-								className={inputClass}
-								onChange={(e) => {
-									const date = e.target.value
-									const time = formData.surgery_date.split("T")[1] || "09:00"
+								placeholder="Seleccionar fecha"
+								className="w-full h-10"
+								format="DD/MM/YYYY" // Formato visual para el usuario
+								// Convertimos el string del estado a objeto dayjs para Antd
+								value={
+									formData.surgery_date
+										? dayjs(formData.surgery_date.split("T")[0])
+										: null
+								}
+								// Agregamos el icono como prefijo
+								prefix={<FaCalendar className="text-gray-400 mr-2" />}
+								onChange={(date) => {
+									const dateStr = date ? date.format("YYYY-MM-DD") : ""
+									const timePart =
+										formData.surgery_date.split("T")[1] || "09:00"
+
 									setFormData({
 										...formData,
-										surgery_date: `${date}T${time}`,
+										surgery_date: dateStr ? `${dateStr}T${timePart}` : "",
 									})
 								}}
 							/>
@@ -412,46 +427,52 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							>
 								Hora *
 							</label>
-							<FaClock className="absolute left-3 bottom-3 text-gray-400" />
-							<input
+							<TimePicker
 								id="surgery_time"
-								type="time"
-								value={formData.surgery_date.split("T")[1] || "09:00"}
-								required
-								className={inputClass}
-								onChange={(e) => {
-									const time = e.target.value
-									const date = formData.surgery_date.split("T")[0] || ""
+								placeholder="Seleccionar hora"
+								className="w-full h-10"
+								format="HH:mm" // Formato de 24 horas
+								// Convertimos la parte de la hora del string ISO a objeto dayjs
+								value={
+									formData.surgery_date ? dayjs(formData.surgery_date) : null
+								}
+								// Icono como prefijo
+								prefix={<FaClock className="text-gray-400 mr-2" />}
+								onChange={(time) => {
+									const timeStr = time ? time.format("HH:mm") : "09:00"
+									const datePart =
+										formData.surgery_date.split("T")[0] ||
+										dayjs().format("YYYY-MM-DD")
+
 									setFormData({
 										...formData,
-										surgery_date: `${date}T${time}`,
+										surgery_date: `${datePart}T${timeStr}`,
 									})
 								}}
 							/>
 						</div>
 
 						{/* Estado */}
-						<div className="relative">
+						<div className="md:col-span-2 relative">
 							<label
 								htmlFor="status"
 								className="text-xs font-bold text-gray-700 mb-1 block ml-1"
 							>
 								Estado
 							</label>
-							<select
+							<Select
 								id="status"
+								className="w-full h-10"
 								value={formData.status || "scheduled"}
-								className={inputClass}
-								onChange={(e) =>
-									setFormData({ ...formData, status: e.target.value })
+								onChange={(value) =>
+									setFormData({ ...formData, status: value })
 								}
-							>
-								{statusOptions.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
+								// Usamos las opciones que ya tienes definidas en statusOptions
+								options={statusOptions.map((option) => ({
+									value: option.value,
+									label: option.label,
+								}))}
+							/>
 						</div>
 
 						{/* Notas */}

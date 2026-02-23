@@ -1,3 +1,5 @@
+import { DatePicker, Input, Select } from "antd"
+import dayjs from "dayjs"
 import type React from "react"
 import { useEffect, useState } from "react"
 import {
@@ -17,7 +19,10 @@ import {
 import { toast } from "react-toastify"
 import type { Patient, PatientFormData } from "../../../shared"
 import { ConfirmModal, PhoneInput } from "../../../shared"
-import { isValidPhone, parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
+import {
+	isValidPhone,
+	parsePhoneToE164,
+} from "../../../shared/utils/phoneFormat"
 import {
 	createPatient,
 	deletePatientById,
@@ -119,7 +124,9 @@ const PatientModalForm = ({
 			return false
 		}
 		if (!isValidPhone(data.phone)) {
-			toast.error("El número de teléfono debe tener formato válido (+58 4XX XXX XXXX)")
+			toast.error(
+				"El número de teléfono debe tener formato válido (+58 4XX XXX XXXX)",
+			)
 			return false
 		}
 
@@ -195,7 +202,7 @@ const PatientModalForm = ({
 	const labelClass =
 		"text-xs font-black text-primary uppercase tracking-wider mb-2 flex items-center gap-2"
 	const inputBaseClass =
-		"w-full bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none disabled:opacity-60"
+		"w-full bg-gray-50! p-3 rounded-xl! border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none disabled:opacity-60"
 
 	return (
 		<>
@@ -235,28 +242,33 @@ const PatientModalForm = ({
 									<label htmlFor="first_name" className={labelClass}>
 										<FaUser /> Nombre(s)
 									</label>
-									<input
-										type="text"
+									<Input
 										name="first_name"
-										required
-										disabled={loading}
-										className={inputBaseClass}
 										value={formData.first_name}
 										onChange={handleInputChange}
+										disabled={loading}
+										required
+										placeholder="Ingresa el nombre"
+										className={inputBaseClass}
+										style={{ height: "42px" }}
+										allowClear
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="last_name" className={labelClass}>
 										<FaUser /> Apellido(s)
 									</label>
-									<input
-										type="text"
+									<Input
 										name="last_name"
-										required
-										disabled={loading}
-										className={inputBaseClass}
 										value={formData.last_name}
 										onChange={handleInputChange}
+										disabled={loading}
+										required
+										placeholder="Ingresa el apellido"
+										// Aplicamos las clases para el comportamiento de color
+										className={inputBaseClass}
+										style={{ height: "42px" }}
+										allowClear
 									/>
 								</div>
 							</div>
@@ -267,32 +279,58 @@ const PatientModalForm = ({
 									<label htmlFor="document_id" className={labelClass}>
 										<FaIdCard /> Documento de Identidad
 									</label>
-									<input
-										type="text"
+									<Input
 										name="document_id"
 										required
 										disabled={loading || !!patient}
-										placeholder="Ej: V-12.345.678"
+										placeholder="12345678"
 										className={inputBaseClass}
-										value={formData.document_id}
-										onChange={handleInputChange}
+										style={{ height: "42px" }}
+										// IMPORTANTE: Mostramos el valor del estado, pero sin el "V-"
+										// (solo por si acaso el estado llegara a tenerlo, lo removemos para la vista)
+										value={formData.document_id.replace(/^V-/, "")}
+										// El prefijo visual de AntD (fuera del flujo del texto del input)
+										prefix={
+											<span className="text-gray-400 font-medium">V-</span>
+										}
+										onChange={(e) => {
+											// 1. Tomamos el valor y eliminamos TODO lo que no sea número
+											const onlyNumbers = e.target.value.replace(/[^\d]/g, "")
+
+											// 2. Mandamos al estado el valor formateado como tú lo quieres para el submit: "V-" + números
+											handleInputChange({
+												target: {
+													name: "document_id",
+													value: `V-${onlyNumbers}`,
+												},
+											} as React.ChangeEvent<HTMLInputElement>)
+										}}
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="gender" className={labelClass}>
 										<FaVenusMars /> Género
 									</label>
-									<select
-										name="gender"
+									<Select
+										id="gender"
 										disabled={loading}
-										className={inputBaseClass}
 										value={formData.gender}
-										onChange={handleInputChange}
-									>
-										<option value="M">Masculino</option>
-										<option value="F">Femenino</option>
-										<option value="Otro">Otro</option>
-									</select>
+										placeholder="Seleccionar género"
+										className="w-full rounded-xl!"
+										style={{ height: "42px" }}
+										// Definimos las opciones directamente aquí
+										options={[
+											{ value: "M", label: "Masculino" },
+											{ value: "F", label: "Femenino" },
+											{ value: "Otro", label: "Otro" },
+										]}
+										// Adaptamos el handleInputChange para que funcione con AntD
+										onChange={(value) => {
+											handleInputChange({
+												target: { name: "gender", value },
+											} as React.ChangeEvent<HTMLInputElement>)
+										}}
+									/>
 								</div>
 							</div>
 
@@ -302,7 +340,7 @@ const PatientModalForm = ({
 									<label htmlFor="email" className={labelClass}>
 										<FaEnvelope /> Correo Electrónico
 									</label>
-									<input
+									<Input
 										type="email"
 										name="email"
 										required
@@ -311,6 +349,9 @@ const PatientModalForm = ({
 										className={inputBaseClass}
 										value={formData.email}
 										onChange={handleInputChange}
+										allowClear
+										// Aseguramos que el estilo de AntD no choque con tu p-3
+										style={{ height: "42px" }}
 									/>
 								</div>
 								<div className="flex flex-col">
@@ -333,44 +374,77 @@ const PatientModalForm = ({
 									<label htmlFor="birthdate" className={labelClass}>
 										<FaCalendarAlt /> Fecha de Nacimiento
 									</label>
-									<input
-										type="date"
+									<DatePicker
 										name="birthdate"
-										required
-										disabled={loading}
+										placeholder="Seleccionar fecha de nacimiento"
 										className={inputBaseClass}
-										value={formData.birthdate}
-										onChange={handleInputChange}
+										style={{ height: "42px" }} // Para mantener la armonía con los otros campos
+										disabled={loading}
+										format="DD/MM/YYYY"
+										// AntD espera un objeto Dayjs. Si el string está vacío, mandamos null.
+										value={
+											formData.birthdate ? dayjs(formData.birthdate) : null
+										}
+										// Bloqueamos fechas futuras (nadie puede nacer mañana)
+										disabledDate={(current) =>
+											current && current > dayjs().endOf("day")
+										}
+										onChange={(date) => {
+											const dateString = date ? date.format("YYYY-MM-DD") : ""
+
+											// Simulamos el evento para tu handleInputChange
+											handleInputChange({
+												target: {
+													name: "birthdate",
+													value: dateString,
+												},
+											} as React.ChangeEvent<HTMLInputElement>)
+										}}
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="blood_type" className={labelClass}>
 										<FaVenusMars /> Tipo de Sangre
 									</label>
-									<select
-										name="blood_type"
+									<Select
+										id="blood_type"
+										placeholder="Seleccionar..."
 										disabled={loading}
+										// Usamos undefined para que se muestre el placeholder correctamente
+										value={formData.blood_type || undefined}
 										className={inputBaseClass}
-										value={formData.blood_type || ""}
-										onChange={handleInputChange}
-									>
-										<option value="">Seleccionar...</option>
-										<option value="A+">A+</option>
-										<option value="A-">A-</option>
-										<option value="B+">B+</option>
-										<option value="B-">B-</option>
-										<option value="AB+">AB+</option>
-										<option value="AB-">AB-</option>
-										<option value="O+">O+</option>
-										<option value="O-">O-</option>
-									</select>
+										style={{
+											height: "42px",
+											display: "flex",
+											alignItems: "center",
+										}}
+										// Definimos las opciones inline
+										options={[
+											{ value: "A+", label: "A+" },
+											{ value: "A-", label: "A-" },
+											{ value: "B+", label: "B+" },
+											{ value: "B-", label: "B-" },
+											{ value: "AB+", label: "AB+" },
+											{ value: "AB-", label: "AB-" },
+											{ value: "O+", label: "O+" },
+											{ value: "O-", label: "O-" },
+										]}
+										// Adaptamos el valor al manejador que ya tienes
+										onChange={(value) => {
+											handleInputChange({
+												target: { name: "blood_type", value },
+											} as React.ChangeEvent<HTMLInputElement>)
+										}}
+										// Permite al usuario borrar la selección
+										allowClear
+									/>
 								</div>
 							</div>
 
 							{/* 5. Alergias (Nueva Sección) */}
 							<div className="flex flex-col">
 								<label htmlFor="allergies" className={labelClass}>
-									<FaExclamationTriangle className="text-red-500" /> Alergias
+									<FaExclamationTriangle /> Alergias
 								</label>
 								<div className="space-y-3">
 									<input
