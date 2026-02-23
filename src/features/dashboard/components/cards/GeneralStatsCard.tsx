@@ -1,4 +1,5 @@
-import { FaUserInjured, FaCalendarCheck, FaStethoscope } from "react-icons/fa"
+import { FaCalendarCheck, FaStethoscope, FaUserInjured } from "react-icons/fa"
+import { MdProductionQuantityLimits } from "react-icons/md"
 import type { DashboardStats } from "../../types/dashboard.types"
 
 interface GeneralStatsCardProps {
@@ -42,15 +43,26 @@ export const GeneralStatsCard = ({ stats, loading }: GeneralStatsCardProps) => {
 							{stats.totalAppointments}
 						</span>
 					</div>
-					<div className="flex items-center justify-between p-2 sm:p-3 bg-orange-50 rounded-lg">
+					<div className="flex items-center justify-between p-2 sm:p-3 bg-lime-50 rounded-lg">
 						<div className="flex items-center gap-1 sm:gap-2">
-							<FaStethoscope className="text-orange-600 text-sm sm:text-base" />
+							<FaStethoscope className="text-lime-600 text-sm sm:text-base" />
 							<span className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
 								Total Cirugías
 							</span>
 						</div>
-						<span className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
+						<span className="text-lg sm:text-xl md:text-2xl font-bold text-lime-600">
 							{stats.totalSurgeries}
+						</span>
+					</div>
+					<div className="flex items-center justify-between p-2 sm:p-3 bg-red-50 rounded-lg">
+						<div className="flex items-center gap-1 sm:gap-2">
+							<MdProductionQuantityLimits className="text-red-600 text-sm sm:text-base" />
+							<span className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
+								Productos con stock bajo u agotado
+							</span>
+						</div>
+						<span className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">
+							{stats.totalLowStockSupplies}
 						</span>
 					</div>
 				</div>
