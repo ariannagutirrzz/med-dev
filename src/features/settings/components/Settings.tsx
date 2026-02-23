@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { api } from "../../../config/axios"
+import { api, getStoredToken, getStoredUser } from "../../../config/axios"
 import type { MyTokenPayload } from "../../../shared"
 import { PhoneInput } from "../../../shared"
 import { parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
@@ -57,7 +57,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 
 	const loadSettings = useCallback(async () => {
 		try {
-			const token = localStorage.getItem("AUTH_TOKEN")
+			const token = getStoredToken()
 			if (!token) {
 				setLoading(false)
 				return
@@ -74,9 +74,9 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 
 	const loadUserData = useCallback(async () => {
 		try {
-			const token = localStorage.getItem("AUTH_TOKEN")
+			const token = getStoredToken()
 			if (!token) {
-				const storedUser = localStorage.getItem("user")
+				const storedUser = getStoredUser()
 				if (storedUser) {
 					const user = JSON.parse(storedUser)
 					setProfileData((prev) => ({
@@ -98,7 +98,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 				}))
 			}
 		} catch {
-			const storedUser = localStorage.getItem("user")
+			const storedUser = getStoredUser()
 			if (storedUser) {
 				const user = JSON.parse(storedUser)
 				setProfileData((prev) => ({
@@ -138,7 +138,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 			setSuccess(null)
 
 			// Update user profile via user API
-			const token = localStorage.getItem("AUTH_TOKEN")
+			const token = getStoredToken()
 			if (!token) {
 				throw new Error("Not authenticated")
 			}

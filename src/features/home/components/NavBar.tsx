@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { getStoredToken } from "../../../config/axios"
 import logoUnidadPleura from "../../../assets/logo-unidad-de-pleura.png"
 
 const NavBar = () => {
@@ -20,9 +21,7 @@ const NavBar = () => {
 	]
 
 	useEffect(() => {
-		localStorage.getItem("AUTH_TOKEN")
-			? setIsUserLogged(true)
-			: setIsUserLogged(false)
+		getStoredToken() ? setIsUserLogged(true) : setIsUserLogged(false)
 	}, [])
 
 	return (
