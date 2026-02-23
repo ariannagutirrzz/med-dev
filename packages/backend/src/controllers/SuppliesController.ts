@@ -45,7 +45,7 @@ export const getSupplyById = async (req: Request, res: Response) => {
 
 // 3. Crear un nuevo insumo
 export const createSupply = async (req: Request, res: Response) => {
-	const { id, name, category, quantity, min_stock, unit, status } = req.body
+	const { id, name, category, quantity, min_stock, unit } = req.body
 
 	// 1. Validar que no falten campos obligatorios
 	const requiredFields = [
@@ -55,7 +55,6 @@ export const createSupply = async (req: Request, res: Response) => {
 		"quantity",
 		"min_stock",
 		"unit",
-		"status",
 	]
 	const missingFields = requiredFields.filter(
 		(field) => !req.body[field] && req.body[field] !== 0,
@@ -82,10 +81,10 @@ export const createSupply = async (req: Request, res: Response) => {
 
 	try {
 		const result = await query(
-			`INSERT INTO medical_supplies (id, name, category, quantity, min_stock, unit, status)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+			`INSERT INTO medical_supplies (id, name, category, quantity, min_stock, unit)
+             VALUES ($1, $2, $3, $4, $5, $6)
              RETURNING *`,
-			[id, name, category, quantity, min_stock, unit, status],
+			[id, name, category, quantity, min_stock, unit],
 		)
 
 		res.status(201).json({
@@ -102,6 +101,9 @@ export const createSupply = async (req: Request, res: Response) => {
 export const updateSupply = async (req: Request, res: Response) => {
 	const { id } = req.params
 	const updates = req.body
+
+	delete updates.status
+	delete updates.id
 
 	// 1. Verificar si se enviaron campos para actualizar
 	const keys = Object.keys(updates)
@@ -147,7 +149,7 @@ export const updateSupply = async (req: Request, res: Response) => {
 		const result = await query(
 			`UPDATE medical_supplies 
              SET ${setClause}
-             WHERE id = $${values.length} 
+             WHERE id = $${values.length}
              RETURNING *`,
 			values,
 		)

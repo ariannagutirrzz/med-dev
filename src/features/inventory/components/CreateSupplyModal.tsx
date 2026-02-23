@@ -11,8 +11,8 @@ import {
 	FaWarehouse,
 } from "react-icons/fa"
 import { toast } from "react-toastify"
-import { createSupply, updateSupplyById } from "../services/SuppliesAPI"
 import type { Supply } from "../../../shared"
+import { createSupply, updateSupplyById } from "../services/SuppliesAPI"
 
 interface CreateSupplyModalProps {
 	isOpen: boolean
@@ -179,42 +179,6 @@ const CreateSupplyModal = ({
 							>
 								<option value="Descartable">Descartable</option>
 								<option value="No Descartable">No descartable</option>
-							</select>
-						</div>
-
-						{/* Estado - NUEVO CAMPO */}
-						<div className="relative">
-							<label
-								htmlFor="status"
-								className="text-xs font-bold text-primary-dark mb-1 block ml-1"
-							>
-								Estado del Insumo
-							</label>
-							<div className="absolute left-3 top-1/2 -translate-y-1/2 mt-2">
-								<div
-									className={`w-3 h-3 rounded-full ${
-										formData.status === "available"
-											? "bg-green-500"
-											: formData.status === "low stock"
-												? "bg-orange-500"
-												: "bg-red-500"
-									}`}
-								/>
-							</div>
-							<select
-								id="status"
-								className={inputClass}
-								value={formData.status}
-								onChange={(e) =>
-									setFormData({
-										...formData,
-										status: e.target.value as Supply["status"],
-									})
-								}
-							>
-								<option value="available">Disponible</option>
-								<option value="low stock">Stock Bajo</option>
-								<option value="out of stock">Agotado</option>
 							</select>
 						</div>
 
