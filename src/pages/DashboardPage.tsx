@@ -24,10 +24,16 @@ const DashboardPage: React.FC = () => {
 	const { user, logout, refreshUser } = useAuth()
 	const navigate = useNavigate()
 	const location = useLocation()
-	// En móvil empezar con el menú cerrado; en desktop abierto
-	const [isSidebarOpen, setIsSidebarOpen] = useState(
-		() => typeof window !== "undefined" && window.innerWidth >= 768,
-	)
+	// Sidebar: en móvil siempre cerrado al cargar; en desktop abierto (se abre en useEffect para evitar flash en móvil)
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+	useEffect(() => {
+		const m = window.matchMedia("(min-width: 768px)")
+		if (m.matches) setIsSidebarOpen(true)
+		const handler = (e: MediaQueryListEvent) => setIsSidebarOpen(e.matches)
+		m.addEventListener("change", handler)
+		return () => m.removeEventListener("change", handler)
+	}, [])
 
 	const userData = {
 		name: user?.name || "Usuario",

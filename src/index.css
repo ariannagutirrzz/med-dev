@@ -42,3 +42,11 @@ aside nav button:focus {
 	outline: none !important;
 	box-shadow: none !important;
 }
+
+/* Sidebar: oculto en móvil cuando está cerrado (evita que se vea antes de hidratar o por conflictos con Tailwind) */
+@media (max-width: 767px) {
+	[data-dashboard-sidebar][data-sidebar-closed] {
+		transform: translateX(-100%) !important;
+		visibility: visible; /* mantiene accesible cuando se abre */
+	}
+}

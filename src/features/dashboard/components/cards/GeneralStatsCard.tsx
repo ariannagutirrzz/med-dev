@@ -1,4 +1,4 @@
-import { FaCalendarCheck, FaStethoscope, FaUserInjured } from "react-icons/fa"
+import { FaCalendarCheck, FaCalendarDay, FaStethoscope, FaUserInjured } from "react-icons/fa"
 import { MdProductionQuantityLimits } from "react-icons/md"
 import type { DashboardStats } from "../../types/dashboard.types"
 
@@ -9,7 +9,7 @@ interface GeneralStatsCardProps {
 
 export const GeneralStatsCard = ({ stats, loading }: GeneralStatsCardProps) => {
 	return (
-		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6">
+		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 h-full flex flex-col">
 			<h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-800 mb-3 sm:mb-4">
 				Resumen General
 			</h3>
@@ -21,6 +21,17 @@ export const GeneralStatsCard = ({ stats, loading }: GeneralStatsCardProps) => {
 				</div>
 			) : (
 				<div className="space-y-2 sm:space-y-3 md:space-y-4">
+					<div className="flex items-center justify-between p-2 sm:p-3 bg-teal-50 rounded-lg">
+						<div className="flex items-center gap-1 sm:gap-2">
+							<FaCalendarDay className="text-teal-600 text-sm sm:text-base" />
+							<span className="text-xs sm:text-sm md:text-base font-medium text-gray-700">
+								Citas Hoy
+							</span>
+						</div>
+						<span className="text-lg sm:text-xl md:text-2xl font-bold text-teal-600">
+							{stats.appointmentsToday}
+						</span>
+					</div>
 					<div className="flex items-center justify-between p-2 sm:p-3 bg-blue-50 rounded-lg">
 						<div className="flex items-center gap-1 sm:gap-2">
 							<FaUserInjured className="text-blue-600 text-sm sm:text-base" />

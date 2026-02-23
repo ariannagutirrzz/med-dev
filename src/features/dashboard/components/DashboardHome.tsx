@@ -2,7 +2,6 @@ import { useAuth } from "../../auth"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { useDashboardData } from "../hooks/useDashboardData"
 import { useSearchFilter } from "../hooks/useSearchFilter"
-import { AppointmentsTodayCard } from "./cards/AppointmentsTodayCard"
 import { CurrencyCard } from "./cards/CurrencyCard"
 import { GeneralStatsCard } from "./cards/GeneralStatsCard"
 import { SurgeryCalendarCard } from "./cards/SurgeryCalendarCard"
@@ -48,19 +47,13 @@ const DashboardHome = () => {
 				userRole={user?.role}
 			/>
 
-			{/* Grid principal - Responsive */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6">
+			{/* Grid principal: bienvenida + sistema cambiario */}
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6">
 				<WelcomeSection userName={user?.name} />
-
-				<AppointmentsTodayCard
-					count={data.stats.appointmentsToday}
-					loading={loading}
-				/>
-
 				<CurrencyCard />
 			</div>
 
-			{/* Grid de estadísticas y calendario - Responsive */}
+			{/* Grid de estadísticas y calendario - Responsive (misma altura en la fila) */}
 			<div className="mt-3 sm:mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
 				{user?.role === "Médico" && (
 					<>

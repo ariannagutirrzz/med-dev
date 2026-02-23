@@ -9,10 +9,19 @@ export interface Surgery {
 
 interface CalendarProps {
 	surgeries?: Surgery[]
-	showLegend?: boolean // Nueva prop para controlar la leyenda
+	showLegend?: boolean
+	/** Tamaño visual del calendario (por defecto 'md') */
+	size?: "sm" | "md" | "lg"
 }
 
-const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
+const sizeClasses = {
+	sm: { cell: "h-6", dayLabel: "text-xs py-0.5", month: "text-base", gap: "gap-0.5" },
+	md: { cell: "h-8", dayLabel: "text-xs py-1", month: "text-lg", gap: "gap-1" },
+	lg: { cell: "h-10", dayLabel: "text-sm py-1.5", month: "text-xl", gap: "gap-2" },
+}
+
+const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
+	const classes = sizeClasses[size]
 	const [currentDate, setCurrentDate] = useState(new Date())
 
 	// Solo cirugías del mes/año actualmente mostrado
@@ -78,8 +87,7 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
 
 	return (
 		<div className="w-full">
-			{/* Header del calendario */}
-			<div className="flex justify-between items-center mb-4">
+			<div className={`flex justify-between items-center mb-4 ${classes.gap}`}>
 				<button
 					type="button"
 					onClick={() => navigateMonth(-1)}
@@ -87,7 +95,7 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
 				>
 					‹
 				</button>
-				<h4 className="text-lg font-semibold text-gray-800">
+				<h4 className={`${classes.month} font-semibold text-gray-800`}>
 					{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
 				</h4>
 				<button
@@ -99,24 +107,21 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
 				</button>
 			</div>
 
-			{/* Días de la semana */}
-			<div className="grid grid-cols-7 gap-1 mb-2">
+			<div className={`grid grid-cols-7 ${classes.gap} mb-2`}>
 				{dayNames.map((day) => (
 					<div
 						key={day}
-						className="text-center text-xs font-medium text-gray-500 py-1"
+						className={`text-center font-medium text-gray-500 ${classes.dayLabel}`}
 					>
 						{day}
 					</div>
 				))}
 			</div>
 
-			{/* Días del mes */}
-			<div className="grid grid-cols-7 gap-1">
-				{/* Espacios vacíos para alinear el primer día */}
+			<div className={`grid grid-cols-7 ${classes.gap}`}>
 				{Array.from({ length: startingDay }).map((_, i) => {
 					const key = `empty-${currentDate.getFullYear()}-${currentDate.getMonth()}-${i}`
-					return <div key={key} className="h-8"></div>
+					return <div key={key} className={classes.cell}></div>
 				})}
 
 				{days.map((day) => {
@@ -129,7 +134,7 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [] }) => {
 					return (
 						<div
 							key={day}
-							className={`h-8 flex items-center justify-center text-sm relative ${
+							className={`${classes.cell} flex items-center justify-center text-sm relative ${
 								isToday ? "bg-primary text-white rounded-full" : "text-gray-700"
 							}`}
 						>

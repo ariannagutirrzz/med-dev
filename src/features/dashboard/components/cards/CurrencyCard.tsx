@@ -15,7 +15,7 @@ export const CurrencyCard = () => {
 	} = useCurrencyRates()
 
 	return (
-		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 min-h-[180px] sm:min-h-[220px] md:min-h-[260px] flex flex-col">
+		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 min-h-[220px] sm:min-h-[260px] md:min-h-[300px] flex flex-col">
 			<div className="flex flex-row justify-between items-center mb-2 sm:mb-3 md:mb-4">
 				<h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800">
 					Sistema Cambiario
@@ -35,18 +35,18 @@ export const CurrencyCard = () => {
 					</div>
 				) : currencyRates ? (
 					<>
-						<div className="flex flex-row justify-between text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
+						<div className="flex flex-row justify-between items-center text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
 							<span>{currencyRates.oficial.nombre}</span>
-							<span className="text-right">{formatPrice(currencyRates.oficial.promedio)}</span>
+							<span className="text-right tabular-nums">{formatPrice(currencyRates.oficial.promedio)}</span>
 						</div>
-						<div className="flex flex-row justify-between text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
+						<div className="flex flex-row justify-between items-center text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
 							<span>{currencyRates.paralelo.nombre}</span>
-							<span className="text-right">{formatPrice(currencyRates.paralelo.promedio)}</span>
+							<span className="text-right tabular-nums">{formatPrice(currencyRates.paralelo.promedio)}</span>
 						</div>
 
 						{user?.role === "Médico" && (
-							<div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500">
-								<p className="mb-1 sm:mb-2 text-xs sm:text-sm">
+							<div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500 flex flex-col items-end">
+								<p className="mb-1 sm:mb-2 text-xs sm:text-sm text-right">
 									Tu tasa personalizada actual:{" "}
 									<span className="font-semibold text-primary">
 										{settings?.custom_exchange_rate != null &&
@@ -55,12 +55,12 @@ export const CurrencyCard = () => {
 											: "No definida"}
 									</span>
 								</p>
-								<div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+								<div className="flex flex-col sm:flex-row gap-2 sm:items-center w-full sm:w-auto sm:justify-end">
 									<input
 										type="number"
 										min="0"
 										step="0.01"
-										className="w-full sm:max-w-[140px] px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+										className="w-full sm:w-[140px] px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-right"
 										placeholder={formatPrice(currencyRates.oficial.promedio)}
 										value={customRateInput}
 										onChange={(e) => setCustomRateInput(e.target.value)}
