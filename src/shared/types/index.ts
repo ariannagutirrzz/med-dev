@@ -18,6 +18,7 @@ export type Patient = {
 	address: string
 	document_id: string
 	blood_type?: string | null
+	allergies: string[]
 }
 
 // PatientFormData hereda todo de Patient EXCEPTO birthdate, que lo definimos como string

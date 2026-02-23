@@ -17,6 +17,7 @@ export type Patient = {
 	gender: string
 	address: string
 	document_id: string
+	allergies: string[]
 }
 export type Doctor = {
 	document_id: string
