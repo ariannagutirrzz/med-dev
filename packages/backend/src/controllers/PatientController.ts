@@ -14,6 +14,7 @@ export const createPatient = async (req: Request, res: Response) => {
 		gender,
 		address,
 		blood_type,
+		allergies,
 	} = req.body
 
 	// Validation
@@ -46,8 +47,8 @@ export const createPatient = async (req: Request, res: Response) => {
 		// The Trigger 'trg_create_patient_on_signup' will automatically
 		// create the record in the 'patients' table after this query.
 		const result = await query(
-			`INSERT INTO users (name, email, password, role, document_id, phone, birthdate, gender, address, blood_type) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+			`INSERT INTO users (name, email, password, role, document_id, phone, birthdate, gender, address, blood_type, allergies) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
              RETURNING id, name, email, role, document_id, 
              TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
 			 TO_CHAR(birthdate, 'DD/MM/YYYY') as birthdate`,
@@ -62,6 +63,7 @@ export const createPatient = async (req: Request, res: Response) => {
 				gender,
 				address,
 				blood_type || null,
+				allergies || [],
 			],
 		)
 
@@ -168,6 +170,7 @@ export const updatePatient = async (req: Request, res: Response) => {
 		"gender",
 		"address",
 		"blood_type",
+		"allergies",
 	]
 	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
