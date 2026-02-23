@@ -12,3 +12,4 @@ export const calcularEdad = (fechaNacimiento: Date): number => {
 }
 
 export * from "./formatPrice"
+export * from "./phoneFormat"

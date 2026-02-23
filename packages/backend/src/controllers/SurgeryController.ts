@@ -4,6 +4,7 @@ import {
 	notifySurgeryCreated,
 	notifySurgeryUpdated,
 } from "../utils/notificationHelpers"
+import { sendWhatsApp } from "../utils/twilio"
 
 // 1. Create Surgery (Reservation)
 export const createSurgery = async (req: Request, res: Response) => {
@@ -58,7 +59,92 @@ export const createSurgery = async (req: Request, res: Response) => {
 
 		const surgery = result.rows[0]
 
-		// Create notification for surgery creation
+		// Fetch patient and doctor (name + phone) for WhatsApp and in-app notifications
+		let patientUser: { name: string; phone?: string } | null = null
+		let doctorUser: { name: string; phone?: string } | null = null
+		let patientFromPatients: { first_name: string; last_name: string } | null =
+			null
+
+		try {
+			const [patientUserResult, doctorResult, patientResult] = await Promise.all([
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					patient_id,
+				]),
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					doctor_id,
+				]),
+				query(`SELECT first_name, last_name FROM patients WHERE document_id = $1`, [
+					patient_id,
+				]),
+			])
+
+			patientUser = patientUserResult.rows[0] || null
+			doctorUser = doctorResult.rows[0] || null
+			patientFromPatients = patientResult.rows[0] || null
+
+			const surgeryDate = new Date(surgery_date)
+			const formattedDate = surgeryDate.toLocaleDateString("es-ES", {
+				weekday: "long",
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+			const formattedTime = surgeryDate.toLocaleTimeString("es-ES", {
+				hour: "2-digit",
+				minute: "2-digit",
+			})
+			const patientName =
+				patientFromPatients ?
+					`${patientFromPatients.first_name} ${patientFromPatients.last_name}`
+				:	patientUser?.name ?? "Paciente"
+			const doctorName = doctorUser?.name ?? "Médico"
+
+			// WhatsApp to patient
+			if (patientUser?.phone) {
+				const patientMessage = `Hola ${patientUser.name}, tu cirugía ha sido programada exitosamente.
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👨‍⚕️ Médico: ${doctorName}
+${surgery_type ? `🏥 Tipo: ${surgery_type}` : ""}
+${notes ? `📝 Notas: ${notes}` : ""}
+
+Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
+				await sendWhatsApp({
+					to: patientUser.phone,
+					message: patientMessage,
+				})
+			} else if (patientUser) {
+				console.warn(
+					`WhatsApp no enviado al paciente ${patientUser.name} (document_id: ${patient_id}): sin teléfono en users.phone`,
+				)
+			}
+
+			// WhatsApp to doctor
+			if (doctorUser?.phone) {
+				const doctorMessage = `Nueva cirugía programada
+
+📅 Fecha: ${formattedDate}
+🕐 Hora: ${formattedTime}
+👤 Paciente: ${patientName}
+${surgery_type ? `🏥 Tipo: ${surgery_type}` : ""}
+${notes ? `📝 Notas: ${notes}` : ""}
+
+Por favor, confirma tu disponibilidad.`
+				await sendWhatsApp({
+					to: doctorUser.phone,
+					message: doctorMessage,
+				})
+			} else if (doctorUser) {
+				console.warn(
+					`WhatsApp no enviado al médico ${doctorUser.name} (document_id: ${doctor_id}): sin teléfono en users.phone`,
+				)
+			}
+		} catch (whatsappError) {
+			console.error("Error sending surgery WhatsApp notifications:", whatsappError)
+		}
+
+		// In-app notifications (existing logic, keep using patients table for name if needed)
 		try {
 			const patientResult = await query(
 				`SELECT first_name, last_name FROM patients WHERE document_id = $1`,

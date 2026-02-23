@@ -4,6 +4,7 @@ import express from "express"
 import swaggerUI from "swagger-ui-express"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import aiRoutes from "./routes/aiRoutes.js"
 import currencyRoutes from "./routes/currencyRoutes.js"
 import doctorAvailabilityRoutes from "./routes/doctorAvailabilityRoutes.js"
 import doctorUnavailabilityRoutes from "./routes/doctorUnavailabilityRoutes.js"
@@ -37,6 +38,7 @@ app.use(express.json())
 
 // Routes
 app.use("/api/auth", authRoutes)
+app.use("/api/ai", aiRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/appointments", appointmentRoutes)
 app.use("/api/surgeries", surgeryRoutes)

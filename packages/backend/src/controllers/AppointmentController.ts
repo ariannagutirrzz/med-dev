@@ -242,6 +242,10 @@ Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, c
 					to: patient.phone,
 					message: patientMessage,
 				})
+			} else if (patient) {
+				console.warn(
+					`WhatsApp no enviado al paciente ${patient.name} (document_id: ${patient_id}): sin teléfono en users.phone`,
+				)
 			}
 
 			// Send WhatsApp to doctor
@@ -258,6 +262,10 @@ Por favor, confirma tu disponibilidad.`
 					to: doctor.phone,
 					message: doctorMessage,
 				})
+			} else if (doctor) {
+				console.warn(
+					`WhatsApp no enviado al médico ${doctor.name} (document_id: ${doctor_id}): sin teléfono en users.phone`,
+				)
 			}
 		} catch (whatsappError) {
 			// Log WhatsApp error but don't fail the appointment creation

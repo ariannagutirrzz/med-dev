@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Button, InputField } from "../../../shared"
+import { Button, InputField, PhoneInput } from "../../../shared"
+import { isValidPhone, parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
 
 interface SignupFormData {
 	name: string
@@ -55,12 +56,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	const validateEmail = (email: string): boolean => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 		return emailRegex.test(email)
-	}
-
-	const validatePhone = (phone: string): boolean => {
-		// Allow phone numbers with or without country code, spaces, dashes, parentheses
-		const phoneRegex = /^[\d\s\-+()]+$/
-		return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 7
 	}
 
 	const validateDocumentId = (docId: string): boolean => {
@@ -132,8 +127,8 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		// Phone validation
 		if (!formData.phone.trim()) {
 			newErrors.phone = "El teléfono es requerido"
-		} else if (!validatePhone(formData.phone)) {
-			newErrors.phone = "Ingresa un número de teléfono válido"
+		} else if (!isValidPhone(formData.phone)) {
+			newErrors.phone = "Ingresa un número válido (+58 4XX XXX XXXX)"
 		}
 
 		// Birthdate validation
@@ -205,9 +200,12 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 
 		setIsSubmitting(true)
 		try {
-			// Don't send confirmPassword to backend
+			// Don't send confirmPassword to backend; normalize phone to E.164
 			const { confirmPassword: _confirmPassword, ...dataToSend } = formData
-			await onSignUp(dataToSend)
+			await onSignUp({
+				...dataToSend,
+				phone: parsePhoneToE164(formData.phone),
+			})
 		} catch (error) {
 			console.error("Error in signup:", error)
 		} finally {
@@ -258,17 +256,32 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				/>
 
 				{/* Phone */}
-				<InputField
-					label="Teléfono"
-					type="tel"
-					placeholder="Ej: 0412-1234567"
-					value={formData.phone}
-					onChange={handleChange("phone")}
-					error={errors.phone}
-					required
-					showIcon={false}
-					showSeparator={false}
-				/>
+				<div>
+					<label
+						htmlFor="phone"
+						className="text-sm text-text ml-1 mb-1 flex justify-start"
+					>
+						Teléfono
+						<span className="text-red-500 ml-1">*</span>
+					</label>
+					<PhoneInput
+						value={formData.phone}
+						onChange={(e164Value) =>
+							setFormData((prev) => ({ ...prev, phone: e164Value }))
+						}
+						placeholder="4XX XXX XXXX"
+						className={errors.phone ? "border-red-500" : ""}
+					/>
+					{errors.phone && (
+						<p
+							className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1"
+							role="alert"
+						>
+							<span className="text-red-500">•</span>
+							{errors.phone}
+						</p>
+					)}
+				</div>
 
 				{/* Birthdate */}
 				<div>

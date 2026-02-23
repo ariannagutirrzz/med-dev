@@ -58,8 +58,12 @@ export default function GenerateAI() {
 		setIsLoading(true)
 
 		try {
-			// 3. Llamar al service que devuelve el stream
-			const textStream = await generateAIResponse(userMessage)
+			// Pasar historial reciente para contexto (últimos 10 mensajes)
+			const recentHistory = messages.slice(-10).map((m) => ({
+				role: m.role,
+				content: m.content,
+			}))
+			const textStream = await generateAIResponse(userMessage, recentHistory)
 
 			// 4. Consumir el stream
 			for await (const textPart of textStream) {
@@ -72,9 +76,19 @@ export default function GenerateAI() {
 				)
 			}
 		} catch (error) {
-			toast.error("Error al generar respuesta de IA")
+			const message =
+				error instanceof Error
+					? error.message
+					: "Error al generar respuesta de IA"
+			const isTimeout =
+				error instanceof Error &&
+				(error.name === "AbortError" || message.toLowerCase().includes("abort"))
+			toast.error(
+				isTimeout
+					? "El asistente tardó demasiado. Prueba con un mensaje más corto o otro modelo."
+					: message,
+			)
 			console.error(error)
-			// Opcional: eliminar el mensaje vacío de la IA si falla
 			setMessages((prev) => prev.filter((m) => m.id !== aiMsgId))
 		} finally {
 			setIsLoading(false)
@@ -187,7 +201,7 @@ export default function GenerateAI() {
 					</div>
 				</form>
 				<p className="text-[10px] text-center text-gray-400 mt-3 uppercase tracking-widest font-bold">
-					Potenciado por Gemma 3 & OpenRouter AI
+					Conectado al sistema: inventario, citas y pacientes
 				</p>
 			</div>
 		</div>
