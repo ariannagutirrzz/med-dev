@@ -16,7 +16,8 @@ import {
 } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Patient, PatientFormData } from "../../../shared"
-import { ConfirmModal } from "../../../shared"
+import { ConfirmModal, PhoneInput } from "../../../shared"
+import { isValidPhone, parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
 import {
 	createPatient,
 	deletePatientById,
@@ -107,16 +108,18 @@ const PatientModalForm = ({
 	// Lógica de Validación
 	const validateFields = (data: PatientFormData) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-		const phoneRegex =
-			/^(\+?\d{1,3})?[-.\s]?\d{3,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}$/
 
 		if (!emailRegex.test(data.email)) {
 			toast.error("El formato del correo electrónico no es válido")
 			return false
 		}
 
-		if (!phoneRegex.test(data.phone)) {
-			toast.error("El número de teléfono debe tener un formato válido")
+		if (!data.phone?.trim()) {
+			toast.error("El teléfono es requerido")
+			return false
+		}
+		if (!isValidPhone(data.phone)) {
+			toast.error("El número de teléfono debe tener formato válido (+58 4XX XXX XXXX)")
 			return false
 		}
 
@@ -140,6 +143,10 @@ const PatientModalForm = ({
 		})
 	}
 
+	const handlePhoneChange = (e164Value: string) => {
+		setFormData((prev) => (prev ? { ...prev, phone: e164Value } : null))
+	}
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		if (!formData) return
@@ -147,11 +154,12 @@ const PatientModalForm = ({
 
 		setLoading(true)
 		try {
+			const payload = { ...formData, phone: parsePhoneToE164(formData.phone) }
 			if (patient) {
-				await updatePatientById(formData)
+				await updatePatientById(payload)
 				toast.success("Información actualizada correctamente")
 			} else {
-				await createPatient(formData)
+				await createPatient(payload)
 				toast.success("Paciente registrado exitosamente")
 			}
 			onSave()
@@ -309,15 +317,12 @@ const PatientModalForm = ({
 									<label htmlFor="phone" className={labelClass}>
 										<FaPhone /> Teléfono
 									</label>
-									<input
-										type="tel"
-										name="phone"
-										required
-										disabled={loading}
-										placeholder="Ej: 0412-1234567"
-										className={inputBaseClass}
+									<PhoneInput
 										value={formData.phone}
-										onChange={handleInputChange}
+										onChange={handlePhoneChange}
+										placeholder="4XX XXX XXXX"
+										disabled={loading}
+										className={inputBaseClass}
 									/>
 								</div>
 							</div>

@@ -2,6 +2,8 @@ import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { api } from "../../../config/axios"
 import type { MyTokenPayload } from "../../../shared"
+import { PhoneInput } from "../../../shared"
+import { parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
 import {
 	getSettings,
 	type UpdateSettingsInput,
@@ -151,7 +153,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 
 			const formData = new FormData()
 			formData.append("name", profileData.name)
-			formData.append("phone", profileData.phone)
+			formData.append("phone", parsePhoneToE164(profileData.phone))
 
 			if (selectedFile) {
 				formData.append("image", selectedFile)
@@ -376,17 +378,17 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 										>
 											Teléfono
 										</label>
-										<input
+										<PhoneInput
 											id="profile-phone"
-											type="tel"
 											value={profileData.phone}
-											onChange={(e) =>
+											onChange={(e164Value) =>
 												setProfileData({
 													...profileData,
-													phone: e.target.value,
+													phone: e164Value,
 												})
 											}
-											className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+											placeholder="4XX XXX XXXX"
+											className="w-full"
 										/>
 									</div>
 									<div>

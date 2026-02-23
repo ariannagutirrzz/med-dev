@@ -4,7 +4,7 @@ import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 // 1. Importamos el service
 import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import type { Patient } from "../../../shared"
-import { calcularEdad } from "../../../shared"
+import { calcularEdad, formatPhoneDisplay } from "../../../shared"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
@@ -207,7 +207,7 @@ export default function MedicalRecords() {
 										</p>
 										<p className="text-gray-500 text-[13px] flex items-center font-medium">
 											<CiPhone className="mr-3 text-primary w-5 h-5" />
-											{record.phone}
+											{formatPhoneDisplay(record.phone ?? "")}
 										</p>
 									</div>
 								</div>
