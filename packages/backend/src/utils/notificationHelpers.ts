@@ -4,8 +4,8 @@ import { createNotification } from "../services/NotificationService"
  * Create notification for appointment creation
  */
 export async function notifyAppointmentCreated(
-	doctor_id: string,
-	patient_name: string,
+	user_id: string,
+	responsible_name: string,
 	appointment_date: Date,
 	appointment_id: number,
 ) {
@@ -23,9 +23,9 @@ export async function notifyAppointmentCreated(
 		)
 
 		await createNotification({
-			user_id: doctor_id,
+			user_id,
 			title: "Nueva cita programada",
-			message: `Se ha programado una cita con ${patient_name} para el ${formattedDate}`,
+			message: `Se ha programado una cita con ${responsible_name} para el ${formattedDate}`,
 			type: "info",
 			related_type: "appointment",
 			related_id: appointment_id,
@@ -40,8 +40,8 @@ export async function notifyAppointmentCreated(
  * Create notification for appointment update
  */
 export async function notifyAppointmentUpdated(
-	doctor_id: string,
-	patient_name: string,
+	user_id: string,
+	responsible_name: string,
 	appointment_date: Date,
 	appointment_id: number,
 	status: string,
@@ -59,19 +59,19 @@ export async function notifyAppointmentUpdated(
 			},
 		)
 
-		let message = `La cita con ${patient_name} del ${formattedDate} ha sido actualizada`
+		let message = `La cita con ${responsible_name} del ${formattedDate} ha sido actualizada`
 		let type: "info" | "success" | "warning" | "error" = "info"
 
 		if (status === "cancelled") {
-			message = `La cita con ${patient_name} del ${formattedDate} ha sido cancelada`
+			message = `La cita con ${responsible_name} del ${formattedDate} ha sido cancelada`
 			type = "warning"
 		} else if (status === "completed") {
-			message = `La cita con ${patient_name} del ${formattedDate} ha sido completada`
+			message = `La cita con ${responsible_name} del ${formattedDate} ha sido completada`
 			type = "success"
 		}
 
 		await createNotification({
-			user_id: doctor_id,
+			user_id,
 			title: "Cita actualizada",
 			message,
 			type,
@@ -87,8 +87,9 @@ export async function notifyAppointmentUpdated(
  * Create notification for surgery creation
  */
 export async function notifySurgeryCreated(
-	doctor_id: string,
+	user_id: string,
 	patient_name: string,
+	doctor_name: string,
 	surgery_date: Date,
 	surgery_type: string,
 	surgery_id: number,
@@ -102,9 +103,9 @@ export async function notifySurgeryCreated(
 		})
 
 		await createNotification({
-			user_id: doctor_id,
+			user_id,
 			title: "Nueva cirugía programada",
-			message: `Se ha programado una ${surgery_type} para ${patient_name} el ${formattedDate}`,
+			message: `Se ha programado una ${surgery_type} para ${patient_name} con ${doctor_name} el ${formattedDate}`,
 			type: "info",
 			related_type: "surgery",
 			related_id: surgery_id,
@@ -118,8 +119,8 @@ export async function notifySurgeryCreated(
  * Create notification for surgery update
  */
 export async function notifySurgeryUpdated(
-	doctor_id: string,
-	patient_name: string,
+	user_id: string,
+	responsible_name: string,
 	surgery_date: Date,
 	surgery_type: string,
 	surgery_id: number,
@@ -133,19 +134,19 @@ export async function notifySurgeryUpdated(
 			day: "numeric",
 		})
 
-		let message = `La cirugía ${surgery_type} de ${patient_name} del ${formattedDate} ha sido actualizada`
+		let message = `La cirugía ${surgery_type} con ${responsible_name} del ${formattedDate} ha sido actualizada`
 		let type: "info" | "success" | "warning" | "error" = "info"
 
 		if (status === "cancelled" || status === "Cancelled") {
-			message = `La cirugía ${surgery_type} de ${patient_name} del ${formattedDate} ha sido cancelada`
+			message = `La cirugía ${surgery_type} con ${responsible_name} del ${formattedDate} ha sido cancelada`
 			type = "warning"
 		} else if (status === "completed" || status === "Completed") {
-			message = `La cirugía ${surgery_type} de ${patient_name} del ${formattedDate} ha sido completada`
+			message = `La cirugía ${surgery_type} con ${responsible_name} del ${formattedDate} ha sido completada`
 			type = "success"
 		}
 
 		await createNotification({
-			user_id: doctor_id,
+			user_id,
 			title: "Cirugía actualizada",
 			message,
 			type,
@@ -161,8 +162,8 @@ export async function notifySurgeryUpdated(
  * Create notification for upcoming appointment (24h before)
  */
 export async function notifyUpcomingAppointment(
-	doctor_id: string,
-	patient_name: string,
+	user_id: string,
+	responsible_name: string,
 	appointment_date: Date,
 	appointment_id: number,
 ) {
@@ -180,14 +181,46 @@ export async function notifyUpcomingAppointment(
 		)
 
 		await createNotification({
-			user_id: doctor_id,
+			user_id,
 			title: "Recordatorio de cita",
-			message: `Tienes una cita con ${patient_name} mañana a las ${formattedDate}`,
+			message: `Tienes una cita con ${responsible_name} mañana a las ${formattedDate}`,
 			type: "warning",
 			related_type: "appointment",
 			related_id: appointment_id,
 		})
 	} catch (error) {
 		console.error("Error creating upcoming appointment notification:", error)
+	}
+}
+
+/**
+ * Create notification for upcoming surgery (24h before)
+ */
+export async function notifyUpcomingSurgery(
+	user_id: string,
+	responsible_name: string,
+	surgery_date: Date,
+	surgery_id: number,
+) {
+	try {
+		const formattedDate = new Date(surgery_date).toLocaleDateString("es-ES", {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		})
+
+		await createNotification({
+			user_id,
+			title: "Recordatorio de cirugía",
+			message: `Tienes una cirugía con ${responsible_name} mañana a las ${formattedDate}`,
+			type: "warning",
+			related_type: "surgery",
+			related_id: surgery_id,
+		})
+	} catch (error) {
+		console.error("Error creating upcoming surgery notification:", error)
 	}
 }

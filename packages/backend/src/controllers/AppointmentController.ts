@@ -273,6 +273,12 @@ Por favor, confirma tu disponibilidad.`
 					new Date(appointment_date),
 					appointment.id,
 				)
+				await notifyAppointmentCreated(
+					patient_id,
+					doctor.name,
+					new Date(appointment_date),
+					appointment.id,
+				)
 			}
 		} catch (notifError) {
 			// Log notification error but don't fail the appointment creation
@@ -415,7 +421,7 @@ export const updateAppointment = async (req: Request, res: Response) => {
 	if (keys.length === 0)
 		return res.status(400).json({ error: "No valid fields" })
 
-	// Corrección de validación de status: Solo Médicos y Admins pueden cambiarlo
+	// Validación de permisos para status
 	if (keys.includes("status") && role !== "Médico" && role !== "Admin") {
 		return res
 			.status(403)
@@ -448,20 +454,104 @@ export const updateAppointment = async (req: Request, res: Response) => {
 		const queryParams = [...values, id]
 
 		if (role === "Admin") {
-			// Admin edita cualquier cita por ID
-			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length} RETURNING *`
+			queryStr = `UPDATE appointments SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${queryParams.length} RETURNING *`
 		} else {
-			// Otros editan solo si les pertenece
 			const roleConstraint = role === "Médico" ? "doctor_id" : "patient_id"
 			queryParams.push(userId)
-			queryStr = `UPDATE appointments SET ${setClause} WHERE id = $${queryParams.length - 1} AND ${roleConstraint} = $${queryParams.length} RETURNING *`
+			queryStr = `UPDATE appointments SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${queryParams.length - 1} AND ${roleConstraint} = $${queryParams.length} RETURNING *`
 		}
 
 		const result = await query(queryStr, queryParams)
 		if (result.rowCount === 0)
 			return res.status(404).json({ error: "No encontrado o no autorizado" })
 
-		res.json({ appointment: result.rows[0], message: "Actualizado con éxito" })
+		const appointment = result.rows[0]
+
+		// --- LÓGICA DE NOTIFICACIONES ---
+		try {
+			// Buscamos info de los involucrados
+			const [patientResult, doctorResult] = await Promise.all([
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					appointment.patient_id,
+				]),
+				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+					appointment.doctor_id,
+				]),
+			])
+
+			const patient = patientResult.rows[0]
+			const doctor = doctorResult.rows[0]
+
+			if (patient && doctor) {
+				const appointmentDate = new Date(appointment.appointment_date)
+				const formattedDate = appointmentDate.toLocaleDateString("es-ES", {
+					weekday: "long",
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				})
+				const formattedTime = appointmentDate.toLocaleTimeString("es-ES", {
+					hour: "2-digit",
+					minute: "2-digit",
+				})
+
+				// 1. Notificación de WhatsApp (Solo si cambió status o fecha)
+				if (keys.includes("status") || keys.includes("appointment_date")) {
+					const statusMap: any = {
+						scheduled: "PROGRAMADA/CONFIRMADA",
+						cancelled: "CANCELADA",
+						completed: "COMPLETADA",
+						pending: "PUESTA EN ESPERA",
+					}
+
+					const baseMsg = `\n📅 Fecha: ${formattedDate}\n🕐 Hora: ${formattedTime}\n👨‍⚕️ Médico: ${doctor.name}`
+
+					// WhatsApp al Paciente
+					if (patient.phone) {
+						await sendWhatsApp({
+							to: patient.phone,
+							message: `Hola ${patient.name}, tu cita médica ha sido actualizada a estado: ${statusMap[appointment.status] || appointment.status}.${baseMsg}`,
+						})
+					}
+
+					// WhatsApp al Doctor (Solo si el cambio no lo hizo él mismo)
+					if (doctor.phone && role !== "Médico") {
+						await sendWhatsApp({
+							to: doctor.phone,
+							message: `Aviso: La cita con el paciente ${patient.name} ha sido actualizada a: ${statusMap[appointment.status] || appointment.status}.${baseMsg}`,
+						})
+					}
+				}
+
+				// 2. Notificaciones In-App (Campanita)
+				// Notificar al paciente que su cita cambió
+				await notifyAppointmentUpdated(
+					appointment.patient_id,
+					doctor.name,
+					appointmentDate,
+					appointment.id,
+					appointment.status,
+				)
+
+				// Notificar al doctor si el cambio lo hizo el Admin o el Paciente
+				if (role !== "Médico") {
+					await notifyAppointmentUpdated(
+						appointment.doctor_id,
+						patient.name,
+						appointmentDate,
+						appointment.id,
+						appointment.status,
+					)
+				}
+			}
+		} catch (notifError) {
+			console.error(
+				"Error en el proceso de notificación de actualización:",
+				notifError,
+			)
+		}
+
+		res.json({ appointment, message: "Actualizado con éxito" })
 	} catch (error) {
 		console.error(error)
 		res.status(500).json({ error: "Internal server error" })
