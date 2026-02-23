@@ -87,11 +87,14 @@ const surgeryRoutes: Router = Router()
  */
 
 surgeryRoutes.use(authenticate)
-surgeryRoutes.use(isMedic)
 
-surgeryRoutes.post("/", createSurgery)
+// GET allowed for all authenticated (Paciente sees only their surgeries in controller)
 surgeryRoutes.get("/", getAllSurgeries)
 surgeryRoutes.get("/:id", getSurgeryById)
+
+// Create, update, delete: only Médico and Admin
+surgeryRoutes.use(isMedic)
+surgeryRoutes.post("/", createSurgery)
 surgeryRoutes.patch("/:id", updateSurgery)
 surgeryRoutes.delete("/:id", deleteSurgery)
 

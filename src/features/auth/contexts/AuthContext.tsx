@@ -8,6 +8,11 @@ export interface User {
 	role?: string
 	document_id?: string
 	image: string
+	gender?: string
+	phone?: string
+	birthdate?: string
+	address?: string
+	blood_type?: string | null
 }
 
 interface AuthContextType {
@@ -82,6 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			role: data.user?.role || "Paciente",
 			document_id: data.user?.document_id,
 			image: data.user?.image,
+			gender: data.user?.gender,
 		}
 		setUser(userData)
 
