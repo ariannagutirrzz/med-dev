@@ -15,7 +15,7 @@ import {
 	FaUserMd,
 } from "react-icons/fa"
 import type { MedicalHistory, MedicalHistoryFormData } from "../../../shared"
-import { ConfirmModal } from "../../../shared"
+import { Button, ConfirmModal } from "../../../shared"
 
 interface ClinicalEvolutionDetailModalProps {
 	isOpen: boolean
@@ -174,13 +174,13 @@ const ClinicalEvolutionDetailModal = ({
 								</p>
 							</div>
 						</div>
-						<button
+						<Button
 							type="button"
+							variant="text"
 							onClick={onClose}
-							className="hover:bg-gray-200 p-2 rounded-full text-gray-400 cursor-pointer transition-colors"
-						>
-							<FaTimes />
-						</button>
+							icon={<FaTimes />}
+							className="!p-2 rounded-full text-gray-400 hover:!bg-gray-200"
+						/>
 					</div>
 
 					<form onSubmit={handleSubmit}>
@@ -328,15 +328,17 @@ const ClinicalEvolutionDetailModal = ({
 									</label>
 
 									{formData.rx_torax && (
-										<button
+										<Button
 											type="button"
+											variant="default"
 											onClick={() =>
 												handleDownload(formData.rx_torax, "rx-torax")
 											}
-											className="w-full py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+											icon={<FaSave size={12} />}
+											className="!w-full !py-2 !min-h-0 text-xs font-bold !bg-primary/5 hover:!bg-primary/10 !border-0"
 										>
-											<FaSave size={12} /> Descargar Rx de Tórax
-										</button>
+											Descargar Rx de Tórax
+										</Button>
 									)}
 								</div>
 								<div>
@@ -357,15 +359,17 @@ const ClinicalEvolutionDetailModal = ({
 										/>
 									</label>
 									{formData.tomography && (
-										<button
+										<Button
 											type="button"
+											variant="default"
 											onClick={() =>
 												handleDownload(formData.tomography, "tomografia")
 											}
-											className="w-full py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+											icon={<FaSave size={12} />}
+											className="!w-full !py-2 !min-h-0 text-xs font-bold !bg-primary/5 hover:!bg-primary/10 !border-0"
 										>
-											<FaSave size={12} /> Descargar Tomografía
-										</button>
+											Descargar Tomografía
+										</Button>
 									)}
 								</div>
 							</div>
@@ -375,37 +379,41 @@ const ClinicalEvolutionDetailModal = ({
 						<div className="p-6 bg-gray-50 flex flex-wrap justify-between items-center gap-3 border-t border-gray-100">
 							<div>
 								{isEditing && (
-									<button
+									<Button
 										type="button"
+										variant="default"
+										danger
 										onClick={() => setShowDeleteConfirm(true)}
-										className="px-4 py-2 text-red-500 font-bold hover:bg-red-50 rounded-xl transition-all flex items-center gap-2 group cursor-pointer"
+										icon={<FaTrash />}
 									>
-										<FaTrash className="group-hover:shake" />
-										<span>Eliminar Evolución</span>
-									</button>
+										Eliminar Evolución
+									</Button>
 								)}
 							</div>
 
 							<div className="flex gap-3">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={onClose}
-									className="px-6 py-3 cursor-pointer bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all"
+									className="!border-2 !border-gray-200 !text-gray-500"
 								>
 									Cancelar
-								</button>
-								<button
+								</Button>
+								<Button
 									type="submit"
+									variant="primary"
+									loading={isSaving}
 									disabled={isSaving}
-									className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50"
+									icon={<FaSave />}
+									className="!shadow-lg"
 								>
-									<FaSave />{" "}
 									{isSaving
 										? "Guardando..."
 										: isEditing
 											? "Actualizar Registro"
 											: "Crear Evolución"}
-								</button>
+								</Button>
 							</div>
 						</div>
 					</form>

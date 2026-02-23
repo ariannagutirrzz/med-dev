@@ -34,9 +34,9 @@ export default function DashboardHeader() {
 						variant="text"
 						onClick={onToggleSidebar}
 						aria-label="Abrir menú"
-						className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center shrink-0 text-gray-600 hover:!bg-gray-100 !rounded-md"
+						className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center shrink-0 !text-gray-600 hover:!bg-gray-100 !rounded-md"
 					>
-						<HiOutlineBars3 className="w-5 h-5" />
+						<HiOutlineBars3 className="w-5 h-5 text-gray-600" />
 					</Button>
 				)}
 				<h2 className="text-sm sm:text-base lg:text-lg text-gray-400 font-semibold flex flex-row items-center gap-1 sm:gap-2 capitalize">

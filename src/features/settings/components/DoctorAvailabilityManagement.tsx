@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react"
 import { FaCalendarAlt, FaClock, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
-import { ConfirmModal } from "../../../shared"
+import { Button, ConfirmModal } from "../../../shared"
 import {
 	createDoctorAvailability,
 	type DoctorAvailability,
@@ -204,8 +204,9 @@ const DoctorAvailabilityManagement: React.FC = () => {
 									<FaCalendarAlt className="text-primary" />
 									{day.label}
 								</h4>
-								<button
+								<Button
 									type="button"
+									variant="text"
 									onClick={() =>
 										handleOpenModal({
 											day_of_week: day.value,
@@ -214,11 +215,10 @@ const DoctorAvailabilityManagement: React.FC = () => {
 											is_active: true,
 										} as DoctorAvailability)
 									}
-									className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 cursor-pointer"
+									icon={<FaPlus className="text-xs" />}
+									className="!p-1.5 !min-w-0 !h-auto text-xs !bg-primary/10 !text-primary hover:!bg-primary/20"
 									title="Agregar horario"
-								>
-									<FaPlus className="text-xs" />
-								</button>
+								/>
 							</div>
 
 							<div className="flex-1">
@@ -250,24 +250,25 @@ const DoctorAvailabilityManagement: React.FC = () => {
 													)}
 												</div>
 												<div className="flex items-center gap-1 shrink-0">
-													<button
+													<Button
 														type="button"
+														variant="text"
 														onClick={() => handleOpenModal(slot)}
-														className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+														icon={<FaEdit className="text-xs" />}
+														className="!p-1.5 !min-w-0 !text-primary hover:!bg-primary/10"
 														title="Editar"
-													>
-														<FaEdit className="text-xs" />
-													</button>
-													<button
+													/>
+													<Button
 														type="button"
+														variant="text"
+														danger
 														onClick={() =>
 															setDeleteConfirm({ isOpen: true, slot })
 														}
-														className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+														icon={<FaTrash className="text-xs" />}
+														className="!p-1.5 !min-w-0"
 														title="Eliminar"
-													>
-														<FaTrash className="text-xs" />
-													</button>
+													/>
 												</div>
 											</div>
 										))}
@@ -389,19 +390,21 @@ const DoctorAvailabilityManagement: React.FC = () => {
 							</div>
 
 							<div className="flex gap-3 pt-4">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={handleCloseModal}
-									className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+									className="flex-1 !border-gray-300 !text-gray-700"
 								>
 									Cancelar
-								</button>
-								<button
+								</Button>
+								<Button
 									type="submit"
-									className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
+									variant="primary"
+									className="flex-1"
 								>
 									{editingSlot ? "Actualizar" : "Crear"}
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>

@@ -1,4 +1,4 @@
-import { DatePicker, Select, TimePicker } from "antd"
+import { DatePicker, Input, Select, TimePicker } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
@@ -642,7 +642,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 							>
 								Caso/Motivo de la cita *
 							</label>
-							<textarea
+							<Input.TextArea
 								id="notes"
 								rows={3}
 								value={formData.notes || ""}

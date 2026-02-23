@@ -1,3 +1,4 @@
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa"
 import { TbLogout2 } from "react-icons/tb"
 
 interface MenuItem {
@@ -45,9 +46,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 			<button
 				type="button"
 				onClick={onToggleSidebar}
-				className="absolute -right-3 top-10 bg-white border border-gray-200 rounded-full w-6 h-6 flex items-center justify-center text-gray-500 hover:text-primary shadow-sm cursor-pointer z-50"
+				className="absolute -right-3 top-10 bg-white border border-gray-200 rounded-full w-6 h-6 flex items-center justify-center hover:text-primary shadow-sm cursor-pointer z-50 text-gray-600"
+				style={{ color: "#4b5563" }}
+				aria-label={isSidebarOpen ? "Cerrar menú" : "Abrir menú"}
 			>
-				{isSidebarOpen ? "❮" : "❯"}
+				{isSidebarOpen ? (
+					<FaChevronLeft className="w-3 h-3 shrink-0" style={{ color: "inherit" }} aria-hidden />
+				) : (
+					<FaChevronRight className="w-3 h-3 shrink-0" style={{ color: "inherit" }} aria-hidden />
+				)}
 			</button>
 			{/* ------------------------------ */}
 			{/* Header del usuario */}

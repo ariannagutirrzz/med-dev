@@ -15,7 +15,7 @@ import {
 	type DoctorUnavailability,
 	type DoctorUnavailabilityFormData,
 } from "../../appointments/services/DoctorUnavailabilityAPI"
-import { ConfirmModal } from "../../../shared"
+import { Button, ConfirmModal } from "../../../shared"
 
 const { TextArea } = Input
 
@@ -170,13 +170,14 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 						licencias, etc.). Los pacientes no podrán agendar citas durante estos períodos.
 					</p>
 				</div>
-				<button
+				<Button
 					type="button"
+					variant="primary"
 					onClick={() => handleOpenModal()}
-					className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark flex items-center gap-2 transition-colors cursor-pointer"
+					icon={<FaPlus />}
 				>
-					<FaPlus /> Nuevo Período
-				</button>
+					Nuevo Período
+				</Button>
 			</div>
 
 			{/* Unavailability List */}
@@ -190,13 +191,13 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 						Agrega períodos específicos (como semanas de vacaciones) para bloquear
 						esas fechas y evitar que los pacientes agenden citas.
 					</p>
-					<button
+					<Button
 						type="button"
+						variant="primary"
 						onClick={() => handleOpenModal()}
-						className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
 					>
 						Agregar Primer Período
-					</button>
+					</Button>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -230,24 +231,29 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 								)}
 							</div>
 							<div className="flex items-center gap-2 mt-auto">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={() => handleOpenModal(period)}
-									className="flex-1 px-3 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+									icon={<FaEdit className="text-xs" />}
+									className="!flex-1 !py-2 !min-h-0 !text-sm !text-primary hover:!bg-primary/10"
 									title="Editar"
 								>
-									<FaEdit className="text-xs" /> Editar
-								</button>
-								<button
+									Editar
+								</Button>
+								<Button
 									type="button"
+									variant="default"
+									danger
 									onClick={() =>
 										setDeleteConfirm({ isOpen: true, period })
 									}
-									className="flex-1 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+									icon={<FaTrash className="text-xs" />}
+									className="!flex-1 !py-2 !min-h-0 !text-sm"
 									title="Eliminar"
 								>
-									<FaTrash className="text-xs" /> Eliminar
-								</button>
+									Eliminar
+								</Button>
 							</div>
 						</div>
 					))}
@@ -349,19 +355,21 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 							</div>
 
 							<div className="flex gap-3 pt-4">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={handleCloseModal}
-									className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+									className="flex-1 !border-gray-300 !text-gray-700"
 								>
 									Cancelar
-								</button>
-								<button
+								</Button>
+								<Button
 									type="submit"
-									className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
+									variant="primary"
+									className="flex-1"
 								>
 									{editingPeriod ? "Actualizar" : "Crear"}
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import Button from "./common/Button"
 
 export interface Surgery {
 	day: number
@@ -88,23 +89,25 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
 	return (
 		<div className="w-full">
 			<div className={`flex justify-between items-center mb-4 ${classes.gap}`}>
-				<button
+				<Button
 					type="button"
+					variant="text"
 					onClick={() => navigateMonth(-1)}
-					className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+					className="!p-2 !min-w-0 text-gray-600 hover:!bg-gray-100"
 				>
 					‹
-				</button>
+				</Button>
 				<h4 className={`${classes.month} font-semibold text-gray-800`}>
 					{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
 				</h4>
-				<button
+				<Button
 					type="button"
+					variant="text"
 					onClick={() => navigateMonth(1)}
-					className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+					className="!p-2 !min-w-0 text-gray-600 hover:!bg-gray-100"
 				>
 					›
-				</button>
+				</Button>
 			</div>
 
 			<div className={`grid grid-cols-7 ${classes.gap} mb-2`}>
