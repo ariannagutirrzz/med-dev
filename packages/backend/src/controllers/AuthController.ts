@@ -98,7 +98,7 @@ export const login = async (req: Request, res: Response) => {
 
 		// Find user by email
 		const result = await query(
-			"SELECT id, email, password, name, role, document_id, image FROM users WHERE email = $1",
+			"SELECT id, email, password, name, role, document_id, image, gender FROM users WHERE email = $1",
 			[email.toLowerCase()],
 		)
 
@@ -127,6 +127,7 @@ export const login = async (req: Request, res: Response) => {
 				role: user.role || "Médico",
 				document_id: user.document_id,
 				image: user.image,
+				gender: user.gender,
 			},
 			token: token,
 		})
