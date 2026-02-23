@@ -110,31 +110,31 @@ const DemandPredictionSection = () => {
 						</div>
 					)}
 
-					{/* Summary cards: 3 cards */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+					{/* Summary cards: 3 cards in one row on desktop */}
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
+							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
 								<FaCalendarCheck className="text-primary" />
 								Citas médicas
 							</h2>
-							<p className="text-xs text-gray-500 mb-3">
+							<p className="text-xs text-gray-500 mb-3 text-center">
 								{data.appointments.meta.totalHistorical} citas en{" "}
 								{data.appointments.meta.daysWithData} días
 							</p>
-							<div className="grid grid-cols-3 gap-4">
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+							<div className="grid grid-cols-3 gap-3 flex-1 min-h-0 w-full">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next7Days}
 									</p>
 									<p className="text-xs text-gray-600">7 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next14Days}
 									</p>
 									<p className="text-xs text-gray-600">14 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next30Days}
 									</p>
@@ -142,29 +142,29 @@ const DemandPredictionSection = () => {
 								</div>
 							</div>
 						</div>
-						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
+							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
 								<FaProcedures className="text-primary" />
 								Cirugías
 							</h2>
-							<p className="text-xs text-gray-500 mb-3">
+							<p className="text-xs text-gray-500 mb-3 text-center">
 								{data.surgeries.meta.totalHistorical} cirugías en{" "}
 								{data.surgeries.meta.daysWithData} días
 							</p>
-							<div className="grid grid-cols-3 gap-4">
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+							<div className="grid grid-cols-3 gap-3 flex-1 min-h-0 w-full">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next7Days}
 									</p>
 									<p className="text-xs text-gray-600">7 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next14Days}
 									</p>
 									<p className="text-xs text-gray-600">14 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next30Days}
 									</p>
@@ -172,29 +172,29 @@ const DemandPredictionSection = () => {
 								</div>
 							</div>
 						</div>
-						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
+							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
 								<FaUserPlus className="text-primary" />
 								Nuevos pacientes
 							</h2>
-							<p className="text-xs text-gray-500 mb-3">
+							<p className="text-xs text-gray-500 mb-3 text-center">
 								{data.newPatients.meta.totalHistorical} pacientes en{" "}
 								{data.newPatients.meta.daysWithData} días
 							</p>
-							<div className="grid grid-cols-3 gap-4">
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+							<div className="grid grid-cols-3 gap-3 flex-1 min-h-0 w-full">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next7Days}
 									</p>
 									<p className="text-xs text-gray-600">7 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next14Days}
 									</p>
 									<p className="text-xs text-gray-600">14 d</p>
 								</div>
-								<div className="bg-primary/10 rounded-xl p-3 text-center">
+								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next30Days}
 									</p>
