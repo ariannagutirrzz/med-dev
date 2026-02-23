@@ -232,12 +232,12 @@ export const createAppointment = async (req: Request, res: Response) => {
 			if (patient?.phone) {
 				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
 
-📅 Fecha: ${formattedDate}
-🕐 Hora: ${formattedTime}
-👨‍⚕️ Médico: ${doctor ? doctor.name : "No especificado"}
-${notes ? `📝 Caso/Motivo: ${notes}` : ""}
+				📅 Fecha: ${formattedDate}
+				🕐 Hora: ${formattedTime}
+				👨‍⚕️ Médico: ${doctor ? doctor.name : "No especificado"}
+				${notes ? `📝 Caso/Motivo: ${notes}` : ""}
 
-Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
+				Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
 				await sendWhatsApp({
 					to: patient.phone,
 					message: patientMessage,

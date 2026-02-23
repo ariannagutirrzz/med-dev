@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiHome, CiSettings, CiUser } from "react-icons/ci"
-import { FaChartBar, FaDollarSign } from "react-icons/fa"
+import { FaChartBar, FaChartLine, FaDollarSign } from "react-icons/fa"
 import { GiArtificialIntelligence, GiMedicalDrip } from "react-icons/gi"
 import { MdOutlineInventory2 } from "react-icons/md"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -15,6 +15,7 @@ import {
 import { Inventory } from "../features/inventory"
 import { MedicalRecords } from "../features/patients"
 import { ReportsSection } from "../features/reports"
+import { DemandPredictionSection } from "../features/demand-prediction"
 import { ServicesManagement } from "../features/services"
 import { Settings } from "../features/settings"
 import { SurgeriesSection } from "../features/surgeries"
@@ -43,6 +44,7 @@ const DashboardPage: React.FC = () => {
 		"/dashboard/inventario": "inventory",
 		"/dashboard/servicios": "services",
 		"/dashboard/reportes": "reports",
+		"/dashboard/prediccion-demandas": "demandPrediction",
 		"/dashboard/asistente-ia": "ai",
 		"/dashboard/configuracion": "settings",
 	}
@@ -56,6 +58,7 @@ const DashboardPage: React.FC = () => {
 		inventory: "/dashboard/inventario",
 		services: "/dashboard/servicios",
 		reports: "/dashboard/reportes",
+		demandPrediction: "/dashboard/prediccion-demandas",
 		ai: "/dashboard/asistente-ia",
 		settings: "/dashboard/configuracion",
 	}
@@ -113,6 +116,13 @@ const DashboardPage: React.FC = () => {
 			icon: <FaChartBar className="w-5 h-5" />,
 			path: "/dashboard/reportes",
 			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
+		},
+		{
+			id: "demandPrediction",
+			label: "Predicción de demandas",
+			icon: <FaChartLine className="w-5 h-5" />,
+			path: "/dashboard/prediccion-demandas",
+			allowedRoles: ["Médico", "Admin"],
 		},
 		{
 			id: "ai",
@@ -203,6 +213,10 @@ const DashboardPage: React.FC = () => {
 
 		if (currentPath === "/dashboard/reportes") {
 			return <ReportsSection />
+		}
+
+		if (currentPath === "/dashboard/prediccion-demandas") {
+			return <DemandPredictionSection />
 		}
 
 		if (currentPath === "/dashboard/asistente-ia") {
