@@ -10,12 +10,18 @@ import {
 	downloadBlob,
 	generateAppointmentsReport,
 	generateFinancialReport,
+	generateInventoryReport,
 	generatePatientsReport,
 	generateSurgeriesReport,
 	type ReportFilters,
 } from "../services/ReportsAPI"
 
-type ReportType = "appointments" | "surgeries" | "patients" | "financial"
+type ReportType =
+	| "appointments"
+	| "surgeries"
+	| "patients"
+	| "financial"
+	| "inventory"
 type ReportFormat = "pdf" | "excel"
 
 const ReportsSection = () => {
@@ -54,6 +60,10 @@ const ReportsSection = () => {
 					blob = await generateFinancialReport(format, filters)
 					filename = `reporte-financiero-${dateStr}.${format === "pdf" ? "pdf" : "xlsx"}`
 					break
+				case "inventory":
+					blob = await generateInventoryReport(format, filters)
+					filename = `reporte-inventario-${dateStr}.${format === "pdf" ? "pdf" : "xlsx"}`
+					break
 			}
 
 			downloadBlob(blob, filename)
@@ -89,13 +99,21 @@ const ReportsSection = () => {
 			label: "Reporte Financiero",
 			description: "Ingresos por servicios (citas y cirugías)",
 		},
+		{
+			value: "inventory" as ReportType,
+			label: "Reporte de Inventario",
+			description:
+				"Estado de stock, insumos médicos y alertas de reabastecimiento",
+		},
 	]
 
-	const showDateFilters = selectedReport !== "patients"
+	const showDateFilters =
+		selectedReport !== "patients" && selectedReport !== "inventory"
 	const showStatusFilter =
 		selectedReport === "appointments" ||
 		selectedReport === "surgeries" ||
-		selectedReport === "financial"
+		selectedReport === "financial" ||
+		selectedReport === "inventory"
 
 	return (
 		<div className="p-6">
@@ -248,6 +266,13 @@ const ReportsSection = () => {
 												<option value="completed">Completada</option>
 												<option value="scheduled">Programada</option>
 												<option value="Cancelled">Cancelada</option>
+											</>
+										)}
+										{selectedReport === "inventory" && (
+											<>
+												<option value="available">Stock Suficiente</option>
+												<option value="low stock">Stock Bajo (Alerta)</option>
+												<option value="out of stock">Agotado</option>
 											</>
 										)}
 									</select>

@@ -2,6 +2,7 @@ import { Router } from "express"
 import {
 	generateAppointmentsReport,
 	generateFinancialReport,
+	generateInventoryReport,
 	generatePatientsReport,
 	generateSurgeriesReport,
 } from "../controllers/ReportController"
@@ -168,5 +169,6 @@ reportRoutes.get("/appointments", generateAppointmentsReport)
 reportRoutes.get("/surgeries", generateSurgeriesReport)
 reportRoutes.get("/patients", generatePatientsReport)
 reportRoutes.get("/financial", generateFinancialReport)
+reportRoutes.get("/inventory", generateInventoryReport)
 
 export default reportRoutes

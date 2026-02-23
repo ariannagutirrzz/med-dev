@@ -2,6 +2,7 @@ import type { Request, Response } from "express"
 import {
 	getAppointmentsReport,
 	getFinancialReport,
+	getInventoryReport,
 	getPatientsReport,
 	getSurgeriesReport,
 	type ReportFilters,
@@ -11,6 +12,8 @@ import {
 	generateAppointmentsPDF,
 	generateFinancialExcel,
 	generateFinancialPDF,
+	generateInventoryExcel,
+	generateInventoryPDF,
 	generatePatientsExcel,
 	generatePatientsPDF,
 	generateSurgeriesExcel,
@@ -225,6 +228,64 @@ export const generateFinancialReport = async (req: Request, res: Response) => {
 		}
 	} catch (error) {
 		console.error("Error generating financial report:", error)
+		res.status(500).json({
+			error: error instanceof Error ? error.message : "Internal server error",
+		})
+	}
+}
+
+/**
+ * Generate inventory report (PDF or Excel)
+ */
+export const generateInventoryReport = async (req: Request, res: Response) => {
+	try {
+		if (!req.user) {
+			return res.status(401).json({ error: "Unauthorized: User not found" })
+		}
+
+		const { role } = req.user
+
+		// Aquí permitimos Médico o Admin, ya que el inventario suele ser de interés para ambos
+		if (role !== "Médico" && role !== "Admin") {
+			return res.status(403).json({
+				error: "Access denied: Unauthorized role",
+			})
+		}
+
+		const { format = "pdf", status } = req.query
+
+		// Filtros opcionales (ej: solo productos 'low stock')
+		const filters: ReportFilters = {
+			status: status as string,
+		}
+
+		// 1. Necesitarás crear este servicio
+		const data = await getInventoryReport(filters)
+
+		if (format === "excel") {
+			// 2. Necesitarás crear este generador de Excel
+			const buffer = await generateInventoryExcel(data, filters)
+			res.setHeader(
+				"Content-Type",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			)
+			res.setHeader(
+				"Content-Disposition",
+				`attachment; filename=reporte-inventario-${new Date().toISOString().split("T")[0]}.xlsx`,
+			)
+			res.send(buffer)
+		} else {
+			// 3. Necesitarás crear este generador de PDF
+			const buffer = await generateInventoryPDF(data, filters)
+			res.setHeader("Content-Type", "application/pdf")
+			res.setHeader(
+				"Content-Disposition",
+				`attachment; filename=reporte-inventario-${new Date().toISOString().split("T")[0]}.pdf`,
+			)
+			res.send(buffer)
+		}
+	} catch (error) {
+		console.error("Error generating inventory report:", error)
 		res.status(500).json({
 			error: error instanceof Error ? error.message : "Internal server error",
 		})
