@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { getDoctors } from "../../patients/services/UsersAPI"
+import imgDraNinive from '../../../assets/dra-ninive.jpg'
+import imgDrCarlosOlivares from '../../../assets/dra-ninive.jpg'
 import TeamCard from "./TeamCard"
 
 interface Medico {
@@ -13,6 +15,11 @@ interface Medico {
 
 const TeamSection = () => {
 	const [medicos, setMedicos] = useState<Medico[]>([])
+
+	const doctorImages: Record<string, string> = {
+    "Dra. Ninive Azuaje": imgDraNinive,
+	"Dr. Carlos Olivares": imgDrCarlosOlivares,
+};
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -40,18 +47,22 @@ const TeamSection = () => {
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-					{medicos.map((member) => (
-						<TeamCard
-							key={member.name}
-							name={member.name}
-							title={member.title}
-							credentials={member.credentials}
-							experience={member.experience}
-							description={member.description}
-							image={member.image}
-						/>
-					))}
-				</div>
+    {medicos.map((member) => {
+        const imageSrc = doctorImages[member.name]
+
+        return (
+            <TeamCard
+                key={member.name}
+                name={member.name}
+                title={member.title}
+                credentials={member.credentials}
+                experience={member.experience}
+                description={member.description}
+                image={imageSrc}
+            />
+        );
+    })}
+</div>
 			</div>
 		</section>
 	)
