@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Patient, Surgery, SurgeryFormData } from "../../../shared"
-import { formatPrice } from "../../../shared"
+import { Button, formatPrice } from "../../../shared"
 import type { Doctor, ExtendedSurgeryFormData } from "../../../types"
 import { useAuth } from "../../auth"
 import {
@@ -236,13 +236,14 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							{editingSurgery ? "Editar Cirugía" : "Nueva Reserva de Cirugía"}
 						</h2>
 					</div>
-					<button
+					<Button
 						type="button"
+						variant="text"
 						onClick={onClose}
-						className="hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
+						className="hover:bg-white/20 !p-2 rounded-full"
 					>
 						<FaTimes size={20} />
-					</button>
+					</Button>
 				</div>
 
 				{/* Formulario */}
@@ -520,27 +521,23 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 
 					{/* Botones de Acción */}
 					<div className="flex gap-3 pt-4">
-						<button
+						<Button
 							type="button"
+							variant="default"
 							onClick={onClose}
-							className="flex-1 py-3 border-2 cursor-pointer border-gray-300 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition-colors"
+							className="flex-1 !py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
 						>
 							Cancelar
-						</button>
-						<button
+						</Button>
+						<Button
 							type="submit"
 							disabled={loading || loadingData}
-							className="flex-1 py-3 cursor-pointer bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+							loading={loading}
+							icon={<FaSave />}
+							className="flex-1 !py-3 font-bold rounded-2xl"
 						>
-							{loading ? (
-								"Guardando..."
-							) : (
-								<>
-									<FaSave /> {editingSurgery ? "Actualizar" : "Programar"}{" "}
-									Cirugía
-								</>
-							)}
-						</button>
+							{editingSurgery ? "Actualizar" : "Programar"} Cirugía
+						</Button>
 					</div>
 				</form>
 			</div>

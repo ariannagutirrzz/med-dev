@@ -2,7 +2,7 @@ import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { api, getStoredToken, getStoredUser } from "../../../config/axios"
 import type { MyTokenPayload } from "../../../shared"
-import { PhoneInput } from "../../../shared"
+import { Button, PhoneInput } from "../../../shared"
 import { parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
 import {
 	getSettings,
@@ -320,13 +320,14 @@ const items: TabsProps['items'] = [
 												}
 											}}
 										/>
-										<button
+										<Button
 											type="button"
+											variant="default"
 											onClick={() => fileInputRef.current?.click()}
-											className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium"
+											className="!border-gray-300 hover:!bg-gray-50 !text-sm"
 										>
 											Cambiar Foto
-										</button>
+										</Button>
 										{previewUrl && (
 											<p className="text-xs text-primary mt-2">
 												Nueva imagen seleccionada
@@ -550,14 +551,15 @@ const items: TabsProps['items'] = [
 									/>
 								</div>
 								<div className="mt-6 flex justify-end">
-									<button
+									<Button
 										type="button"
+										variant="primary"
 										onClick={handleUpdatePassword}
 										disabled={saving}
-										className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+										loading={saving}
 									>
 										{saving ? "Actualizando..." : "Actualizar Contraseña"}
-									</button>
+									</Button>
 								</div>
 							</div>
 						</div>

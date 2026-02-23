@@ -4,7 +4,7 @@ import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 // 1. Importamos el service
 import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import type { Patient } from "../../../shared"
-import { calcularEdad, formatPhoneDisplay } from "../../../shared"
+import { Button, calcularEdad, formatPhoneDisplay } from "../../../shared"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
@@ -110,23 +110,24 @@ useEffect(() => {
 									{selectedPatient.first_name} {selectedPatient.last_name}
 								</span>
 							</h3>
-							<button
+							<Button
 								type="button"
+								variant="default"
 								onClick={handleBack}
-								className="cursor-pointer flex items-center gap-2 text-primary font-bold hover:bg-primary/10 px-4 py-2 rounded-xl transition-all"
+								icon={<LuArrowLeft className="w-5 h-5" />}
+								className="!font-bold !px-4 !py-2 !rounded-xl border-primary text-primary hover:!bg-primary/10"
 							>
-								<LuArrowLeft className="w-5 h-5" />
 								Volver
-							</button>
+							</Button>
 						</div>
-						<button
+						<Button
 							type="button"
 							onClick={() => setNewEvolution(true)}
-							className="flex items-center gap-2 cursor-pointer bg-primary text-white px-6 py-3 rounded-2xl hover:scale-105 transition-all shadow-lg font-bold text-sm"
+							icon={<LuPlus className="w-5 h-5" />}
+							className="!px-6 !py-3 !rounded-2xl !font-bold !text-sm"
 						>
-							<LuPlus className="w-5 h-5" />
 							REGISTRAR EVOLUCIÓN
-						</button>
+						</Button>
 					</div>
 
 					<ClinicalEvolution
@@ -158,26 +159,37 @@ useEffect(() => {
 				</h3>
 
 				<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-2">
-					<button
+					<Button
 						type="button"
+						variant="default"
 						onClick={handleCreatePatient}
-						className="group relative w-full h-100 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-4 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer shadow-sm"
+						className="!w-full !h-100 !rounded-[2.5rem] !border-2 !border-dashed border-gray-300 !flex !flex-col !items-center !justify-center !p-4 hover:!border-primary hover:!bg-primary/5 !bg-white !shadow-sm group"
 					>
 						<CiSquarePlus className="text-primary w-14 h-14 transition-transform duration-300 group-hover:scale-110" />
 						<span className="text-gray-400 mt-2 font-black uppercase text-xs tracking-widest group-hover:text-primary">
 							Nuevo Registro
 						</span>
-					</button>
+					</Button>
 
 					{currentRecords.map((record) => (
 						<div key={record.document_id} className="relative group">
-							<button
-								type="button"
+							{/* Card is a div so the edit Button can live inside without nested buttons */}
+							{/* biome-ignore lint/a11y/useSemanticElements: card contains edit Button; nested <button> is invalid */}
+							<div
+								role="button"
+								tabIndex={0}
 								onClick={() => {
 									setSelectedPatient(record)
 									setView("details")
 								}}
-								className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden"
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault()
+										setSelectedPatient(record)
+										setView("details")
+									}
+								}}
+								className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden relative"
 							>
 								<div className="flex justify-between items-start mb-6 w-full">
 									<h4 className="text-xl font-black text-gray-800 leading-tight group-hover:text-primary transition-colors">

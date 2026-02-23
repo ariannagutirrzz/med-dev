@@ -1,27 +1,80 @@
-interface ButtonProps {
-	text: string
-	onClick: () => void
-	className?: string
-	type?: "button" | "submit" | "reset"
+import { Button as AntButton } from "antd"
+import type { ButtonProps as AntButtonProps } from "antd"
+import type { ReactNode } from "react"
+
+export type ButtonVariant = "primary" | "default" | "dashed" | "link" | "text"
+export type ButtonSize = "small" | "middle" | "large"
+
+export interface ButtonProps extends Omit<AntButtonProps, "type"> {
+	/** Button style variant (antd: primary, default, dashed, link, text) */
+	variant?: ButtonVariant
+	/** Legacy: use children instead. If provided, used as button content. */
+	text?: string
+	/** Content of the button (use this or `text`) */
+	children?: ReactNode
+	/** Size: small, middle, large */
+	size?: ButtonSize
+	/** Show loading spinner */
+	loading?: boolean
+	/** Destructive action (red) */
+	danger?: boolean
+	/** Disabled state */
 	disabled?: boolean
+	/** Icon before children */
+	icon?: ReactNode
+	/** Full width (e.g. for forms) */
+	block?: boolean
+	/** Native button type when used inside a form */
+	type?: "button" | "submit" | "reset"
+	/** Click handler */
+	onClick?: (e: React.MouseEvent<HTMLElement>) => void
+	/** Extra class names */
+	className?: string
 }
 
+/**
+ * Reusable app button. Uses Ant Design Button under the hood so it respects
+ * ConfigProvider theme (e.g. colorPrimary). Use this everywhere for consistency.
+ *
+ * @example
+ * <Button>Guardar</Button>
+ * <Button variant="default" onClick={handleCancel}>Cancelar</Button>
+ * <Button type="submit" loading={saving} block>Enviar</Button>
+ * <Button variant="text" icon={<FaEdit />}>Editar</Button>
+ */
 const Button = ({
 	text,
-	onClick,
-	className = "",
-	type = "button",
+	children,
+	variant = "primary",
+	size = "large",
+	loading = false,
+	danger = false,
 	disabled = false,
+	block = false,
+	type = "button",
+	icon,
+	className = "",
+	...rest
 }: ButtonProps) => {
+	const content = text ?? children
+	const isIconOnly = variant === "text" || variant === "link"
+	const baseHeightClass = isIconOnly ? "" : "min-h-12"
+
 	return (
-		<button
-			type={type}
-			className={`w-full font-semibold py-4 mt-4 rounded-2xl transition-all duration-300 bg-primary text-white hover:bg-primary-dark hover:shadow-[0_14px_30px_rgba(120,154,97,0.25)] shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${className}`}
-			onClick={onClick}
+		<AntButton
+			type={variant}
+			size={size}
+			loading={loading}
+			danger={danger}
 			disabled={disabled}
+			block={block}
+			htmlType={type}
+			icon={icon}
+			className={baseHeightClass ? `${baseHeightClass} ${className}` : className}
+			{...rest}
 		>
-			{text}
-		</button>
+			{content}
+		</AntButton>
 	)
 }
 

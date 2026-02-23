@@ -1,4 +1,5 @@
 import { FaExclamationTriangle, FaTimes } from "react-icons/fa"
+import Button from "./common/Button"
 
 interface ConfirmModalProps {
 	isOpen: boolean
@@ -23,10 +24,6 @@ const ConfirmModal = ({
 }: ConfirmModalProps) => {
 	if (!isOpen) return null
 
-	const colorClass =
-		variant === "danger"
-			? "bg-red-500 hover:bg-red-600 shadow-red-200"
-			: "bg-orange-500 hover:bg-orange-600 shadow-orange-200"
 	const iconClass =
 		variant === "danger"
 			? "bg-red-100 text-red-500"
@@ -35,13 +32,14 @@ const ConfirmModal = ({
 	return (
 		<div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
 			<div className="bg-white p-8 rounded-[2.5rem] max-w-sm w-full shadow-2xl text-center relative animate-in zoom-in duration-300">
-				<button
+				<Button
 					type="button"
+					variant="text"
 					onClick={onClose}
-					className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+					className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 !p-0 !min-w-0 !h-auto"
 				>
 					<FaTimes />
-				</button>
+				</Button>
 
 				<div
 					className={`w-20 h-20 ${iconClass} rounded-full flex items-center justify-center mx-auto mb-6`}
@@ -54,20 +52,24 @@ const ConfirmModal = ({
 				<div className="text-gray-500 mb-8 leading-relaxed">{message}</div>
 
 				<div className="flex flex-col gap-3">
-					<button
+					<Button
 						type="button"
+						danger
 						onClick={onConfirm}
-						className={`w-full py-4 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-lg ${colorClass} cursor-pointer`}
+						block
+						className="!py-4 font-black uppercase tracking-widest text-xs rounded-2xl"
 					>
 						{confirmText}
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
+						variant="default"
 						onClick={onClose}
-						className="w-full py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-colors cursor-pointer"
+						block
+						className="!py-4 font-bold rounded-2xl bg-gray-100 text-gray-600 border-0 hover:!bg-gray-200 hover:!text-gray-700"
 					>
 						{cancelText}
-					</button>
+					</Button>
 				</div>
 			</div>
 		</div>

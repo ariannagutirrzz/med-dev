@@ -11,7 +11,7 @@ import {
 import { MdAddCircleOutline, MdFilterList, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Appointment } from "../../../shared"
-import { ConfirmModal, formatPrice } from "../../../shared"
+import { Button, ConfirmModal, formatPrice } from "../../../shared"
 import { useAuth } from "../../auth"
 import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import {
@@ -225,14 +225,14 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 						Programa y administra citas médicas
 					</p>
 				</div>
-				<button
+				<Button
 					type="button"
 					onClick={handleCreateAppointment}
-					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors cursor-pointer"
+					icon={<MdAddCircleOutline className="w-5 h-5" />}
+					className="!px-6 !py-3 !rounded-lg"
 				>
-					<MdAddCircleOutline className="w-5 h-5" />
-					<span>Nueva Cita</span>
-				</button>
+					Nueva Cita
+				</Button>
 			</div>
 
 			{/* Filtros y búsqueda */}
@@ -374,30 +374,30 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 										<div className="flex items-center gap-3">
 											{getStatusBadge(appointment.status)}
 											<div className="flex gap-2">
-												<button
+												<Button
 													type="button"
+													variant="text"
 													onClick={() => handleEditAppointment(appointment)}
-													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+													icon={<FaEdit className="w-4 h-4" />}
+													className="!p-2 text-primary hover:!bg-primary/10 !min-w-0"
 													title="Editar cita"
-												>
-													<FaEdit className="w-4 h-4" />
-												</button>
-												{isDoctor ||
-													(isAdmin && (
-														<button
-															type="button"
-															onClick={() =>
-																setDeleteConfirm({
-																	isOpen: true,
-																	appointment,
-																})
-															}
-															className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-															title="Eliminar cita"
-														>
-															<FaTrash className="w-4 h-4" />
-														</button>
-													))}
+												/>
+												{(isDoctor || isAdmin) && (
+													<Button
+														type="button"
+														variant="text"
+														danger
+														onClick={() =>
+															setDeleteConfirm({
+																isOpen: true,
+																appointment,
+															})
+														}
+														icon={<FaTrash className="w-4 h-4" />}
+														className="!p-2 !min-w-0 hover:!bg-red-50"
+														title="Eliminar cita"
+													/>
+												)}
 											</div>
 										</div>
 									</div>

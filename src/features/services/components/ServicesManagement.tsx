@@ -12,6 +12,7 @@ import {
 import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
 import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import { formatPrice } from "../../../shared"
+import { Button } from "../../../shared"
 
 const ServicesManagement: React.FC = () => {
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
@@ -149,13 +150,14 @@ const ServicesManagement: React.FC = () => {
 						Administra tus servicios y precios
 					</p>
 				</div>
-				<button
+				<Button
 					type="button"
 					onClick={() => handleOpenModal()}
-					className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark flex items-center gap-2 cursor-pointer"
+					icon={<FaPlus />}
+					className="!px-4 !py-2 !rounded-lg"
 				>
-					<FaPlus /> Agregar Servicio
-				</button>
+					Agregar Servicio
+				</Button>
 			</div>
 
 			{/* Services List */}
@@ -215,20 +217,23 @@ const ServicesManagement: React.FC = () => {
 							</div>
 
 							<div className="flex gap-2">
-								<button
+								<Button
 									type="button"
 									onClick={() => handleOpenModal(service)}
-									className="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2 cursor-pointer"
+									icon={<FaEdit />}
+									className="flex-1 !px-3 !py-2 !rounded-lg bg-blue-500 border-0 text-white hover:!bg-blue-600"
 								>
-									<FaEdit /> Editar
-								</button>
-								<button
+									Editar
+								</Button>
+								<Button
 									type="button"
+									danger
 									onClick={() => handleDelete(service.id)}
-									className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2 cursor-pointer"
+									icon={<FaTrash />}
+									className="flex-1 !px-3 !py-2 !rounded-lg"
 								>
-									<FaTrash /> Eliminar
-								</button>
+									Eliminar
+								</Button>
 							</div>
 						</div>
 					)
@@ -324,19 +329,20 @@ const ServicesManagement: React.FC = () => {
 							</div>
 
 							<div className="flex gap-3 pt-4">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={handleCloseModal}
-									className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 cursor-pointer"
+									className="flex-1 !bg-gray-200 !text-gray-700 border-0 hover:!bg-gray-300 !px-4 !py-2 !rounded-lg"
 								>
 									Cancelar
-								</button>
-								<button
+								</Button>
+								<Button
 									type="submit"
-									className="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark cursor-pointer"
+									className="flex-1 !px-4 !py-2 !rounded-lg"
 								>
 									{editingService ? "Actualizar" : "Crear"}
-								</button>
+								</Button>
 							</div>
 						</form>
 					</div>

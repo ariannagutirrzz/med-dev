@@ -10,7 +10,7 @@ import {
 import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Surgery } from "../../../shared"
-import { ConfirmModal, formatPrice } from "../../../shared"
+import { Button, ConfirmModal, formatPrice } from "../../../shared"
 import {
 	type CurrencyRates,
 	getCurrencyRates,
@@ -233,14 +233,14 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 						Gestiona las reservas de las salas quirúrgicas
 					</p>
 				</div>
-				<button
+				<Button
 					type="button"
 					onClick={handleCreateSurgery}
-					className="bg-primary text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-dark transition-colors cursor-pointer"
+					icon={<MdAddCircleOutline className="w-5 h-5" />}
+					className="!px-6 !py-3 !rounded-lg"
 				>
-					<MdAddCircleOutline className="w-5 h-5" />
-					<span>Nueva Reserva</span>
-				</button>
+					Nueva Reserva
+				</Button>
 			</div>
 
 			{/* Estadísticas rápidas */}
@@ -416,27 +416,28 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 										<div className="flex items-center gap-3">
 											{getStatusBadge(surgery.status || "scheduled")}
 											<div className="flex gap-2">
-												<button
+												<Button
 													type="button"
+													variant="text"
 													onClick={() => handleEditSurgery(surgery)}
-													className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+													icon={<FaEdit className="w-4 h-4" />}
+													className="!p-2 text-primary hover:!bg-primary/10 !min-w-0"
 													title="Editar cirugía"
-												>
-													<FaEdit className="w-4 h-4" />
-												</button>
-												<button
+												/>
+												<Button
 													type="button"
+													variant="text"
+													danger
 													onClick={() =>
 														setDeleteConfirm({
 															isOpen: true,
 															surgery,
 														})
 													}
-													className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+													icon={<FaTrash className="w-4 h-4" />}
+													className="!p-2 !min-w-0 hover:!bg-red-50"
 													title="Eliminar cirugía"
-												>
-													<FaTrash className="w-4 h-4" />
-												</button>
+												/>
 											</div>
 										</div>
 									</div>

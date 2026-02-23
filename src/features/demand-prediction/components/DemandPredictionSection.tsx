@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { FaCalendarCheck, FaChartLine, FaProcedures, FaUserPlus } from "react-icons/fa"
 import { toast } from "react-toastify"
+import { Button } from "../../../shared"
 import {
 	getDemandPrediction,
 	type DemandPredictionResult,
@@ -71,18 +72,19 @@ const DemandPredictionSection = () => {
 			{/* Period selector */}
 			<div className="mb-6 flex flex-wrap gap-2">
 				{PERIOD_OPTIONS.map((opt) => (
-					<button
+					<Button
 						key={opt.value}
 						type="button"
+						variant={period === opt.value ? "primary" : "default"}
 						onClick={() => setPeriod(opt.value)}
-						className={`px-4 py-2 rounded-xl border-2 transition-all ${
+						className={
 							period === opt.value
-								? "border-primary bg-primary text-white"
-								: "border-gray-300 text-gray-700 hover:border-gray-400"
-						}`}
+								? "!border-2 !border-primary"
+								: "!border-2 !border-gray-300 text-gray-700 hover:!border-gray-400"
+						}
 					>
 						{opt.label}
-					</button>
+					</Button>
 				))}
 			</div>
 

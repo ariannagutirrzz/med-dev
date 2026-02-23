@@ -1,4 +1,4 @@
-import { DatePicker, Select, TimePicker } from "antd"
+import { DatePicker, Input, Select, TimePicker } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
@@ -10,7 +10,7 @@ import { FaSave, FaTimes, FaUser, FaUserMd } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
 import type { Appointment, AppointmentFormData, Patient } from "../../../shared"
-import { formatPrice } from "../../../shared"
+import { Button, formatPrice } from "../../../shared"
 import type { Doctor } from "../../../types"
 import { useAuth } from "../../auth"
 import {
@@ -341,13 +341,14 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 							{editingAppointment ? "Editar Cita" : "Nueva Cita"}
 						</h2>
 					</div>
-					<button
+					<Button
 						type="button"
+						variant="text"
 						onClick={onClose}
-						className="hover:bg-white/20 p-2 rounded-full transition-colors cursor-pointer"
+						className="hover:bg-white/20 !p-2 rounded-full"
 					>
 						<FaTimes size={20} />
-					</button>
+					</Button>
 				</div>
 
 				{/* Formulario */}
@@ -641,7 +642,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 							>
 								Caso/Motivo de la cita *
 							</label>
-							<textarea
+							<Input.TextArea
 								id="notes"
 								rows={3}
 								value={formData.notes || ""}
@@ -657,26 +658,23 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 					{/* Botones de Acción */}
 					<div className="flex gap-3 pt-4">
-						<button
+						<Button
 							type="button"
+							variant="default"
 							onClick={onClose}
-							className="flex-1 py-3 border-2 cursor-pointer border-gray-300 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition-colors"
+							className="flex-1 !py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
 						>
 							Cancelar
-						</button>
-						<button
+						</Button>
+						<Button
 							type="submit"
 							disabled={loading || loadingData}
-							className="flex-1 py-3 cursor-pointer bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+							loading={loading}
+							icon={<FaSave />}
+							className="flex-1 !py-3 font-bold rounded-2xl"
 						>
-							{loading ? (
-								"Guardando..."
-							) : (
-								<>
-									<FaSave /> {editingAppointment ? "Actualizar" : "Crear"} Cita
-								</>
-							)}
-						</button>
+							{editingAppointment ? "Actualizar" : "Crear"} Cita
+						</Button>
 					</div>
 				</form>
 			</div>

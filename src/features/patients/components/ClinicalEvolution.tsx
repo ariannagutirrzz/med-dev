@@ -10,6 +10,7 @@ import type {
 	MedicalHistoryFormData,
 	MyTokenPayload,
 } from "../../../shared"
+import { Button } from "../../../shared"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
@@ -215,13 +216,13 @@ export default function ClinicalEvolution({
 								<div className="text-[9px] text-gray-400">
 									<p>Creado: {new Date(evo.created_at).toLocaleDateString()}</p>
 								</div>
-								<button
+								<Button
 									type="button"
+									variant="text"
 									onClick={() => handleOpenDetail(evo)}
-									className="bg-gray-100 p-2.5 rounded-xl group-hover:bg-primary group-hover:text-white transition-colors cursor-pointer"
-								>
-									<LuPencilLine className="w-5 h-5" />
-								</button>
+									icon={<LuPencilLine className="w-5 h-5" />}
+									className="!p-2.5 !min-w-0 rounded-xl group-hover:!bg-primary group-hover:!text-white"
+								/>
 							</div>
 						</div>
 					))}

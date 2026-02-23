@@ -1,7 +1,7 @@
-import { Button as AntButton, Checkbox, Input } from "antd"
+import { Checkbox, Input } from "antd"
 import { useState } from "react"
 import { FaEnvelope, FaLock } from "react-icons/fa"
-import { Button } from "../../../shared" // Mantengo tu botón personalizado si prefieres
+import { Button } from "../../../shared"
 
 interface LoginFormProps {
 	onLogin: (data: {
@@ -82,7 +82,9 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 
 			{/* Login Button */}
 			<div className="pt-4">
-				<Button text="Acceder" onClick={() => {}} type="submit" />
+				<Button type="submit" block>
+					Acceder
+				</Button>
 			</div>
 		</form>
 	)

@@ -1,6 +1,7 @@
 import { CiCalendar } from "react-icons/ci"
 import { HiOutlineBars3, HiOutlineMagnifyingGlass } from "react-icons/hi2"
 import { useAuth } from "../../auth"
+import { Button } from "../../../shared"
 import { useDashboardLayout } from "../contexts/DashboardLayoutContext"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { NotificationBell } from "../../notifications"
@@ -28,14 +29,15 @@ export default function DashboardHeader() {
 			{/* Mobile: menú + fecha + campana. Desktop: solo fecha a la izquierda */}
 			<div className="flex flex-row items-center justify-between md:justify-start gap-2 min-w-0 shrink-0">
 				{isMobile && (
-					<button
+					<Button
 						type="button"
+						variant="text"
 						onClick={onToggleSidebar}
 						aria-label="Abrir menú"
-						className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 shrink-0"
+						className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center shrink-0 !text-gray-600 hover:!bg-gray-100 !rounded-md"
 					>
-						<HiOutlineBars3 className="w-5 h-5" />
-					</button>
+						<HiOutlineBars3 className="w-5 h-5 text-gray-600" />
+					</Button>
 				)}
 				<h2 className="text-sm sm:text-base lg:text-lg text-gray-400 font-semibold flex flex-row items-center gap-1 sm:gap-2 capitalize">
 					<CiCalendar className="text-primary font-semibold text-base sm:text-lg shrink-0" />

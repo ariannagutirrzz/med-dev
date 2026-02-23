@@ -1,4 +1,4 @@
-import { formatPrice } from "../../../../shared"
+import { Button, formatPrice } from "../../../../shared"
 import { useCurrencyRates } from "../../hooks/useCurrencyRates"
 import { useAuth } from "../../../auth"
 
@@ -60,19 +60,21 @@ export const CurrencyCard = () => {
 										type="number"
 										min="0"
 										step="0.01"
-										className="w-full sm:w-[140px] px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-right"
+										className="w-full sm:w-[140px] h-9 px-2 sm:px-3 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-right"
 										placeholder={formatPrice(currencyRates.oficial.promedio)}
 										value={customRateInput}
 										onChange={(e) => setCustomRateInput(e.target.value)}
 									/>
-									<button
+									<Button
 										type="button"
 										onClick={handleSaveCustomRate}
 										disabled={savingCustomRate}
-										className="inline-flex items-center justify-center px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
+										loading={savingCustomRate}
+										size="small"
+										className="!h-9 !min-h-9 !rounded-lg !text-xs sm:!text-sm !px-4 sm:!min-w-[160px]"
 									>
-										{savingCustomRate ? "Guardando..." : "Guardar"}
-									</button>
+										Guardar
+									</Button>
 								</div>
 							</div>
 						)}

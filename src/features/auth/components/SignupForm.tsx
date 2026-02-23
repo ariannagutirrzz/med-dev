@@ -468,15 +468,19 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						className="rounded-xl h-12"
 						// Añadimos un botón al final del input para que sea más intuitivo
 						suffix={
-							<button
+							<Button
 								type="button"
-								onClick={(e: any) =>
-									addAllergy({ ...e, key: "Enter", preventDefault: () => {} })
+								variant="text"
+								size="small"
+								onClick={() =>
+									addAllergy({
+										key: "Enter",
+										preventDefault: () => {},
+									} as React.KeyboardEvent<HTMLInputElement>)
 								}
-								className="text-primary hover:scale-110 transition-transform"
-							>
-								<FaPlus />
-							</button>
+								icon={<FaPlus />}
+								className="!text-primary hover:!scale-110 transition-transform !p-0 !min-w-0 !h-auto"
+							/>
 						}
 					/>
 

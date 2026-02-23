@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { HiOutlineBars3 } from "react-icons/hi2"
 import { useLocation } from "react-router-dom"
-import { Sidebar } from "../../../shared"
+import { Button, Sidebar } from "../../../shared"
 import { DashboardLayoutProvider } from "../contexts/DashboardLayoutContext"
 import { useIsMobile } from "../hooks/useIsMobile"
 
@@ -66,9 +66,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 				data-dashboard-sidebar
 				data-sidebar-closed={!isSidebarOpen ? "" : undefined}
 				className={`
-					fixed left-0 top-0 bottom-0 z-40 h-screen w-56 max-w-[75vw] transition-transform duration-300 ease-in-out
-					${isSidebarOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"}
-					md:relative md:inset-auto md:top-auto md:bottom-auto md:h-full md:min-h-0 md:translate-x-0 md:w-auto md:max-w-none
+					fixed left-0 top-0 bottom-0 z-40 h-screen max-w-[75vw] overflow-visible transition-all duration-300 ease-in-out
+					${isSidebarOpen ? "w-64 sm:w-72 max-md:translate-x-0" : "w-16 sm:w-20 max-md:-translate-x-full"}
+					md:relative md:inset-auto md:top-auto md:bottom-auto md:h-full md:min-h-0 md:translate-x-0 md:max-w-none
 				`}
 			>
 				<Sidebar
@@ -90,14 +90,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 					{/* En páginas que no son home, barra con solo hamburger para abrir menú */}
 					{isMobile && location.pathname !== "/dashboard/home" && (
 						<div className="flex items-center shrink-0 h-10 px-3 border-b border-gray-200 bg-white/95">
-							<button
+							<Button
 								type="button"
+								variant="text"
 								onClick={onToggleSidebar}
 								aria-label="Abrir menú"
-								className="flex items-center justify-center w-8 h-8 rounded-md text-gray-600 hover:bg-gray-100 cursor-pointer"
+								className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center !text-gray-600 hover:!bg-gray-100 !rounded-md"
 							>
-								<HiOutlineBars3 className="w-5 h-5" />
-							</button>
+								<HiOutlineBars3 className="w-5 h-5 text-gray-600" />
+							</Button>
 						</div>
 					)}
 					{children}
