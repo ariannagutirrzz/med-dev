@@ -20,7 +20,7 @@ import {
 import { getPatients } from "../../patients"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
-import { getMyServices } from "../../services"
+import { getDoctorServices } from "../../services"
 import {
 	getSettings,
 	type UserSettings,
@@ -42,6 +42,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 }) => {
 	const { user } = useAuth()
 	const isAdmin = user?.role === "Admin"
+	const isDoctor = user?.role === "Médico"
 	const [loading, setLoading] = useState(false)
 	const [patients, setPatients] = useState<Patient[]>([])
 	const [doctors, setDoctors] = useState<Doctor[]>()
@@ -65,11 +66,16 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	const [formData, setFormData] =
 		useState<ExtendedSurgeryFormData>(initialValues)
 
-	// Cargar servicios del médico
-	const loadServices = useCallback(async () => {
+	// Cargar servicios del médico seleccionado (Admin: por doctor_id; Médico: los suyos)
+	const loadServices = useCallback(async (doctorId: string | null) => {
+		if (!doctorId) {
+			setServices([])
+			setSelectedService(null)
+			return
+		}
 		try {
 			const [servicesData, settingsData, ratesData] = await Promise.all([
-				getMyServices(),
+				getDoctorServices(doctorId),
 				getSettings().catch(() => null),
 				getCurrencyRates().catch(() => null),
 			])
@@ -86,7 +92,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	const loadInitialData = useCallback(async () => {
 		setLoadingData(true)
 		try {
-			const promises: any[] = [getPatients()]
+		const promises: Promise<unknown>[] = [getPatients()]
 			if (isAdmin) {
 				promises.push(getDoctors()) // O la función que traiga solo médicos
 			}
@@ -108,12 +114,23 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	useEffect(() => {
 		if (isOpen) {
 			loadInitialData()
-			if (!isAdmin) loadServices()
+			if (isAdmin) {
+				setServices([])
+				setSelectedService(null)
+			}
 		}
-	}, [isOpen, loadInitialData, loadServices, isAdmin])
+	}, [isOpen, loadInitialData, isAdmin])
 
-	// Cargar datos de la cirugía si es edición
+	// Cuando Admin selecciona un médico, cargar sus servicios
 	useEffect(() => {
+		if (isOpen && isAdmin && formData.doctor_id) {
+			loadServices(formData.doctor_id)
+		}
+	}, [isOpen, isAdmin, formData.doctor_id, loadServices])
+
+	// Cargar datos de la cirugía si es edición; si es nuevo y Médico, preseleccionar médico y cargar sus servicios
+	useEffect(() => {
+		if (!isOpen) return
 		if (editingSurgery) {
 			const surgeryDate = new Date(editingSurgery.surgery_date)
 			const localDateTime = new Date(
@@ -124,21 +141,26 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 
 			setFormData({
 				patient_id: editingSurgery.patient_id,
-				doctor_id: editingSurgery.doctor_id, // Mapear doctor_id existente
+				doctor_id: editingSurgery.doctor_id,
 				surgery_date: localDateTime,
 				surgery_type: editingSurgery.surgery_type,
 				status: editingSurgery.status,
 				notes: editingSurgery.notes || "",
 				service_id: editingSurgery.service_id || null,
 			})
-
-			if (editingSurgery) {
-				loadServices()
-			}
+			loadServices(editingSurgery.doctor_id)
 		} else {
-			setFormData(initialValues)
+			if (isDoctor && user?.document_id) {
+				setFormData({
+					...initialValues,
+					doctor_id: user.document_id,
+				})
+				loadServices(user.document_id)
+			} else {
+				setFormData(initialValues)
+			}
 		}
-	}, [editingSurgery, loadServices])
+	}, [isOpen, editingSurgery, isDoctor, user?.document_id, loadServices])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
