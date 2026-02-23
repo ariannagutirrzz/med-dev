@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import {
 	FaCalendarAlt,
 	FaEnvelope,
+	FaExclamationTriangle,
 	FaIdCard,
 	FaMapMarkerAlt,
 	FaPhone,
@@ -14,13 +15,13 @@ import {
 	FaVenusMars,
 } from "react-icons/fa"
 import { toast } from "react-toastify"
+import type { Patient, PatientFormData } from "../../../shared"
+import { ConfirmModal } from "../../../shared"
 import {
 	createPatient,
 	deletePatientById,
 	updatePatientById,
 } from "../services/PatientsAPI"
-import type { Patient, PatientFormData } from "../../../shared"
-import { ConfirmModal } from "../../../shared"
 
 interface PatientModalFormProps {
 	isOpen: boolean
@@ -37,6 +38,7 @@ const PatientModalForm = ({
 }: PatientModalFormProps) => {
 	const [formData, setFormData] = useState<PatientFormData | null>(null)
 	const [loading, setLoading] = useState(false)
+	const [allergyInput, setAllergyInput] = useState("")
 
 	// Estado para controlar el modal de confirmación
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -47,6 +49,7 @@ const PatientModalForm = ({
 			setFormData({
 				...patient,
 				birthdate: patient.birthdate.toISOString().split("T")[0],
+				allergies: patient.allergies,
 			})
 		} else {
 			setFormData({
@@ -59,9 +62,47 @@ const PatientModalForm = ({
 				address: "",
 				document_id: "",
 				blood_type: "",
+				allergies: [],
 			})
 		}
 	}, [patient])
+
+	// --- Lógica de Alergias ---
+	const addAllergy = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter" && allergyInput.trim() !== "") {
+			e.preventDefault()
+
+			setFormData((prev) => {
+				if (!prev) return null
+				// Nos aseguramos de que currentAllergies sea un array antes de procesar
+				const currentAllergies = prev.allergies || []
+
+				if (currentAllergies.includes(allergyInput.trim())) {
+					toast.warning("Esta alergia ya está registrada")
+					return prev
+				}
+
+				return {
+					...prev,
+					allergies: [...currentAllergies, allergyInput.trim()],
+				}
+			})
+			setAllergyInput("")
+		}
+	}
+
+	const removeAllergy = (indexToRemove: number) => {
+		setFormData((prev) =>
+			prev
+				? {
+						...prev,
+						allergies: prev.allergies.filter(
+							(_, index) => index !== indexToRemove,
+						),
+					}
+				: null,
+		)
+	}
 
 	// Lógica de Validación
 	const validateFields = (data: PatientFormData) => {
@@ -321,7 +362,51 @@ const PatientModalForm = ({
 								</div>
 							</div>
 
-							{/* 5. Dirección */}
+							{/* 5. Alergias (Nueva Sección) */}
+							<div className="flex flex-col">
+								<label htmlFor="allergies" className={labelClass}>
+									<FaExclamationTriangle className="text-red-500" /> Alergias
+								</label>
+								<div className="space-y-3">
+									<input
+										id="allergies"
+										type="text"
+										placeholder="Escribe una alergia y presiona Enter..."
+										className={inputBaseClass}
+										value={allergyInput}
+										onChange={(e) => setAllergyInput(e.target.value)}
+										onKeyDown={addAllergy}
+										disabled={loading}
+									/>
+
+									{/* Contenedor de Tags */}
+									<div className="flex flex-wrap gap-2">
+										{formData.allergies?.length === 0 ? (
+											<span className="text-xs text-gray-400 italic">
+												No se han registrado alergias.
+											</span>
+										) : (
+											formData.allergies?.map((allergy, index) => (
+												<div
+													key={allergy}
+													className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 text-sm font-medium animate-in fade-in slide-in-from-left-2"
+												>
+													{allergy}
+													<button
+														type="button"
+														onClick={() => removeAllergy(index)}
+														className="hover:text-red-900 transition-colors"
+													>
+														<FaTimes size={12} />
+													</button>
+												</div>
+											))
+										)}
+									</div>
+								</div>
+							</div>
+
+							{/* 6. Dirección */}
 							<div className="flex flex-col">
 								<label htmlFor="address" className={labelClass}>
 									<FaMapMarkerAlt /> Dirección de Habitación

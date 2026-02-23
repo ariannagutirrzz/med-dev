@@ -12,6 +12,7 @@ interface SignupFormData {
 	gender: string
 	address: string
 	blood_type?: string
+	allergies: string[]
 }
 
 interface SignupFormErrors {
@@ -24,10 +25,12 @@ interface SignupFormErrors {
 	birthdate?: string
 	gender?: string
 	address?: string
+	blood_type?: string
+	allergies?: string[]
 }
 
 interface SignupFormProps {
-	onSignUp: (data: Omit<SignupFormData, 'confirmPassword'>) => void
+	onSignUp: (data: Omit<SignupFormData, "confirmPassword">) => void
 }
 
 const SignupForm = ({ onSignUp }: SignupFormProps) => {
@@ -42,10 +45,12 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		gender: "",
 		address: "",
 		blood_type: "",
+		allergies: [],
 	})
 
 	const [errors, setErrors] = useState<SignupFormErrors>({})
 	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [allergyInput, setAllergyInput] = useState("")
 
 	const validateEmail = (email: string): boolean => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -54,13 +59,35 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 
 	const validatePhone = (phone: string): boolean => {
 		// Allow phone numbers with or without country code, spaces, dashes, parentheses
-		const phoneRegex = /^[\d\s\-\+\(\)]+$/
+		const phoneRegex = /^[\d\s\-+()]+$/
 		return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 7
 	}
 
 	const validateDocumentId = (docId: string): boolean => {
 		// Allow alphanumeric document IDs, typically 6-12 characters
 		return /^[A-Za-z0-9]{6,12}$/.test(docId)
+	}
+
+	const addAllergy = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter" && allergyInput.trim() !== "") {
+			e.preventDefault()
+			const newAllergy = allergyInput.trim()
+
+			if (!formData.allergies.includes(newAllergy)) {
+				setFormData((prev) => ({
+					...prev,
+					allergies: [...prev.allergies, newAllergy],
+				}))
+			}
+			setAllergyInput("")
+		}
+	}
+
+	const removeAllergy = (indexToRemove: number) => {
+		setFormData((prev) => ({
+			...prev,
+			allergies: prev.allergies.filter((_, index) => index !== indexToRemove),
+		}))
 	}
 
 	const validateForm = (): boolean => {
@@ -117,7 +144,11 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 			const today = new Date()
 			const age = today.getFullYear() - birthDate.getFullYear()
 			const monthDiff = today.getMonth() - birthDate.getMonth()
-			const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age
+			const actualAge =
+				monthDiff < 0 ||
+				(monthDiff === 0 && today.getDate() < birthDate.getDate())
+					? age - 1
+					: age
 
 			if (actualAge < 0) {
 				newErrors.birthdate = "La fecha de nacimiento no puede ser futura"
@@ -142,28 +173,32 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		return Object.keys(newErrors).length === 0
 	}
 
-	const handleChange = (field: keyof SignupFormData) => (
-		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-	) => {
-		const value = e.target.value
-		setFormData((prev) => ({ ...prev, [field]: value }))
-		// Clear error for this field when user starts typing
-		if (errors[field]) {
-			setErrors((prev) => ({ ...prev, [field]: undefined }))
+	const handleChange =
+		(field: keyof SignupFormData) =>
+		(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+			const value = e.target.value
+			setFormData((prev) => ({ ...prev, [field]: value }))
+			// Clear error for this field when user starts typing
+			if (errors[field]) {
+				setErrors((prev) => ({ ...prev, [field]: undefined }))
+			}
+			// If password changes, also clear confirmPassword error
+			if (field === "password" && errors.confirmPassword) {
+				setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+			}
+			// If confirmPassword changes and passwords match, clear error
+			if (
+				field === "confirmPassword" &&
+				formData.password === value &&
+				errors.confirmPassword
+			) {
+				setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+			}
 		}
-		// If password changes, also clear confirmPassword error
-		if (field === "password" && errors.confirmPassword) {
-			setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
-		}
-		// If confirmPassword changes and passwords match, clear error
-		if (field === "confirmPassword" && formData.password === value && errors.confirmPassword) {
-			setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
-		}
-	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		
+
 		if (!validateForm()) {
 			return
 		}
@@ -237,7 +272,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 
 				{/* Birthdate */}
 				<div>
-					<label htmlFor="birthdate" className="text-sm text-text ml-1 mb-1 flex justify-start">
+					<label
+						htmlFor="birthdate"
+						className="text-sm text-text ml-1 mb-1 flex justify-start"
+					>
 						Fecha de Nacimiento
 						<span className="text-red-500 ml-1">*</span>
 					</label>
@@ -254,7 +292,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						max={new Date().toISOString().split("T")[0]}
 					/>
 					{errors.birthdate && (
-						<p className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1" role="alert">
+						<p
+							className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1"
+							role="alert"
+						>
 							<span className="text-red-500">•</span>
 							{errors.birthdate}
 						</p>
@@ -263,7 +304,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 
 				{/* Gender */}
 				<div>
-					<label htmlFor="gender" className="text-sm text-text ml-1 mb-1 flex justify-start">
+					<label
+						htmlFor="gender"
+						className="text-sm text-text ml-1 mb-1 flex justify-start"
+					>
 						Género
 						<span className="text-red-500 ml-1">*</span>
 					</label>
@@ -283,7 +327,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						<option value="O">Otro</option>
 					</select>
 					{errors.gender && (
-						<p className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1" role="alert">
+						<p
+							className="text-red-500 text-sm mt-1 ml-1 flex items-center gap-1"
+							role="alert"
+						>
 							<span className="text-red-500">•</span>
 							{errors.gender}
 						</p>
@@ -291,8 +338,11 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				</div>
 
 				{/* Blood Type */}
-				<div>
-					<label htmlFor="blood_type" className="text-sm text-text ml-1 mb-1 flex justify-start">
+				<div className="md:col-span-2">
+					<label
+						htmlFor="blood_type"
+						className="text-sm text-text ml-1 mb-1 flex justify-start"
+					>
 						Tipo de Sangre
 					</label>
 					<select
@@ -311,6 +361,50 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						<option value="O+">O+</option>
 						<option value="O-">O-</option>
 					</select>
+				</div>
+
+				{/* Sección de Alergias */}
+				<div className="md:col-span-2 flex flex-col gap-2">
+					<label
+						htmlFor="allergies"
+						className="text-sm text-text ml-1 flex justify-start items-center gap-2"
+					>
+						Alergias (Presiona Enter para agregar)
+					</label>
+					<input
+						id="allergies"
+						type="text"
+						placeholder="Ej: Penicilina, Maní..."
+						value={allergyInput}
+						onChange={(e) => setAllergyInput(e.target.value)}
+						onKeyDown={addAllergy}
+						className="w-full pl-4 pr-4 py-4 border-2 rounded-2xl bg-white text-text border-muted hover:border-primary focus:border-primary focus:outline-none transition-colors"
+					/>
+
+					{/* Contenedor de Tags */}
+					<div className="flex flex-wrap gap-2 mt-2">
+						{formData.allergies.length === 0 ? (
+							<span className="text-xs text-gray-400 italic ml-1">
+								No se han agregado alergias.
+							</span>
+						) : (
+							formData.allergies.map((allergy, index) => (
+								<div
+									key={`${allergy}`}
+									className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-xl border border-red-100 text-sm font-medium animate-in fade-in zoom-in duration-200"
+								>
+									{allergy}
+									<button
+										type="button"
+										onClick={() => removeAllergy(index)}
+										className="hover:text-red-900 transition-colors p-0.5"
+									>
+										✕
+									</button>
+								</div>
+							))
+						)}
+					</div>
 				</div>
 
 				{/* Address */}
