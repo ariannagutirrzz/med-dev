@@ -1,16 +1,24 @@
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendarCheck, FaClock, FaDollarSign, FaEdit, FaTrash, FaUserMd, FaStethoscope } from "react-icons/fa"
+import {
+	FaClock,
+	FaDollarSign,
+	FaEdit,
+	FaStethoscope,
+	FaTrash,
+} from "react-icons/fa"
 import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
-import {
-	deleteSurgeryById,
-	getSurgeries,
-} from "../services/SurgeriesAPI"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import type { Surgery } from "../../../shared"
-import { formatPrice } from "../../../shared"
-import { ConfirmModal } from "../../../shared"
+import { ConfirmModal, formatPrice } from "../../../shared"
+import {
+	type CurrencyRates,
+	getCurrencyRates,
+} from "../../currency/services/CurrencyAPI"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
+import { deleteSurgeryById, getSurgeries } from "../services/SurgeriesAPI"
 import SurgeryModal from "./SurgeryModal"
 
 const SurgeriesSection = () => {
@@ -24,7 +32,7 @@ const SurgeriesSection = () => {
 	}>({ isOpen: false, surgery: null })
 	const [searchTerm, setSearchTerm] = useState("")
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
 
@@ -139,7 +147,8 @@ const SurgeriesSection = () => {
 	const filteredSurgeries = surgeries.filter((surgery) => {
 		// Filtro de búsqueda
 		const searchLower = searchTerm.toLowerCase()
-		const patientName = `${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
+		const patientName =
+			`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
 		const matchesSearch =
 			!searchTerm ||
 			patientName.includes(searchLower) ||
@@ -149,7 +158,8 @@ const SurgeriesSection = () => {
 
 		// Filtro de estado
 		const matchesStatus =
-			statusFilter === "all" || surgery.status?.toLowerCase() === statusFilter.toLowerCase()
+			statusFilter === "all" ||
+			surgery.status?.toLowerCase() === statusFilter.toLowerCase()
 
 		// Filtro de fecha
 		let matchesDate = true
@@ -160,8 +170,7 @@ const SurgeriesSection = () => {
 
 			switch (dateFilter) {
 				case "today":
-					matchesDate =
-						surgeryDate.toDateString() === today.toDateString()
+					matchesDate = surgeryDate.toDateString() === today.toDateString()
 					break
 				case "week": {
 					const weekFromNow = new Date(today)
@@ -183,10 +192,18 @@ const SurgeriesSection = () => {
 
 	// Calcular estadísticas
 	const stats = {
-		available: surgeries.filter((s) => s.status?.toLowerCase() === "scheduled").length,
-		scheduled: surgeries.filter((s) => s.status?.toLowerCase() === "scheduled").length,
-		inProgress: surgeries.filter((s) => s.status?.toLowerCase() === "in_progress").length,
-		total: surgeries.length,
+		available: surgeries.filter((s) => s.status?.toLowerCase() === "scheduled")
+			.length,
+		scheduled: surgeries.filter((s) => s.status?.toLowerCase() === "scheduled")
+			.length,
+		inProgress: surgeries.filter(
+			(s) => s.status?.toLowerCase() === "in_progress",
+		).length,
+		total: surgeries.filter(
+			(s) =>
+				s.status?.toLowerCase() !== "cancelled" &&
+				s.status?.toLowerCase() !== "completed",
+		).length,
 	}
 
 	return (
@@ -213,28 +230,40 @@ const SurgeriesSection = () => {
 			{/* Estadísticas rápidas */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
 				<div className="bg-white rounded-2xl shadow-lg p-6">
-					<h3 className="text-sm font-semibold text-gray-600 mb-2">Salas Disponibles</h3>
+					<h3 className="text-sm font-semibold text-gray-600 mb-2">
+						Salas Disponibles
+					</h3>
 					<div className="text-center">
-						<p className="text-3xl font-bold text-green-600">{stats.available}</p>
+						<p className="text-3xl font-bold text-green-600">
+							{stats.available}
+						</p>
 						<p className="text-gray-600 mt-2 text-sm">Programadas hoy</p>
 					</div>
 				</div>
 				<div className="bg-white rounded-2xl shadow-lg p-6">
-					<h3 className="text-sm font-semibold text-gray-600 mb-2">Reservas Hoy</h3>
+					<h3 className="text-sm font-semibold text-gray-600 mb-2">
+						Reservas Hoy
+					</h3>
 					<div className="text-center">
-						<p className="text-3xl font-bold text-blue-600">{stats.scheduled}</p>
+						<p className="text-3xl font-bold text-blue-600">
+							{stats.scheduled}
+						</p>
 						<p className="text-gray-600 mt-2 text-sm">Programadas</p>
 					</div>
 				</div>
 				<div className="bg-white rounded-2xl shadow-lg p-6">
 					<h3 className="text-sm font-semibold text-gray-600 mb-2">En Uso</h3>
 					<div className="text-center">
-						<p className="text-3xl font-bold text-orange-600">{stats.inProgress}</p>
+						<p className="text-3xl font-bold text-orange-600">
+							{stats.inProgress}
+						</p>
 						<p className="text-gray-600 mt-2 text-sm">Actualmente</p>
 					</div>
 				</div>
 				<div className="bg-white rounded-2xl shadow-lg p-6">
-					<h3 className="text-sm font-semibold text-gray-600 mb-2">Total Reservas</h3>
+					<h3 className="text-sm font-semibold text-gray-600 mb-2">
+						Total Reservas
+					</h3>
 					<div className="text-center">
 						<p className="text-3xl font-bold text-purple-600">{stats.total}</p>
 						<p className="text-gray-600 mt-2 text-sm">Cirugías activas</p>
@@ -302,7 +331,8 @@ const SurgeriesSection = () => {
 					<div className="space-y-4">
 						{filteredSurgeries.map((surgery) => {
 							const { date, time } = formatDateTime(surgery.surgery_date)
-							const patientName = `${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.trim()
+							const patientName =
+								`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.trim()
 
 							return (
 								<div
@@ -339,10 +369,11 @@ const SurgeriesSection = () => {
 													{surgery.price_usd && (
 														<>
 															<span className="flex items-center gap-1 text-primary font-semibold">
-																<FaDollarSign className="w-4 h-4" />
-																${formatPrice(surgery.price_usd)} USD
+																<FaDollarSign className="w-4 h-4" />$
+																{formatPrice(surgery.price_usd)} USD
 															</span>
-															{(settings?.custom_exchange_rate || currencyRates?.oficial?.promedio) && (
+															{(settings?.custom_exchange_rate ||
+																currencyRates?.oficial?.promedio) && (
 																<span className="flex items-center gap-1 text-green-600 font-semibold">
 																	Bs.{" "}
 																	{formatPrice(
@@ -410,9 +441,7 @@ const SurgeriesSection = () => {
 			{/* Modal de confirmación de eliminación */}
 			<ConfirmModal
 				isOpen={deleteConfirm.isOpen}
-				onClose={() =>
-					setDeleteConfirm({ isOpen: false, surgery: null })
-				}
+				onClose={() => setDeleteConfirm({ isOpen: false, surgery: null })}
 				onConfirm={handleDeleteSurgery}
 				title="Eliminar Cirugía"
 				message="¿Estás seguro de que deseas eliminar esta reserva de cirugía? Esta acción no se puede deshacer."
