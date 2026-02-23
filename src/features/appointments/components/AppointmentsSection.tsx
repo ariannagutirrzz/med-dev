@@ -1,4 +1,4 @@
-import { Input, Select } from "antd"
+import { Input, Pagination, Select } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import {
 	FaCalendarCheck,
@@ -41,6 +41,11 @@ const AppointmentsSection = () => {
 	const [dateFilter, setDateFilter] = useState<string>("all")
 	const [settings, setSettings] = useState<UserSettings | null>(null)
 	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	// Estados de paginación
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 6;
+
+
 
 	type AppointmentData = {
 		appointments: Appointment[]
@@ -80,6 +85,11 @@ const AppointmentsSection = () => {
 		}
 		loadPriceData()
 	}, [loadAppointments])
+
+	// Resetear a pag 1 cuando cambie cualquier filtro
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm, statusFilter, dateFilter]);
 
 	const handleCreateAppointment = () => {
 		setEditingAppointment(null)
@@ -196,6 +206,13 @@ const AppointmentsSection = () => {
 		return matchesSearch && matchesStatus && matchesDate
 	})
 
+	// Lógica de segmentación (Slicing)
+const indexOfLastRecord = currentPage * pageSize;
+const indexOfFirstRecord = indexOfLastRecord - pageSize;
+
+// Estos son los que realmente vas a mostrar en el .map()
+const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, indexOfLastRecord);
+
 	const isDoctor = user?.role === "Médico"
 	const isAdmin = user?.role === "Admin"
 
@@ -292,7 +309,7 @@ const AppointmentsSection = () => {
 					</div>
 				) : (
 					<div className="space-y-4">
-						{filteredAppointments.map((appointment) => {
+						{currentAppointments.map((appointment) => {
 							const { date, time } = formatDateTime(
 								appointment.appointment_date,
 							)
@@ -389,6 +406,15 @@ const AppointmentsSection = () => {
 						})}
 					</div>
 				)}
+				<div className="flex justify-center mt-8 pb-4">
+    <Pagination
+        current={currentPage}
+        total={filteredAppointments.length} // El total sigue siendo el de filtrados
+        pageSize={pageSize}
+        onChange={(page) => setCurrentPage(page)}
+        showSizeChanger={false}
+    />
+</div>
 			</div>
 
 			{/* Modal de crear/editar cita */}

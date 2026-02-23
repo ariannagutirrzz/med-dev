@@ -12,6 +12,7 @@ import {
 } from "../services/SettingsAPI"
 import DoctorAvailabilityManagement from "./DoctorAvailabilityManagement"
 import DoctorUnavailabilityManagement from "./DoctorUnavailabilityManagement"
+import { Tabs, type TabsProps } from "antd"
 
 /**
  * Settings Component
@@ -215,6 +216,25 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 		}
 	}
 
+	const handleChangeTab = (key: string) => {
+  setActiveSection(key as SettingsSection)
+};
+
+const items: TabsProps['items'] = [
+  {
+    key: 'profile',
+    label: 'Perfil',
+  },
+  {
+    key: 'security',
+    label: 'Seguridad',
+  },
+  {
+    key: 'availability',
+    label: 'Disponibilidad',
+  },
+];
+
 	if (loading) {
 		return (
 			<div className="p-6">
@@ -246,41 +266,22 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 				</div>
 			)}
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="flex flex-col gap-6 w-full">
 				{/* Settings Navigation */}
-				<div className="lg:col-span-1">
-					<div className="bg-white rounded-2xl shadow-lg p-4">
-						<nav className="space-y-2">
-							{[
-								{ id: "profile", label: "Perfil" },
-								{ id: "notifications", label: "Notificaciones" },
-								{ id: "security", label: "Seguridad" },
-								...(userData.role === "Médico"
-									? [{ id: "availability", label: "Disponibilidad" }]
-									: []),
-								// { id: "preferences", label: "Preferencias" },
-							].map((section) => (
-								<button
-									key={section.id}
-									type="button"
-									onClick={() =>
-										setActiveSection(section.id as SettingsSection)
-									}
-									className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
-										activeSection === section.id
-											? "bg-primary text-white"
-											: "text-gray-700 hover:bg-gray-50"
-									}`}
-								>
-									{section.label}
-								</button>
-							))}
-						</nav>
-					</div>
-				</div>
+				<div className="bg-white rounded-2xl p-1 px-4 self-start border-2 border-gray-100 shadow-lg overflow-hidden">
+        <div className="px-6 pt-4"> 
+            <Tabs 
+                defaultActiveKey="1" 
+                items={items} 
+                onChange={handleChangeTab}
+				size="large"
+            />
+        </div>
+    </div>
+				
 
 				{/* Settings Content */}
-				<div className="lg:col-span-2 space-y-6">
+				<div className="w-full space-y-6">
 					{/* Profile Section */}
 					{activeSection === "profile" && (
 						<div className="bg-white rounded-2xl shadow-lg p-6">
