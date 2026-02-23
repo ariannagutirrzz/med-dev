@@ -11,9 +11,6 @@ const InventoryRow = ({
 	onDelete: (id: Supply["id"]) => void
 	onEdit: () => void
 }) => {
-	const isLowStock = item.quantity <= item.min_stock
-	const isOutOfStock = item.quantity === 0
-
 	return (
 		<tr className="hover:bg-blue-50/30 transition-colors group">
 			<td className="px-6 py-4">
@@ -37,7 +34,7 @@ const InventoryRow = ({
 			<td className="px-6 py-4">
 				<div className="flex items-center gap-1.5">
 					<span
-						className={`font-bold ${isLowStock ? "text-red-600" : "text-gray-700"}`}
+						className={`font-bold ${item.status === "low stock" ? "text-red-600" : "text-gray-700"}`}
 					>
 						{item.quantity}
 					</span>
@@ -45,11 +42,11 @@ const InventoryRow = ({
 				</div>
 			</td>
 			<td className="px-6 py-4">
-				{isOutOfStock ? (
+				{item.status === "out of stock" ? (
 					<span className="flex items-center gap-1.5 text-red-700 bg-red-100 px-2.5 py-1 rounded-full text-[10px] font-black uppercase w-fit">
 						<FaExclamationTriangle size={10} /> Agotado
 					</span>
-				) : isLowStock ? (
+				) : item.status === "low stock" ? (
 					<span className="text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full text-[10px] font-black uppercase">
 						Stock Bajo
 					</span>
