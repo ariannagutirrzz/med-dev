@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 	return (
 		<aside
 			className={`
-        flex flex-col h-full min-h-screen
+        flex flex-col h-full min-h-0
         bg-white
         text-white
         transition-all duration-300 ease-in-out
@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 			</button>
 			{/* ------------------------------ */}
 			{/* Header del usuario */}
-			<div className="p-3 sm:p-4 md:p-5 border-b border-gray-200 flex-col text-center items-center gap-2 sm:gap-4 relative">
+			<div className="shrink-0 p-3 sm:p-4 md:p-5 border-b border-gray-200 flex-col text-center items-center gap-2 sm:gap-4 relative">
 				{/* Foto de perfil */}
 				<div className="shrink-0 justify-center flex mb-2 sm:mb-3 md:mb-4">
 					{user.image ? (
@@ -87,8 +87,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 				</div>
 			</div>
 
-			{/* Menú de opciones */}
-			<nav className="flex-1 p-2 sm:p-3 md:p-4">
+			{/* Menú de opciones: scroll interno para no desplazar toda la página */}
+			<nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-2 sm:p-3 md:p-4">
 				<ul className="space-y-1 sm:space-y-2">
 					{menuItems.map((item) => {
 						const isActive = activeMenuItem === item.id
@@ -140,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 			{/* Logout button */}
 			{onLogout && (
-				<div className="p-2 sm:p-3 md:p-4 border-t border-gray-200">
+				<div className="shrink-0 p-2 sm:p-3 md:p-4 border-t border-gray-200 bg-white">
 					<button
 						type="button"
 						onClick={onLogout}

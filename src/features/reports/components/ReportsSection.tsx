@@ -1,3 +1,7 @@
+import { DatePicker, Select } from "antd"
+import type { Dayjs } from "dayjs"
+import dayjs from "dayjs"
+import "dayjs/locale/es"
 import { useState } from "react"
 import {
 	FaCalendarAlt,
@@ -24,6 +28,8 @@ type ReportType =
 	| "financial"
 	| "inventory"
 type ReportFormat = "pdf" | "excel"
+
+dayjs.locale("es")
 
 const ReportsSection = () => {
 	const [selectedReport, setSelectedReport] =
@@ -118,70 +124,73 @@ const ReportsSection = () => {
 
 	return (
 		<div className="p-6">
-			<div className="mb-6">
-				<h1 className="text-3xl font-bold text-gray-800 mb-2">Reportes</h1>
-				<p className="text-gray-600">
+			<div className="mb-4">
+				<h1 className="text-2xl font-bold text-gray-800 mb-1">Reportes</h1>
+				<p className="text-sm text-gray-600">
 					Genera y descarga reportes en formato PDF o Excel
 				</p>
 			</div>
 
-			<div className="bg-white rounded-2xl shadow-lg p-6">
+			<div className="bg-white rounded-xl shadow-lg p-4">
 				{/* Report Type Selection */}
-				<div className="mb-6">
-					<h3 className="block text-sm font-medium text-gray-700 mb-3">
+				<div className="mb-4">
+					<h3 className="block text-xs font-medium text-gray-700 mb-2">
 						Tipo de Reporte
 					</h3>
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-stretch">
 						{reportOptions.map((option) => (
-							<Button
+							<button
 								key={option.value}
 								type="button"
-								variant="default"
 								onClick={() => setSelectedReport(option.value)}
-								className={`!p-4 !h-auto !border-2 !rounded-xl text-left block ${
+								className={`w-full min-h-[3.5rem] p-3 rounded-lg border text-left transition-colors cursor-pointer flex flex-col ${
 									selectedReport === option.value
-										? "!border-primary !bg-primary/5"
-										: "!border-gray-200 hover:!border-gray-300"
+										? "border-primary bg-primary/5"
+										: "border-gray-200 hover:border-gray-300 bg-white"
 								}`}
 							>
-								<h3 className="font-semibold text-gray-800 mb-1">
-									{option.label}
-								</h3>
-								<p className="text-sm text-gray-600">{option.description}</p>
-							</Button>
+								<div className="flex flex-col items-start gap-0.5 flex-1">
+									<h3 className="text-sm font-semibold text-gray-800">
+										{option.label}
+									</h3>
+									<p className="text-xs text-gray-600">{option.description}</p>
+								</div>
+							</button>
 						))}
 					</div>
 				</div>
 
 				{/* Format Selection */}
-				<div className="mb-6">
-					<h3 className="block text-sm font-medium text-gray-700 mb-3">
+				<div className="mb-4">
+					<h3 className="block text-xs font-medium text-gray-700 mb-2">
 						Formato
 					</h3>
-					<div className="flex gap-4">
+					<div className="flex gap-3">
 						<Button
 							type="button"
+							size="middle"
 							variant={format === "pdf" ? "primary" : "default"}
 							onClick={() => setFormat("pdf")}
-							icon={<FaFilePdf className="w-5 h-5" />}
-							className={
+							icon={<FaFilePdf className="w-4 h-4" />}
+							className={`!min-h-0 !text-sm ${
 								format === "pdf"
-									? "!border-2 !border-primary"
-									: "!border-2 !border-gray-300 text-gray-700 hover:!border-gray-400"
-							}
+									? "!border !border-primary"
+									: "!border !border-gray-300 text-gray-700 hover:!border-gray-400"
+							}`}
 						>
 							PDF
 						</Button>
 						<Button
 							type="button"
+							size="middle"
 							variant={format === "excel" ? "primary" : "default"}
 							onClick={() => setFormat("excel")}
-							icon={<FaFileExcel className="w-5 h-5" />}
-							className={
+							icon={<FaFileExcel className="w-4 h-4" />}
+							className={`!min-h-0 !text-sm ${
 								format === "excel"
-									? "!border-2 !border-primary"
-									: "!border-2 !border-gray-300 text-gray-700 hover:!border-gray-400"
-							}
+									? "!border !border-primary"
+									: "!border !border-gray-300 text-gray-700 hover:!border-gray-400"
+							}`}
 						>
 							Excel
 						</Button>
@@ -190,11 +199,11 @@ const ReportsSection = () => {
 
 				{/* Filters */}
 				{(showDateFilters || showStatusFilter) && (
-					<div className="mb-6 p-4 bg-gray-50 rounded-xl">
-						<h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-							<FaCalendarAlt /> Filtros (Opcional)
+					<div className="mb-4 p-3 bg-gray-50 rounded-lg">
+						<h3 className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-2">
+							<FaCalendarAlt className="text-xs" /> Filtros (Opcional)
 						</h3>
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 							{showDateFilters && (
 								<>
 									<div>
@@ -204,14 +213,26 @@ const ReportsSection = () => {
 										>
 											Fecha Inicio
 										</label>
-										<input
+										<DatePicker
 											id="start_date"
-											type="date"
-											value={filters.startDate}
-											onChange={(e) =>
-												setFilters({ ...filters, startDate: e.target.value })
+											size="middle"
+											value={
+												filters.startDate
+													? dayjs(filters.startDate)
+													: null
 											}
-											className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+											onChange={(date: Dayjs | null) =>
+												setFilters({
+													...filters,
+													startDate: date ? date.format("YYYY-MM-DD") : "",
+												})
+											}
+											format="DD/MM/YYYY"
+											className="w-full"
+											placeholder="Seleccionar fecha"
+											disabledDate={(current) =>
+												current && current < dayjs().startOf("day")
+											}
 										/>
 									</div>
 									<div>
@@ -221,14 +242,28 @@ const ReportsSection = () => {
 										>
 											Fecha Fin
 										</label>
-										<input
+										<DatePicker
 											id="end_date"
-											type="date"
-											value={filters.endDate}
-											onChange={(e) =>
-												setFilters({ ...filters, endDate: e.target.value })
+											size="middle"
+											value={
+												filters.endDate ? dayjs(filters.endDate) : null
 											}
-											className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+											onChange={(date: Dayjs | null) =>
+												setFilters({
+													...filters,
+													endDate: date ? date.format("YYYY-MM-DD") : "",
+												})
+											}
+											format="DD/MM/YYYY"
+											className="w-full"
+											placeholder="Seleccionar fecha"
+											disabledDate={(current) => {
+												if (!filters.startDate) return false
+												return (
+													current != null &&
+													current < dayjs(filters.startDate).startOf("day")
+												)
+											}}
 										/>
 									</div>
 								</>
@@ -241,45 +276,52 @@ const ReportsSection = () => {
 									>
 										Estado
 									</label>
-									<select
+									<Select
 										id="status"
-										value={filters.status}
-										onChange={(e) =>
-											setFilters({ ...filters, status: e.target.value })
+										size="middle"
+										value={filters.status || undefined}
+										onChange={(value) =>
+											setFilters({ ...filters, status: value ?? "" })
 										}
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-									>
-										<option value="">Todos</option>
-										{selectedReport === "appointments" && (
-											<>
-												<option value="pending">Pendiente</option>
-												<option value="scheduled">Programada</option>
-												<option value="completed">Completada</option>
-												<option value="cancelled">Cancelada</option>
-											</>
-										)}
-										{selectedReport === "surgeries" && (
-											<>
-												<option value="Scheduled">Programada</option>
-												<option value="Completed">Completada</option>
-												<option value="Cancelled">Cancelada</option>
-											</>
-										)}
-										{selectedReport === "financial" && (
-											<>
-												<option value="completed">Completada</option>
-												<option value="scheduled">Programada</option>
-												<option value="Cancelled">Cancelada</option>
-											</>
-										)}
-										{selectedReport === "inventory" && (
-											<>
-												<option value="available">Stock Suficiente</option>
-												<option value="low stock">Stock Bajo (Alerta)</option>
-												<option value="out of stock">Agotado</option>
-											</>
-										)}
-									</select>
+										className="w-full"
+										placeholder="Todos"
+										allowClear
+										options={[
+											{ value: "", label: "Todos" },
+											...(selectedReport === "appointments"
+												? [
+														{ value: "pending", label: "Pendiente" },
+														{ value: "scheduled", label: "Programada" },
+														{ value: "completed", label: "Completada" },
+														{ value: "cancelled", label: "Cancelada" },
+													]
+												: selectedReport === "surgeries"
+													? [
+															{ value: "Scheduled", label: "Programada" },
+															{ value: "Completed", label: "Completada" },
+															{ value: "Cancelled", label: "Cancelada" },
+														]
+													: selectedReport === "financial"
+														? [
+																{ value: "completed", label: "Completada" },
+																{ value: "scheduled", label: "Programada" },
+																{ value: "Cancelled", label: "Cancelada" },
+															]
+														: selectedReport === "inventory"
+															? [
+																	{
+																		value: "available",
+																		label: "Stock Suficiente",
+																	},
+																	{
+																		value: "low stock",
+																		label: "Stock Bajo (Alerta)",
+																	},
+																	{ value: "out of stock", label: "Agotado" },
+																]
+															: []),
+										]}
+									/>
 								</div>
 							)}
 						</div>
@@ -289,12 +331,13 @@ const ReportsSection = () => {
 				{/* Generate Button */}
 				<Button
 					type="button"
+					size="middle"
 					onClick={handleGenerateReport}
 					disabled={loading}
 					loading={loading}
-					icon={<FaDownload className="w-5 h-5" />}
+					icon={<FaDownload className="w-4 h-4" />}
 					block
-					className="!px-6 !py-3 !rounded-xl"
+					className="!min-h-0 !px-4 !py-2 !rounded-lg !text-sm"
 				>
 					Generar y Descargar Reporte
 				</Button>

@@ -66,9 +66,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 				data-dashboard-sidebar
 				data-sidebar-closed={!isSidebarOpen ? "" : undefined}
 				className={`
-					fixed left-0 top-0 bottom-0 z-40 h-screen w-56 max-w-[75vw] transition-transform duration-300 ease-in-out
-					${isSidebarOpen ? "max-md:translate-x-0" : "max-md:-translate-x-full"}
-					md:relative md:inset-auto md:top-auto md:bottom-auto md:h-full md:min-h-0 md:translate-x-0 md:w-auto md:max-w-none
+					fixed left-0 top-0 bottom-0 z-40 h-screen max-w-[75vw] overflow-visible transition-all duration-300 ease-in-out
+					${isSidebarOpen ? "w-64 sm:w-72 max-md:translate-x-0" : "w-16 sm:w-20 max-md:-translate-x-full"}
+					md:relative md:inset-auto md:top-auto md:bottom-auto md:h-full md:min-h-0 md:translate-x-0 md:max-w-none
 				`}
 			>
 				<Sidebar
