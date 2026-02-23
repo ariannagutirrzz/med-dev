@@ -9,6 +9,7 @@ import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
 import { useAuth } from "../../auth"
+import { Pagination } from "antd"
 
 export default function MedicalRecords() {
 	// 2. ESTADOS (Iniciamos records vacío)
@@ -20,6 +21,9 @@ export default function MedicalRecords() {
 	const [records, setRecords] = useState<Patient[]>([])
 	const [searchTerm, setSearchTerm] = useState("")
 	const { user } = useAuth()
+	const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 8; // Número de pacientes por página
+
 
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
@@ -82,6 +86,16 @@ export default function MedicalRecords() {
 			record.document_id.toString().includes(search)
 		)
 	})
+
+	// Lógica de paginación
+const indexOfLastRecord = currentPage * pageSize;
+const indexOfFirstRecord = indexOfLastRecord - pageSize;
+const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+
+// IMPORTANTE: Resetear a la página 1 cuando el usuario busca algo
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm]);
 
 	// 6. VISTA DETALLE
 	if (view === "details" && selectedPatient) {
@@ -155,7 +169,7 @@ export default function MedicalRecords() {
 						</span>
 					</button>
 
-					{filteredRecords.map((record) => (
+					{currentRecords.map((record) => (
 						<div key={record.document_id} className="relative group">
 							<button
 								type="button"
@@ -181,7 +195,7 @@ export default function MedicalRecords() {
 								</div>
 
 								<div className="flex-1 space-y-4 w-full">
-									<div className="grid grid-cols-2 gap-4">
+									<div className="flex flex-col">
 										<div>
 											<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
 												Identificación
@@ -200,7 +214,7 @@ export default function MedicalRecords() {
 										</div>
 									</div>
 
-									<div className="pt-4 border-t border-gray-100 space-y-2.5">
+									<div className="border-t border-gray-100">
 										<p className="text-gray-500 text-[13px] flex items-center italic truncate">
 											<CiMail className="mr-3 text-primary w-5 h-5" />
 											{record.email}
@@ -212,7 +226,7 @@ export default function MedicalRecords() {
 									</div>
 								</div>
 
-								<div className="mt-4 pt-4 border-t border-gray-100 flex flex-col w-full">
+								<div className="mt-2 pt-2 border-t border-gray-100 flex flex-col w-full">
 									<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
 										Fecha de Nacimiento
 									</p>
@@ -245,6 +259,17 @@ export default function MedicalRecords() {
 						</div>
 					)}
 				</div>
+
+				<div className="flex justify-center mt-8 pb-4">
+    <Pagination
+        current={currentPage}
+        total={filteredRecords.length}
+        pageSize={pageSize}
+        onChange={(page) => setCurrentPage(page)}
+        showSizeChanger={false} // Para mantenerlo simple
+        className="custom-pagination"
+    />
+</div>
 			</div>
 
 			<PatientModalForm

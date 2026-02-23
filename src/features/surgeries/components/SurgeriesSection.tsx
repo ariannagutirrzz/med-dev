@@ -1,4 +1,4 @@
-import { Input, Select } from "antd"
+import { Input, Pagination, Select } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import {
 	FaClock,
@@ -36,6 +36,14 @@ const SurgeriesSection = () => {
 	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
+	// 1. Definir estados (ajusta pageSize a 5 o 6 por el tamaño de las cards)
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 5;
+
+// 2. Resetear página al filtrar
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm, statusFilter, dateFilter]);
 
 	const loadSurgeries = useCallback(async () => {
 		setLoading(true)
@@ -191,6 +199,13 @@ const SurgeriesSection = () => {
 		return matchesSearch && matchesStatus && matchesDate
 	})
 
+	// Lógica de paginación
+const indexOfLastRecord = currentPage * pageSize;
+const indexOfFirstRecord = indexOfLastRecord - pageSize;
+
+// Estas son las cirugías que se renderizarán en el .map()
+const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLastRecord);
+
 	// Calcular estadísticas
 	const stats = {
 		available: surgeries.filter((s) => s.status?.toLowerCase() === "scheduled")
@@ -338,7 +353,7 @@ const SurgeriesSection = () => {
 					</div>
 				) : (
 					<div className="space-y-4">
-						{filteredSurgeries.map((surgery) => {
+						{currentSurgeries.map((surgery) => {
 							const { date, time } = formatDateTime(surgery.surgery_date)
 							const patientName =
 								`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.trim()
@@ -427,8 +442,20 @@ const SurgeriesSection = () => {
 									</div>
 								</div>
 							)
+							
 						})}
+						<div className="flex justify-center mt-8 pt-4 border-t border-gray-100">
+        <Pagination
+            current={currentPage}
+            total={filteredSurgeries.length}
+            pageSize={pageSize}
+            onChange={(page) => setCurrentPage(page)}
+            showSizeChanger={false}
+            responsive={true}
+        />
+    </div>
 					</div>
+					
 				)}
 			</div>
 

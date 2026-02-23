@@ -7,6 +7,7 @@ import { ConfirmModal } from "../../../shared"
 import CreateSupplyModal from "./CreateSupplyModal" // Asegúrate de importarlo
 import InventoryHeader from "./InventoryHeader"
 import InventoryRow from "./InventoryRow"
+import { Pagination } from "antd"
 
 const Inventory = () => {
 	const [supplies, setSupplies] = useState<Supply[]>([])
@@ -19,6 +20,14 @@ const Inventory = () => {
 		null,
 	)
 	const [supplyToEdit, setSupplyToEdit] = useState<Supply | null>(null)
+	// Estados de paginación
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 10;
+
+// Resetear página al filtrar (Busqueda o Categoría)
+useEffect(() => {
+    setCurrentPage(1);
+}, [searchTerm, categoryFilter]);
 
 	const openEditModal = (supply: Supply) => {
 		setSupplyToEdit(supply)
@@ -78,6 +87,12 @@ const Inventory = () => {
 		return matchesSearch && matchesCategory
 	})
 
+	const indexOfLastItem = currentPage * pageSize;
+const indexOfFirstItem = indexOfLastItem - pageSize;
+
+// Esta es la lista que usaremos para el .map()
+const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem);
+
 	return (
 		<div className="p-6 space-y-6">
 			<div className="mb-6">
@@ -129,8 +144,8 @@ const Inventory = () => {
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-gray-50">
-								{filteredSupplies.length > 0 ? (
-									filteredSupplies.map((item) => (
+								{currentItems.length > 0 ? (
+									currentItems.map((item) => (
 										<InventoryRow
 											key={item.id}
 											item={item}
@@ -156,6 +171,16 @@ const Inventory = () => {
 						</table>
 					)}
 				</div>
+				<div className="p-4 border-t border-gray-100 flex justify-center bg-gray-50/50">
+                <Pagination
+                    current={currentPage}
+                    total={filteredSupplies.length}
+                    pageSize={pageSize}
+                    onChange={(page) => setCurrentPage(page)}
+                    showSizeChanger={false}
+                    size="small"
+                />
+            </div>
 			</div>
 
 			<ConfirmModal
