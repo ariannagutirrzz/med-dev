@@ -88,6 +88,29 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 	const [formData, setFormData] = useState<AppointmentFormData>(initialValues)
 
+	// Preparamos las opciones antes del JSX
+	const patientOptions = patients.map((p) => ({
+		value: p.document_id,
+		label: `${p.first_name} ${p.last_name} - ${p.document_id}`,
+	}))
+
+	const doctorOptions = doctors.map((doctor) => ({
+		value: doctor.document_id,
+		label: `${doctor.name} - ${doctor.document_id}`,
+	}))
+
+	const serviceOptions = services.map((s) => ({
+		value: s.id,
+		label: `${s.service_type.name} - $${formatPrice(s.price_usd)} USD`,
+	}))
+
+	const statusOptions = [
+		{ value: "pending", label: "Pendiente" },
+		{ value: "scheduled", label: "Programada" },
+		{ value: "cancelled", label: "Cancelada" },
+		{ value: "completed", label: "Completada" },
+	]
+
 	const loadDoctorSchedule = useCallback(async (doctorId: string) => {
 		try {
 			const [availRes, unavailRes] = await Promise.all([
@@ -340,27 +363,26 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									Paciente *
 								</label>
 								<FaUser className="absolute left-3 bottom-3 text-gray-400" />
-								<select
+								<Select
+									showSearch // Permite escribir para filtrar
 									id="patient_id"
-									value={formData.patient_id}
-									required
+									placeholder="Seleccionar paciente..."
+									loading={loadingData}
 									disabled={loadingData}
-									className={inputClass}
-									onChange={(e) =>
-										setFormData({ ...formData, patient_id: e.target.value })
+									value={formData.patient_id || undefined} // AntD prefiere undefined sobre "" para mostrar el placeholder
+									className="w-full" // Usamos Tailwind para el ancho
+									style={{ height: "42px" }} // Altura para que coincida con tus otros inputs
+									onChange={(value) =>
+										setFormData({ ...formData, patient_id: value })
 									}
-								>
-									<option value="">Seleccionar paciente...</option>
-									{patients.map((patient) => (
-										<option
-											key={patient.document_id}
-											value={patient.document_id}
-										>
-											{patient.first_name} {patient.last_name} -{" "}
-											{patient.document_id}
-										</option>
-									))}
-								</select>
+									options={patientOptions}
+									// Lógica de búsqueda: busca tanto en nombre como en documento
+									filterOption={(input, option) =>
+										(option?.label ?? "")
+											.toLowerCase()
+											.includes(input.toLowerCase())
+									}
+								/>
 							</div>
 						)}
 
@@ -374,36 +396,44 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									Médico *
 								</label>
 								<FaUserMd className="absolute left-3 bottom-3 text-gray-400" />
-								<select
+								<Select
+									showSearch
 									id="doctor_id"
-									value={formData.doctor_id}
-									required={!isDoctor}
+									placeholder="Seleccionar médico..."
+									loading={loadingData}
 									disabled={loadingData}
-									className={inputClass}
-									onChange={(e) => {
-										const doctorId = e.target.value
+									value={formData.doctor_id || undefined}
+									className="w-full"
+									style={{ height: "42px" }}
+									options={doctorOptions}
+									// Lógica para filtrar mientras escribes
+									filterOption={(input, option) =>
+										(option?.label ?? "")
+											.toLowerCase()
+											.includes(input.toLowerCase())
+									}
+									onChange={(value) => {
+										const doctorId = value
 										const currentDate =
-											formData.appointment_date.split("T")[0] || ""
+											formData.appointment_date?.split("T")[0] || ""
+
+										// Actualizamos estado
 										setFormData({
 											...formData,
 											doctor_id: doctorId,
 											service_id: null,
 										})
+
+										// Disparamos efectos secundarios
 										loadServices(doctorId)
 										setSelectedService(null)
-										// Cargar slots disponibles si hay fecha seleccionada
+
+										// Si ya hay una fecha, refrescamos los horarios disponibles del nuevo médico
 										if (currentDate) {
 											loadAvailableTimeSlots(doctorId, currentDate)
 										}
 									}}
-								>
-									<option value="">Seleccionar médico...</option>
-									{doctors.map((doctor) => (
-										<option key={doctor.document_id} value={doctor.document_id}>
-											{doctor.name} - {doctor.document_id}
-										</option>
-									))}
-								</select>
+								/>
 							</div>
 						)}
 
@@ -416,27 +446,31 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								>
 									Servicio (Opcional)
 								</label>
-								<select
+								<Select
 									id="service_id"
-									value={formData.service_id?.toString() || ""}
-									className={inputClass}
-									onChange={(e) => {
-										const serviceId = e.target.value
-											? parseInt(e.target.value, 10)
-											: null
+									placeholder="Seleccionar servicio..."
+									value={formData.service_id || undefined} // AntD usa undefined para resetear al placeholder
+									className="w-full"
+									style={{ height: "42px" }}
+									options={serviceOptions}
+									onChange={(value) => {
+										// value ya viene como número o undefined, no necesitas parseInt
+										const serviceId = value || null
 										const service = services.find((s) => s.id === serviceId)
+
 										setFormData({ ...formData, service_id: serviceId })
 										setSelectedService(service || null)
 									}}
-								>
-									<option value="">Seleccionar servicio...</option>
-									{services.map((service) => (
-										<option key={service.id} value={service.id}>
-											{service.service_type.name} - $
-											{formatPrice(service.price_usd)} USD
-										</option>
-									))}
-								</select>
+									// Si quieres que el usuario pueda borrar la selección fácilmente
+									allowClear
+									// Para que herede el estilo de búsqueda si la lista es larga
+									showSearch
+									filterOption={(input, option) =>
+										(option?.label ?? "")
+											.toLowerCase()
+											.includes(input.toLowerCase())
+									}
+								/>
 								{selectedService && (
 									<div className="mt-2 p-3 bg-blue-50 rounded-lg">
 										<div className="text-sm">
@@ -581,22 +615,21 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 								>
 									Estado
 								</label>
-								<select
+								<Select
 									id="status"
 									value={formData.status}
-									className={inputClass}
-									onChange={(e) =>
+									className="w-full"
+									style={{ height: "42px" }}
+									options={statusOptions}
+									onChange={(value) =>
 										setFormData({
 											...formData,
-											status: e.target.value as AppointmentFormData["status"],
+											status: value, // AntD ya infiere el tipo si usas TypeScript correctamente
 										})
 									}
-								>
-									<option value="pending">Pendiente</option>
-									<option value="scheduled">Programada</option>
-									<option value="cancelled">Cancelada</option>
-									<option value="completed">Completada</option>
-								</select>
+									// Opcional: añade colores de fondo según el estado elegido
+									dropdownStyle={{ borderRadius: "8px" }}
+								/>
 							</div>
 						)}
 

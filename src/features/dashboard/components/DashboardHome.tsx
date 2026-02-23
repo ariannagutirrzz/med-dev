@@ -47,10 +47,14 @@ const DashboardHome = () => {
 				userRole={user?.role}
 			/>
 
-			{/* Grid principal: bienvenida + sistema cambiario */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6">
+			{/* Grid principal: bienvenida + sistema cambiario (solo Médico y Admin; Paciente no ve tasa ni sistema cambiario) */}
+			<div
+				className={`grid gap-3 sm:gap-4 md:gap-6 mt-3 sm:mt-4 md:mt-6 ${
+					user?.role === "Paciente" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
+				}`}
+			>
 				<WelcomeSection userName={user?.name} />
-				<CurrencyCard />
+				{user?.role !== "Paciente" && <CurrencyCard />}
 			</div>
 
 			{/* Grid de estadísticas y calendario - Responsive (misma altura en la fila) */}
