@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Patient, PatientFormData } from "../../../shared"
-import { ConfirmModal, PhoneInput } from "../../../shared"
+import { Button, ConfirmModal, PhoneInput } from "../../../shared"
 import {
 	isValidPhone,
 	parsePhoneToE164,
@@ -225,13 +225,13 @@ const PatientModalForm = ({
 								</p>
 							</div>
 						</div>
-						<button
+						<Button
 							type="button"
+							variant="text"
 							onClick={onClose}
-							className="hover:bg-gray-200 p-2 rounded-full text-gray-400 cursor-pointer transition-colors"
-						>
-							<FaTimes />
-						</button>
+							icon={<FaTimes />}
+							className="!p-2 rounded-full text-gray-400 hover:!bg-gray-200 hover:!text-gray-600"
+						/>
 					</div>
 
 					<form onSubmit={handleSubmit}>
@@ -471,13 +471,13 @@ const PatientModalForm = ({
 													className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 text-sm font-medium animate-in fade-in slide-in-from-left-2"
 												>
 													{allergy}
-													<button
+													<Button
 														type="button"
+														variant="text"
 														onClick={() => removeAllergy(index)}
-														className="hover:text-red-900 transition-colors"
-													>
-														<FaTimes size={12} />
-													</button>
+														icon={<FaTimes size={12} />}
+														className="!p-0 !min-h-0 hover:!text-red-900"
+													/>
 												</div>
 											))
 										)}
@@ -507,38 +507,39 @@ const PatientModalForm = ({
 							{/* Botón de eliminar (sólo si se está editando) */}
 							<div>
 								{patient && (
-									<button
+									<Button
 										type="button"
+										variant="default"
+										danger
 										onClick={() => setShowDeleteConfirm(true)}
-										className="px-4 py-2 text-red-500 font-bold hover:bg-red-50 rounded-xl transition-all flex items-center gap-2 group cursor-pointer"
+										icon={<FaTrash />}
+										className="group"
 									>
-										<FaTrash className="group-hover:shake" />
-										<span>Eliminar Paciente</span>
-									</button>
+										Eliminar Paciente
+									</Button>
 								)}
 							</div>
 
 							<div className="flex gap-3">
-								<button
+								<Button
 									type="button"
+									variant="default"
 									onClick={onClose}
 									disabled={loading}
-									className="px-6 py-3 cursor-pointer bg-white border-2 border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-100 transition-all disabled:opacity-50"
+									className="!border-2 !border-gray-200 !text-gray-500"
 								>
 									Cancelar
-								</button>
-								<button
+								</Button>
+								<Button
 									type="submit"
+									variant="primary"
+									loading={loading}
 									disabled={loading}
-									className="px-8 py-3 bg-primary cursor-pointer text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-lg flex items-center gap-2 disabled:bg-primary/50 disabled:cursor-wait"
+									icon={loading ? undefined : <FaSave />}
+									className="!shadow-lg"
 								>
-									{loading ? (
-										<div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-									) : (
-										<FaSave />
-									)}
 									{patient ? "Actualizar Paciente" : "Registrar Paciente"}
-								</button>
+								</Button>
 							</div>
 						</div>
 					</form>

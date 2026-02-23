@@ -159,13 +159,23 @@ export default function MedicalRecords() {
 
 					{filteredRecords.map((record) => (
 						<div key={record.document_id} className="relative group">
-							<button
-								type="button"
+							{/* Card is a div so the edit Button can live inside without nested buttons */}
+							{/* biome-ignore lint/a11y/useSemanticElements: card contains edit Button; nested <button> is invalid */}
+							<div
+								role="button"
+								tabIndex={0}
 								onClick={() => {
 									setSelectedPatient(record)
 									setView("details")
 								}}
-								className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden"
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault()
+										setSelectedPatient(record)
+										setView("details")
+									}
+								}}
+								className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden relative"
 							>
 								<div className="flex justify-between items-start mb-6 w-full">
 									<h4 className="text-xl font-black text-gray-800 leading-tight group-hover:text-primary transition-colors">
@@ -214,29 +224,33 @@ export default function MedicalRecords() {
 									</div>
 								</div>
 
-								<div className="mt-4 pt-4 border-t border-gray-100 flex flex-col w-full">
-									<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
-										Fecha de Nacimiento
-									</p>
-									<p className="text-xs text-gray-600 flex items-center font-bold">
-										<CiCalendar className="mr-2 text-primary w-5 h-5" />
-										{record.birthdate.toLocaleDateString("es-ES", {
-											day: "2-digit",
-											month: "long",
-											year: "numeric",
-										})}
-									</p>
+								<div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-end w-full gap-3">
+									<div className="flex flex-col min-w-0">
+										<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
+											Fecha de Nacimiento
+										</p>
+										<p className="text-xs text-gray-600 flex items-center font-bold">
+											<CiCalendar className="mr-2 text-primary w-5 h-5 shrink-0" />
+											{record.birthdate.toLocaleDateString("es-ES", {
+												day: "2-digit",
+												month: "long",
+												year: "numeric",
+											})}
+										</p>
+									</div>
+									<Button
+										type="button"
+										variant="text"
+										onClick={(e) => {
+											e.stopPropagation()
+											handleEditPatient(e, record)
+										}}
+										icon={<LuPencilLine className="h-6 w-6" />}
+										className="!p-2 !min-w-0 shrink-0 bg-white border border-gray-100 text-gray-400 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl shadow-md"
+										title="Editar información del paciente"
+									/>
 								</div>
-							</button>
-
-							<Button
-								type="button"
-								variant="text"
-								onClick={(e) => handleEditPatient(e, record)}
-								icon={<LuPencilLine className="h-6 w-6" />}
-								className="absolute bottom-7 right-4 !p-2 !min-w-0 bg-white border border-gray-100 text-gray-400 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl z-10 shadow-md"
-								title="Editar información del paciente"
-							/>
+							</div>
 						</div>
 					))}
 
