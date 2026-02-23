@@ -11,6 +11,7 @@ import doctorUnavailabilityRoutes from "./routes/doctorUnavailabilityRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import notificationRoutes from "./routes/notificationRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
+import demandPredictionRoutes from "./routes/demandPredictionRoutes.js"
 import reportRoutes from "./routes/reportRoutes.js"
 import serviceRoutes from "./routes/serviceRoutes.js"
 import settingsRoutes from "./routes/settingsRoutes.js"
@@ -50,6 +51,7 @@ app.use("/api/currency", currencyRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/services", serviceRoutes)
 app.use("/api/reports", reportRoutes)
+app.use("/api/demand-prediction", demandPredictionRoutes)
 app.use("/api/doctor-availability", doctorAvailabilityRoutes)
 app.use("/api/doctor-unavailability", doctorUnavailabilityRoutes)
 
