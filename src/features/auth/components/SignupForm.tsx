@@ -8,6 +8,7 @@ import {
 	isValidPhone,
 	parsePhoneToE164,
 } from "../../../shared/utils/phoneFormat"
+import { Option } from "antd/es/mentions"
 
 export interface SignupFormData {
 	name: string
@@ -66,11 +67,9 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	}
 
 	const validateDocumentId = (docId: string): boolean => {
-		// ^V- : Empieza con V- (2 chars)
-		// [0-9]{4,8} : Seguido de 4 a 8 números
-		// $ : Fin de la cadena. Total: 6 a 10 caracteres.
-		return /^V-[0-9]{4,8}$/.test(docId)
-	}
+    // Acepta V-, J- o E- seguido de 4 a 8 números
+    return /^[VJE]-[0-9]{4,8}$/.test(docId);
+}
 
 	const addAllergy = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && allergyInput.trim() !== "") {
@@ -231,52 +230,58 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				</div>
 
 				{/* Document ID */}
-				<div className="flex flex-col gap-1">
-					<label
-						htmlFor="document_id"
-						className="text-sm font-semibold text-gray-700 ml-1"
-					>
-						Cédula/Documento de Identidad{" "}
-						<span className="text-red-500">*</span>
-					</label>
-					<Input
-						id="document_id"
-						name="document_id"
-						size="large"
-						placeholder="12345678"
-						className="rounded-xl h-12"
-						status={errors.document_id ? "error" : ""}
-						// maxLength de 8 porque el prefijo "V-" no cuenta para el valor del input físico
-						maxLength={8}
-						value={formData.document_id.replace(/^V-/, "")}
-						prefix={
-							<span className="text-gray-400 font-medium border-r pr-2 mr-1">
-								V-
-							</span>
-						}
-						onChange={(e) => {
-							// 1. Solo números y máximo 8 dígitos (para que el total con V- sea 10)
-							const onlyNumbers = e.target.value
-								.replace(/[^\d]/g, "")
-								.slice(0, 8)
-
-							// 2. Actualizamos el estado
-							const syntheticEvent = {
-								target: {
-									name: "document_id",
-									value: `V-${onlyNumbers}`,
-								},
-							} as React.ChangeEvent<HTMLInputElement>
-
-							handleChange("document_id")(syntheticEvent)
-						}}
-					/>
-					{errors.document_id && (
-						<span className="text-red-500 text-xs ml-1 mt-1">
-							{errors.document_id}
-						</span>
-					)}
-				</div>
+<div className="flex flex-col gap-1">
+    <label htmlFor="document_id" className="text-sm font-semibold text-gray-700 ml-1">
+        Documento de Identidad <span className="text-red-500">*</span>
+    </label>
+    <Input
+        id="document_id"
+        name="document_id"
+        size="large"
+        placeholder="12345678"
+        className="rounded-xl h-12 overflow-hidden"
+        status={errors.document_id ? "error" : ""}
+        maxLength={8}
+        // Extraemos solo los números para mostrar en el input
+        value={formData.document_id.split('-')[1] || ""}
+        addonBefore={
+            <Select
+                // Extraemos el prefijo del estado (V, J o E). Por defecto "V"
+                value={formData.document_id.split('-')[0] || "V"}
+                className="w-16"
+                onChange={(prefix) => {
+                    const currentNumbers = formData.document_id.split('-')[1] || "";
+                    handleChange("document_id")({
+                        target: {
+                            name: "document_id",
+                            value: `${prefix}-${currentNumbers}`,
+                        },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                }}
+            >
+                <Option value="V">V-</Option>
+                <Option value="J">J-</Option>
+                <Option value="E">E-</Option>
+            </Select>
+        }
+        onChange={(e) => {
+            const onlyNumbers = e.target.value.replace(/[^\d]/g, "").slice(0, 8);
+            const currentPrefix = formData.document_id.split('-')[0] || "V";
+            
+            handleChange("document_id")({
+                target: {
+                    name: "document_id",
+                    value: `${currentPrefix}-${onlyNumbers}`,
+                },
+            } as React.ChangeEvent<HTMLInputElement>);
+        }}
+    />
+    {errors.document_id && (
+        <span className="text-red-500 text-xs ml-1 mt-1">
+            {errors.document_id}
+        </span>
+    )}
+</div>
 				{/* Email */}
 				<div className="flex flex-col gap-1">
 					<label
