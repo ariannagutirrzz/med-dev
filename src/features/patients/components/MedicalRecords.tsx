@@ -102,33 +102,29 @@ useEffect(() => {
 		return (
 			<div className="p-6">
 				<div className="animate-in fade-in duration-300">
-					<div className="flex justify-between items-center mb-6">
-						<div className="flex items-center gap-4">
-							<h3 className="text-xl font-bold text-gray-800">
-								Historial:{" "}
-								<span className="text-primary">
-									{selectedPatient.first_name} {selectedPatient.last_name}
-								</span>
-							</h3>
-							<Button
-								type="button"
-								variant="default"
-								onClick={handleBack}
-								icon={<LuArrowLeft className="w-5 h-5" />}
-								className="!font-bold !px-4 !py-2 !rounded-xl border-primary text-primary hover:!bg-primary/10"
-							>
-								Volver
-							</Button>
-						</div>
+					{/* Header: Volver a la izquierda, acción principal a la derecha */}
+					<div className="flex justify-between items-center gap-4 mb-2">
+						<Button
+							type="button"
+							variant="default"
+							onClick={handleBack}
+							icon={<LuArrowLeft className="w-4 h-4" />}
+							className="!border-gray-300 !text-gray-700 hover:!bg-gray-50 !font-medium !rounded-lg"
+						>
+							Volver
+						</Button>
 						<Button
 							type="button"
 							onClick={() => setNewEvolution(true)}
-							icon={<LuPlus className="w-5 h-5" />}
-							className="!px-6 !py-3 !rounded-2xl !font-bold !text-sm"
+							icon={<LuPlus className="w-4 h-4" />}
+							className="!px-5 !py-2.5 !rounded-lg !font-medium !text-sm"
 						>
-							REGISTRAR EVOLUCIÓN
+							Registrar evolución
 						</Button>
 					</div>
+					<p className="text-sm text-gray-500 mb-6">
+						Paciente: {selectedPatient.first_name} {selectedPatient.last_name}
+					</p>
 
 					<ClinicalEvolution
 						patientName={`${selectedPatient.first_name} ${selectedPatient.last_name}`}
@@ -251,16 +247,20 @@ useEffect(() => {
 										})}
 									</p>
 								</div>
-							</button>
 
-							<button
-								type="button"
-								onClick={(e) => handleEditPatient(e, record)}
-								className="absolute bottom-7 right-4 p-2 bg-white border border-gray-100 text-gray-400 hover:text-primary hover:border-primary hover:shadow-lg hover:scale-110 rounded-2xl transition-all cursor-pointer z-10 shadow-md"
-								title="Editar información del paciente"
-							>
-								<LuPencilLine className="h-6 w-6" />
-							</button>
+								<Button
+									type="button"
+									variant="text"
+									onClick={(e) => {
+										e.stopPropagation()
+										handleEditPatient(e, record)
+									}}
+									icon={<LuPencilLine className="h-6 w-6 text-gray-600" />}
+									className="!p-2 !min-w-0 !bg-white !border !border-gray-200 text-gray-600 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl z-10 shadow-md"
+									style={{ position: "absolute", right: "1.5rem", bottom: "1.5rem", left: "auto" }}
+									title="Editar información del paciente"
+								/>
+							</div>
 						</div>
 					))}
 

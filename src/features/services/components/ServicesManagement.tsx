@@ -143,25 +143,26 @@ const ServicesManagement: React.FC = () => {
 
 	return (
 		<div className="p-6">
-			<div className="mb-6 flex justify-between items-center">
+			<div className="mb-4 flex justify-between items-center">
 				<div>
-					<h1 className="text-3xl font-bold text-gray-800">Gestión de Servicios</h1>
-					<p className="text-gray-600 mt-2">
+					<h1 className="text-2xl font-bold text-gray-800">Gestión de Servicios</h1>
+					<p className="text-sm text-gray-600 mt-1">
 						Administra tus servicios y precios
 					</p>
 				</div>
 				<Button
 					type="button"
+					size="middle"
 					onClick={() => handleOpenModal()}
-					icon={<FaPlus />}
-					className="!px-4 !py-2 !rounded-lg"
+					icon={<FaPlus className="w-4 h-4" />}
+					className="!min-h-0 !px-3 !py-2 !rounded-lg !text-sm"
 				>
 					Agregar Servicio
 				</Button>
 			</div>
 
 			{/* Services List */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 				{services.map((service) => {
 					const priceBS = getPriceInBS(service.price_usd)
 					const exchangeRate =
@@ -172,37 +173,37 @@ const ServicesManagement: React.FC = () => {
 					return (
 						<div
 							key={service.id}
-							className={`bg-white rounded-xl shadow-lg p-6 ${
+							className={`bg-white rounded-lg border border-gray-200 shadow p-4 ${
 								!service.is_active ? "opacity-60" : ""
 							}`}
 						>
-							<div className="flex justify-between items-start mb-4">
+							<div className="flex justify-between items-start mb-3">
 								<div>
-									<h3 className="text-lg font-semibold text-gray-800">
+									<h3 className="text-base font-semibold text-gray-800">
 										{service.service_type.name}
 									</h3>
 									{service.service_type.description && (
-										<p className="text-sm text-gray-600 mt-1">
+										<p className="text-xs text-gray-600 mt-0.5">
 											{service.service_type.description}
 										</p>
 									)}
 								</div>
 								{!service.is_active && (
-									<span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded">
+									<span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">
 										Inactivo
 									</span>
 								)}
 							</div>
 
-							<div className="space-y-2 mb-4">
-								<div className="flex items-center justify-between">
+							<div className="space-y-1.5 mb-3">
+								<div className="flex items-center justify-between text-sm">
 									<span className="text-gray-600">Precio USD:</span>
 									<span className="font-semibold text-primary">
 										${formatPrice(service.price_usd)}
 									</span>
 								</div>
 								{exchangeRate > 0 && (
-									<div className="flex items-center justify-between">
+									<div className="flex items-center justify-between text-sm">
 										<span className="text-gray-600">Precio BS:</span>
 										<span className="font-semibold text-green-600">
 											Bs. {formatPrice(priceBS)}
@@ -210,7 +211,7 @@ const ServicesManagement: React.FC = () => {
 									</div>
 								)}
 								{exchangeRate > 0 && (
-									<div className="text-xs text-gray-500 pt-2 border-t">
+									<div className="text-xs text-gray-500 pt-1.5 border-t border-gray-100">
 										Tasa: {formatPrice(exchangeRate)} Bs/$
 									</div>
 								)}
@@ -219,18 +220,20 @@ const ServicesManagement: React.FC = () => {
 							<div className="flex gap-2">
 								<Button
 									type="button"
+									size="middle"
 									onClick={() => handleOpenModal(service)}
-									icon={<FaEdit />}
-									className="flex-1 !px-3 !py-2 !rounded-lg bg-blue-500 border-0 text-white hover:!bg-blue-600"
+									icon={<FaEdit className="w-3.5 h-3.5" />}
+									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm bg-blue-500 border-0 text-white hover:!bg-blue-600"
 								>
 									Editar
 								</Button>
 								<Button
 									type="button"
+									size="middle"
 									danger
 									onClick={() => handleDelete(service.id)}
-									icon={<FaTrash />}
-									className="flex-1 !px-3 !py-2 !rounded-lg"
+									icon={<FaTrash className="w-3.5 h-3.5" />}
+									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm"
 								>
 									Eliminar
 								</Button>
@@ -241,10 +244,10 @@ const ServicesManagement: React.FC = () => {
 			</div>
 
 			{services.length === 0 && (
-				<div className="text-center py-12 bg-white rounded-xl shadow-lg">
-					<FaDollarSign className="text-6xl text-gray-300 mx-auto mb-4" />
-					<p className="text-gray-600 text-lg">No tienes servicios configurados</p>
-					<p className="text-gray-500 text-sm mt-2">
+				<div className="text-center py-8 bg-white rounded-lg border border-gray-200">
+					<FaDollarSign className="text-4xl text-gray-300 mx-auto mb-3" />
+					<p className="text-gray-600 text-base">No tienes servicios configurados</p>
+					<p className="text-gray-500 text-sm mt-1">
 						Agrega tu primer servicio para comenzar
 					</p>
 				</div>
@@ -252,55 +255,58 @@ const ServicesManagement: React.FC = () => {
 
 			{/* Modal */}
 			{showModal && (
-				<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-					<div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-						<h2 className="text-2xl font-bold text-gray-800 mb-4">
+				<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+					<div className="bg-white rounded-xl shadow-xl border border-gray-200 p-5 w-full max-w-sm">
+						<h2 className="text-lg font-bold text-gray-800 mb-3">
 							{editingService ? "Editar Servicio" : "Nuevo Servicio"}
 						</h2>
 
-						<form onSubmit={handleSubmit} className="space-y-4">
+						<form onSubmit={handleSubmit} className="space-y-3">
 							{!editingService && (
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
+									<label htmlFor="service_name" className="block text-xs font-medium text-gray-700 mb-1">
 										Nombre del Tratamiento/Servicio *
 									</label>
 									<input
+										id="service_name"
 										type="text"
 										value={formData.service_name}
 										onChange={(e) =>
 											setFormData({ ...formData, service_name: e.target.value })
 										}
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-										placeholder="Ej: Consulta, Toracoscopia, Biopsia de pleura..."
+										className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+										placeholder="Ej: Consulta, Toracoscopia..."
 										required
 									/>
 									<p className="text-xs text-gray-500 mt-1">
-										Escribe el nombre del tratamiento o servicio que deseas agregar
+										Nombre del tratamiento o servicio
 									</p>
 								</div>
 							)}
 							{editingService && (
 								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-2">
+									<label htmlFor="service_name_disabled" className="block text-xs font-medium text-gray-700 mb-1">
 										Nombre del Servicio
 									</label>
 									<input
+										id="service_name_disabled"
 										type="text"
 										value={formData.service_name}
 										disabled
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+										className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
 									/>
 									<p className="text-xs text-gray-500 mt-1">
-										El nombre del servicio no se puede modificar
+										El nombre no se puede modificar
 									</p>
 								</div>
 							)}
 
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label htmlFor="price_usd" className="block text-xs font-medium text-gray-700 mb-1">
 									Precio (USD)
 								</label>
 								<input
+									id="price_usd"
 									type="number"
 									step="0.01"
 									min="0"
@@ -308,12 +314,12 @@ const ServicesManagement: React.FC = () => {
 									onChange={(e) =>
 										setFormData({ ...formData, price_usd: e.target.value })
 									}
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+									className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 									required
 								/>
 							</div>
 
-							<div className="flex items-center">
+							<div className="flex items-center gap-3">
 								<input
 									type="checkbox"
 									id="is_active"
@@ -321,25 +327,27 @@ const ServicesManagement: React.FC = () => {
 									onChange={(e) =>
 										setFormData({ ...formData, is_active: e.target.checked })
 									}
-									className="mr-2"
+									className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
 								/>
-								<label htmlFor="is_active" className="text-sm text-gray-700">
+								<label htmlFor="is_active" className="text-sm text-gray-700 cursor-pointer">
 									Servicio activo
 								</label>
 							</div>
 
-							<div className="flex gap-3 pt-4">
+							<div className="flex gap-2 pt-3">
 								<Button
 									type="button"
+									size="middle"
 									variant="default"
 									onClick={handleCloseModal}
-									className="flex-1 !bg-gray-200 !text-gray-700 border-0 hover:!bg-gray-300 !px-4 !py-2 !rounded-lg"
+									className="flex-1 !min-h-0 !bg-gray-100 !text-gray-700 border-0 hover:!bg-gray-200 !px-3 !py-2 !rounded-lg !text-sm"
 								>
 									Cancelar
 								</Button>
 								<Button
 									type="submit"
-									className="flex-1 !px-4 !py-2 !rounded-lg"
+									size="middle"
+									className="flex-1 !min-h-0 !px-3 !py-2 !rounded-lg !text-sm"
 								>
 									{editingService ? "Actualizar" : "Crear"}
 								</Button>
