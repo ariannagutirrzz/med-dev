@@ -112,7 +112,7 @@ const DashboardPage: React.FC = () => {
 			label: "Reportes",
 			icon: <FaChartBar className="w-5 h-5" />,
 			path: "/dashboard/reportes",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"], // Solo médicos y secretaria
 		},
 		{
 			id: "ai",
