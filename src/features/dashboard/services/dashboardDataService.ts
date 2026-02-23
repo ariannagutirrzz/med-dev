@@ -1,5 +1,6 @@
-import type { Appointment, Patient, Surgery } from "../../../shared"
+import type { Appointment, Patient, Supply, Surgery } from "../../../shared"
 import { getFilteredAppointments } from "../../appointments"
+import { getLowStockSupplies } from "../../inventory"
 import { getDoctorPatients } from "../../patients"
 import { getSurgeries } from "../../surgeries"
 import type { DashboardStats } from "../types/dashboard.types"
@@ -58,6 +59,17 @@ export const fetchDashboardData = async (
 		}
 	}
 
+	// Fetch supplies (only for doctors)
+	let supplies = 0
+	if (userRole === "Médico") {
+		try {
+			const suppliesData = await getLowStockSupplies()
+			supplies = suppliesData.count
+		} catch (error) {
+			console.error("Error cargando cirugías:", error)
+		}
+	}
+
 	// Calculate stats
 	const appointmentsToday = appointments.filter((apt) => {
 		const aptDate = new Date(apt.appointment_date)
@@ -73,6 +85,7 @@ export const fetchDashboardData = async (
 		appointmentsToday,
 		totalAppointments: appointments.length,
 		activePatients: patients.length,
+		totalLowStockSupplies: supplies,
 		totalSurgeries: surgeries.length,
 		surgeriesToday,
 	}
