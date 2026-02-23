@@ -7,13 +7,13 @@ interface SelectionButtonsProps {
 
 const SelectionButtons = ({ isLogin, onAuthToggle }: SelectionButtonsProps) => {
 	return (
-		<div className="flex gap-2 rounded-xl p-1.5 bg-muted/30 max-w-xl mx-auto shadow-md border border-gray-200/80">
+		<div className="flex gap-3 rounded-xl p-2 bg-muted/30 w-full max-w-3xl mx-auto shadow-md border border-gray-200/80">
 			<Button
 				type="button"
 				variant={isLogin ? "primary" : "default"}
 				onClick={() => onAuthToggle(true)}
 				block
-				className="rounded-lg py-4 px-6 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg min-h-14"
+				className="rounded-lg py-4 px-8 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg min-h-12"
 			>
 				Iniciar Sesión
 			</Button>
@@ -22,7 +22,7 @@ const SelectionButtons = ({ isLogin, onAuthToggle }: SelectionButtonsProps) => {
 				variant={!isLogin ? "primary" : "default"}
 				onClick={() => onAuthToggle(false)}
 				block
-				className="rounded-lg py-4 px-6 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg text-muted hover:text-text min-h-14"
+				className="rounded-lg py-4 px-8 font-semibold text-base whitespace-nowrap border-0 shadow-none hover:shadow-lg text-muted hover:text-text min-h-12"
 			>
 				Registrarse
 			</Button>
