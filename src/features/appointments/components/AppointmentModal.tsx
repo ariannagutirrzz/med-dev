@@ -17,7 +17,7 @@ import {
 	type CurrencyRates,
 	getCurrencyRates,
 } from "../../currency/services/CurrencyAPI"
-import { getPatients } from "../../patients"
+import { getPatients, getDoctorPatients } from "../../patients"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
 import { getDoctorServices } from "../../services"
@@ -179,16 +179,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 		setLoadingData(true)
 
 		try {
-			// Cargar pacientes si es Médico O Admin
+			// Cargar pacientes: Médico solo ve los asignados a él; Admin ve todos
 			if (isDoctor || isAdmin) {
-				const patientsData = await getPatients()
-				if (patientsData?.patients) {
-					const formattedPatients = patientsData.patients.map((p: Patient) => ({
-						...p,
-						birthdate: p.birthdate ? new Date(p.birthdate) : new Date(),
-					}))
-					setPatients(formattedPatients)
-				}
+				const patientsData = isDoctor
+					? await getDoctorPatients()
+					: await getPatients()
+				const list = patientsData?.patients ?? []
+				const formattedPatients = list.map((p: Patient) => ({
+					...p,
+					birthdate: p.birthdate ? new Date(p.birthdate) : new Date(),
+				}))
+				setPatients(formattedPatients)
 			}
 
 			// Cargar doctores (Admin siempre los necesita, Paciente también)

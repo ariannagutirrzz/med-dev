@@ -1,3 +1,5 @@
+import { getStoredToken } from "../../../config/axios"
+
 const API_BASE =
 	typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL
 		? import.meta.env.VITE_API_URL
@@ -16,7 +18,7 @@ export async function generateAIResponse(
 	prompt: string,
 	history: ChatMessage[] = [],
 ): Promise<AsyncIterable<string>> {
-	const token = localStorage.getItem("AUTH_TOKEN")
+	const token = getStoredToken()
 	const controller = new AbortController()
 	const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS)
 

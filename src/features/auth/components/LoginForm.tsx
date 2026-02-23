@@ -4,7 +4,11 @@ import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Button } from "../../../shared" // Mantengo tu botón personalizado si prefieres
 
 interface LoginFormProps {
-	onLogin: (data: { email: string; password: string }) => void
+	onLogin: (data: {
+		email: string
+		password: string
+		rememberDevice: boolean
+	}) => void
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -14,7 +18,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		onLogin({ email, password })
+		onLogin({ email, password, rememberDevice })
 	}
 
 	return (

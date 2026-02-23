@@ -13,7 +13,7 @@ export interface User {
 interface AuthContextType {
 	user: User | null
 	isAuthenticated: boolean
-	login: (email: string, password: string) => Promise<void>
+	login: (email: string, password: string, rememberMe?: boolean) => Promise<void>
 	logout: () => void
 	loading: boolean
 	refreshUser: () => Promise<void>
@@ -25,18 +25,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<User | null>(null)
 	const [loading, setLoading] = useState(true)
 
-	// Check for existing session on mount
+	// Check for existing session on mount (localStorage = "recordar dispositivo", sessionStorage = no)
 	useEffect(() => {
-		const storedUser = localStorage.getItem("user")
-		const storedToken = localStorage.getItem("AUTH_TOKEN")
+		const tokenFromLocal = localStorage.getItem("AUTH_TOKEN")
+		const tokenFromSession = sessionStorage.getItem("AUTH_TOKEN")
+		const storedToken = tokenFromLocal || tokenFromSession
+		const storedUser = tokenFromLocal
+			? localStorage.getItem("user")
+			: sessionStorage.getItem("user")
 
-		// Only set user if both user data and token exist
 		if (storedUser && storedToken) {
 			setUser(JSON.parse(storedUser))
 		} else {
-			// Clear invalid session
 			if (storedUser && !storedToken) {
 				localStorage.removeItem("user")
+				sessionStorage.removeItem("user")
 			}
 		}
 		setLoading(false)
@@ -45,12 +48,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const refreshUser = async () => {
 		const response = await api.get("/users/me")
 		if (response.data?.user) {
-			// ✅ CREAMOS UN NUEVO OBJETO (Inmutabilidad)
-			setUser({ ...response.data.user })
+			const updated = { ...response.data.user }
+			setUser(updated)
+			// Persist to same storage as current session
+			if (localStorage.getItem("AUTH_TOKEN")) {
+				localStorage.setItem("user", JSON.stringify(updated))
+			} else if (sessionStorage.getItem("AUTH_TOKEN")) {
+				sessionStorage.setItem("user", JSON.stringify(updated))
+			}
 		}
 	}
 
-	const login = async (email: string, password: string) => {
+	const login = async (
+		email: string,
+		password: string,
+		rememberMe: boolean = true,
+	) => {
 		const response = await fetch("http://localhost:3001/api/auth/login", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -71,14 +84,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			image: data.user?.image,
 		}
 		setUser(userData)
-		localStorage.setItem("AUTH_TOKEN", data.token)
-		localStorage.setItem("user", JSON.stringify(userData))
+
+		if (rememberMe) {
+			localStorage.setItem("AUTH_TOKEN", data.token)
+			localStorage.setItem("user", JSON.stringify(userData))
+			sessionStorage.removeItem("AUTH_TOKEN")
+			sessionStorage.removeItem("user")
+		} else {
+			sessionStorage.setItem("AUTH_TOKEN", data.token)
+			sessionStorage.setItem("user", JSON.stringify(userData))
+			localStorage.removeItem("AUTH_TOKEN")
+			localStorage.removeItem("user")
+		}
 	}
 
 	const logout = () => {
 		setUser(null)
 		localStorage.removeItem("user")
 		localStorage.removeItem("AUTH_TOKEN")
+		sessionStorage.removeItem("user")
+		sessionStorage.removeItem("AUTH_TOKEN")
 		localStorage.removeItem("chat_history")
 	}
 

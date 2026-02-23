@@ -9,7 +9,7 @@ import {
 	parsePhoneToE164,
 } from "../../../shared/utils/phoneFormat"
 
-interface SignupFormData {
+export interface SignupFormData {
 	name: string
 	email: string
 	password: string
@@ -76,7 +76,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		if (e.key === "Enter" && allergyInput.trim() !== "") {
 			e.preventDefault()
 			const newAllergy = allergyInput.trim()
-
 			if (!formData.allergies.includes(newAllergy)) {
 				setFormData((prev) => ({
 					...prev,
@@ -97,35 +96,30 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	const validateForm = (): boolean => {
 		const newErrors: SignupFormErrors = {}
 
-		// Name validation
 		if (!formData.name.trim()) {
 			newErrors.name = "El nombre es requerido"
 		} else if (formData.name.trim().length < 2) {
 			newErrors.name = "El nombre debe tener al menos 2 caracteres"
 		}
 
-		// Email validation
 		if (!formData.email.trim()) {
 			newErrors.email = "El correo electrónico es requerido"
 		} else if (!validateEmail(formData.email)) {
 			newErrors.email = "Ingresa un correo electrónico válido"
 		}
 
-		// Password validation
 		if (!formData.password) {
 			newErrors.password = "La contraseña es requerida"
 		} else if (formData.password.length < 8) {
 			newErrors.password = "La contraseña debe tener al menos 8 caracteres"
 		}
 
-		// Confirm Password validation
 		if (!formData.confirmPassword) {
 			newErrors.confirmPassword = "Confirma tu contraseña"
 		} else if (formData.password !== formData.confirmPassword) {
 			newErrors.confirmPassword = "Las contraseñas no coinciden"
 		}
 
-		// Document ID validation
 		if (!formData.document_id.trim()) {
 			newErrors.document_id = "La cédula/documento es requerido"
 		} else if (!validateDocumentId(formData.document_id)) {
@@ -133,14 +127,12 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				"La cédula debe tener entre 6 y 12 caracteres alfanuméricos"
 		}
 
-		// Phone validation
 		if (!formData.phone.trim()) {
 			newErrors.phone = "El teléfono es requerido"
 		} else if (!isValidPhone(formData.phone)) {
 			newErrors.phone = "Ingresa un número válido (+58 4XX XXX XXXX)"
 		}
 
-		// Birthdate validation
 		if (!formData.birthdate) {
 			newErrors.birthdate = "La fecha de nacimiento es requerida"
 		} else {
@@ -153,7 +145,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				(monthDiff === 0 && today.getDate() < birthDate.getDate())
 					? age - 1
 					: age
-
 			if (actualAge < 0) {
 				newErrors.birthdate = "La fecha de nacimiento no puede ser futura"
 			} else if (actualAge > 120) {
@@ -161,12 +152,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 			}
 		}
 
-		// Gender validation
 		if (!formData.gender) {
 			newErrors.gender = "El género es requerido"
 		}
 
-		// Address validation
 		if (!formData.address.trim()) {
 			newErrors.address = "La dirección es requerida"
 		} else if (formData.address.trim().length < 5) {
@@ -182,15 +171,12 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 		(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 			const value = e.target.value
 			setFormData((prev) => ({ ...prev, [field]: value }))
-			// Clear error for this field when user starts typing
 			if (errors[field]) {
 				setErrors((prev) => ({ ...prev, [field]: undefined }))
 			}
-			// If password changes, also clear confirmPassword error
 			if (field === "password" && errors.confirmPassword) {
 				setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
 			}
-			// If confirmPassword changes and passwords match, clear error
 			if (
 				field === "confirmPassword" &&
 				formData.password === value &&
@@ -202,14 +188,9 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-
-		if (!validateForm()) {
-			return
-		}
-
+		if (!validateForm()) return
 		setIsSubmitting(true)
 		try {
-			// Don't send confirmPassword to backend; normalize phone to E.164
 			const { confirmPassword: _confirmPassword, ...dataToSend } = formData
 			await onSignUp({
 				...dataToSend,
@@ -322,7 +303,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 					)}
 				</div>
 
-				{/* Phone */}
 				<div>
 					<label
 						htmlFor="phone"
@@ -465,7 +445,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 					)}
 				</div>
 
-				{/* Sección de Alergias */}
 				<div className="md:col-span-2 flex flex-col gap-2">
 					<label
 						htmlFor="allergies"
