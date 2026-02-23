@@ -3,7 +3,11 @@ import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Button, InputField } from "../../../shared"
 
 interface LoginFormProps {
-	onLogin: (data: { email: string; password: string }) => void
+	onLogin: (data: {
+		email: string
+		password: string
+		rememberDevice: boolean
+	}) => void
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
@@ -17,12 +21,11 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
-		onLogin({ email, password })
+		onLogin({ email, password, rememberDevice })
 	}
 
 	return (
 		<form onSubmit={handleSubmit} className="py-6">
-			{/* Email Field */}
 			<InputField
 				type="email"
 				icon={<FaEnvelope size={20} />}
@@ -32,9 +35,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 				onChange={(e) => setEmail(e.target.value)}
 			/>
 
-			<div className="my-6"></div>
+			<div className="my-6" />
 
-			{/* Password Field */}
 			<InputField
 				label="Contraseña"
 				type="password"
@@ -44,7 +46,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 				icon={<FaLock size={20} />}
 			/>
 
-			{/* "Remember this device" */}
 			<div className="flex items-center justify-between mt-4">
 				<div className="flex items-center">
 					<input
@@ -69,7 +70,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 				</a>
 			</div>
 
-			{/* Login Button */}
 			<Button text="Acceder" onClick={() => {}} type="submit" />
 		</form>
 	)

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
+import { getStoredToken } from "../../../config/axios"
 import { getCurrencyRates, type CurrencyRates } from "../../currency"
 import { getSettings, updateSettings, type UserSettings } from "../../settings"
 
@@ -56,7 +57,7 @@ export const useCurrencyRates = () => {
 			return
 		}
 
-		const token = localStorage.getItem("AUTH_TOKEN")
+		const token = getStoredToken()
 		if (!token) {
 			toast.error("Sesión expirada. Por favor inicia sesión nuevamente.")
 			return

@@ -7,6 +7,7 @@ import {
 	SignupForm,
 	useAuth,
 } from "../features/auth"
+import type { SignupFormData } from "../features/auth/components/SignupForm"
 
 const LoginPage = () => {
 	const navigate = useNavigate()
@@ -34,16 +35,9 @@ const LoginPage = () => {
 		setLoginError(null)
 	}
 
-	const handleSignUp = async (formData: {
-		name: string
-		email: string
-		password: string
-		document_id: string
-		phone: string
-		birthdate: string
-		gender: string
-		address: string
-	}) => {
+	const handleSignUp = async (
+		formData: Omit<SignupFormData, "confirmPassword">,
+	) => {
 		setSignupError(null)
 		try {
 			const response = await fetch("http://localhost:3001/api/auth/signup", {
@@ -57,8 +51,8 @@ const LoginPage = () => {
 				throw new Error(error.error || "Error al registrarse")
 			}
 
-			// Auto-login after successful signup
-			await login(formData.email, formData.password)
+			// Auto-login after successful signup (with "recordar" so session persists)
+			await login(formData.email, formData.password, true)
 			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error signing up", error)
@@ -71,13 +65,15 @@ const LoginPage = () => {
 	const handleLogin = async ({
 		email,
 		password,
+		rememberDevice,
 	}: {
 		email: string
 		password: string
+		rememberDevice: boolean
 	}) => {
 		setLoginError(null)
 		try {
-			await login(email, password)
+			await login(email, password, rememberDevice)
 			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error logging in", error)

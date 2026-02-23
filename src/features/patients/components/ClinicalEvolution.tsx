@@ -4,6 +4,7 @@ import { CiCalendar, CiMedicalCase, CiMedicalClipboard } from "react-icons/ci"
 import { FaQuestion } from "react-icons/fa"
 import { LuPencilLine } from "react-icons/lu"
 import { toast } from "react-toastify"
+import { getStoredToken } from "../../../config/axios"
 import type {
 	MedicalHistory,
 	MedicalHistoryFormData,
@@ -34,7 +35,7 @@ export default function ClinicalEvolution({
 		MedicalHistory | MedicalHistoryFormData | null
 	>(null)
 	const [isLoading, setIsLoading] = useState(true)
-	const token = localStorage.getItem("AUTH_TOKEN")
+	const token = getStoredToken()
 	const doctor_id = token ? jwtDecode<MyTokenPayload>(token).id : ""
 
 	// 1. Cargar evoluciones desde el Backend
