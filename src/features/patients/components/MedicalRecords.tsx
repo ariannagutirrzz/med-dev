@@ -1,15 +1,15 @@
+import { Pagination } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
-// 1. Importamos el service
-import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import type { Patient } from "../../../shared"
 import { Button, calcularEdad, formatPhoneDisplay } from "../../../shared"
+import { useAuth } from "../../auth"
+// 1. Importamos el service
+import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
 import PatientSearchBar from "./PatientSearchBar"
-import { useAuth } from "../../auth"
-import { Pagination } from "antd"
 
 export default function MedicalRecords() {
 	// 2. ESTADOS (Iniciamos records vacío)
@@ -21,14 +21,13 @@ export default function MedicalRecords() {
 	const [records, setRecords] = useState<Patient[]>([])
 	const [searchTerm, setSearchTerm] = useState("")
 	const { user } = useAuth()
-	const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 8; // Número de pacientes por página
-
+	const [currentPage, setCurrentPage] = useState(1)
+	const pageSize = 8 // Número de pacientes por página
 
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
 		try {
-			let data;
+			let data: { patients: Patient[] }
 			if (user?.role === "Admin") {
 				data = await getPatients()
 			} else {
@@ -88,14 +87,18 @@ const pageSize = 8; // Número de pacientes por página
 	})
 
 	// Lógica de paginación
-const indexOfLastRecord = currentPage * pageSize;
-const indexOfFirstRecord = indexOfLastRecord - pageSize;
-const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+	const indexOfLastRecord = currentPage * pageSize
+	const indexOfFirstRecord = indexOfLastRecord - pageSize
+	const currentRecords = filteredRecords.slice(
+		indexOfFirstRecord,
+		indexOfLastRecord,
+	)
 
-// IMPORTANTE: Resetear a la página 1 cuando el usuario busca algo
-useEffect(() => {
-    setCurrentPage(1);
-}, [searchTerm]);
+	// IMPORTANTE: Resetear a la página 1 cuando el usuario busca algo
+	// biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [searchTerm])
 
 	// 6. VISTA DETALLE
 	if (view === "details" && selectedPatient) {
@@ -109,7 +112,7 @@ useEffect(() => {
 							variant="default"
 							onClick={handleBack}
 							icon={<LuArrowLeft className="w-4 h-4" />}
-							className="!border-gray-300 !text-gray-700 hover:!bg-gray-50 !font-medium !rounded-lg"
+							className="border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg"
 						>
 							Volver
 						</Button>
@@ -117,7 +120,7 @@ useEffect(() => {
 							type="button"
 							onClick={() => setNewEvolution(true)}
 							icon={<LuPlus className="w-4 h-4" />}
-							className="!px-5 !py-2.5 !rounded-lg !font-medium !text-sm"
+							className="px-5! py-2.5! rounded-lg! font-semibold! text-sm!"
 						>
 							Registrar evolución
 						</Button>
@@ -159,7 +162,7 @@ useEffect(() => {
 						type="button"
 						variant="default"
 						onClick={handleCreatePatient}
-						className="!w-full !h-100 !rounded-[2.5rem] !border-2 !border-dashed border-gray-300 !flex !flex-col !items-center !justify-center !p-4 hover:!border-primary hover:!bg-primary/5 !bg-white !shadow-sm group"
+						className="w-full! h-100! rounded-[2.5rem]! border-2! border-dashed! border-gray-300 flex! flex-col! items-center! justify-center! p-4! hover:border-primary! hover:bg-primary/5! bg-white! shadow-sm! group"
 					>
 						<CiSquarePlus className="text-primary w-14 h-14 transition-transform duration-300 group-hover:scale-110" />
 						<span className="text-gray-400 mt-2 font-black uppercase text-xs tracking-widest group-hover:text-primary">
@@ -256,8 +259,13 @@ useEffect(() => {
 										handleEditPatient(e, record)
 									}}
 									icon={<LuPencilLine className="h-6 w-6 text-gray-600" />}
-									className="!p-2 !min-w-0 !bg-white !border !border-gray-200 text-gray-600 hover:!text-primary hover:!border-primary hover:!shadow-lg rounded-2xl z-10 shadow-md"
-									style={{ position: "absolute", right: "1.5rem", bottom: "1.5rem", left: "auto" }}
+									className="p-2! min-w-0! bg-white! borde! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! hover:shadow-lg! rounded-2xl z-10 shadow-md"
+									style={{
+										position: "absolute",
+										right: "1.5rem",
+										bottom: "1.5rem",
+										left: "auto",
+									}}
 									title="Editar información del paciente"
 								/>
 							</div>
@@ -273,15 +281,15 @@ useEffect(() => {
 				</div>
 
 				<div className="flex justify-center mt-8 pb-4">
-    <Pagination
-        current={currentPage}
-        total={filteredRecords.length}
-        pageSize={pageSize}
-        onChange={(page) => setCurrentPage(page)}
-        showSizeChanger={false} // Para mantenerlo simple
-        className="custom-pagination"
-    />
-</div>
+					<Pagination
+						current={currentPage}
+						total={filteredRecords.length}
+						pageSize={pageSize}
+						onChange={(page) => setCurrentPage(page)}
+						showSizeChanger={false} // Para mantenerlo simple
+						className="custom-pagination"
+					/>
+				</div>
 			</div>
 
 			<PatientModalForm

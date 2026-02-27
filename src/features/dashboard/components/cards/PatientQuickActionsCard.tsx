@@ -1,3 +1,4 @@
+import { AiFillThunderbolt } from "react-icons/ai"
 import { CiCalendar, CiSettings } from "react-icons/ci"
 import { Link } from "react-router-dom"
 
@@ -19,7 +20,8 @@ const actions = [
 export const PatientQuickActionsCard = () => {
 	return (
 		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 flex flex-col min-h-0">
-			<h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-800 mb-2 sm:mb-3">
+			<h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-800 mb-2 sm:mb-3 flex flex-row items-center gap-2">
+				<AiFillThunderbolt className="text-primary" />
 				Acciones rápidas
 			</h3>
 			<div className="flex flex-col gap-2 sm:gap-3">
@@ -33,7 +35,9 @@ export const PatientQuickActionsCard = () => {
 							<Icon className="w-5 h-5" />
 						</div>
 						<div className="min-w-0 flex-1">
-							<p className="font-medium text-gray-800 text-sm sm:text-base">{label}</p>
+							<p className="font-medium text-gray-800 text-sm sm:text-base">
+								{label}
+							</p>
 							<p className="text-xs text-gray-500 truncate">{description}</p>
 						</div>
 					</Link>

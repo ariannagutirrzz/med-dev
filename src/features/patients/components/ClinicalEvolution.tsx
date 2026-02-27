@@ -20,7 +20,6 @@ import {
 import ClinicalEvolutionDetailModal from "./ClinicalEvolutionDetailModal"
 
 export default function ClinicalEvolution({
-	patientName,
 	patientId,
 	newEvolution,
 	setNewEvolution,
@@ -141,11 +140,7 @@ export default function ClinicalEvolution({
 		}
 	}
 	return (
-		<div
-			className="bg-white rounded-xl border border-gray-200 p-6 mb-6 min-h-screen"
-			aria-label={`Historial clínico de ${patientName}`}
-		>
-
+		<div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 min-h-screen">
 			{isLoading ? (
 				<div className="flex flex-col items-center justify-center py-20">
 					<div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
@@ -164,42 +159,45 @@ export default function ClinicalEvolution({
 					{evolutions.map((evo) => (
 						<div
 							key={evo.id}
-							className="group bg-gray-50 rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col"
+							className="group bg-gray-50 rounded-xl border-2 border-gray-200 p-5 hover:shadow-md hover:border-primary transition-all duration-200 flex flex-col"
 						>
 							{/* Header de la Card */}
 							<div className="flex justify-between items-center mb-4">
 								<div className="flex items-center gap-2 text-gray-600">
-									<CiCalendar className="w-4 h-4" />
-									<span className="text-sm font-medium">
+									<CiCalendar className="w-4 h-4 text-primary" />
+									<span className="text-sm font-bold">
 										{new Date(evo.record_date).toLocaleDateString()}
 									</span>
 								</div>
-								<span className="text-xs font-medium text-gray-400">
+								<span className="text-md font-bold text-primary">
 									#{evo.id}
 								</span>
 							</div>
 
 							{/* Contenido */}
 							<div className="space-y-3 flex-1">
-								<div className="bg-white p-3 rounded-lg border border-gray-100">
-									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<FaQuestion className="w-3 h-3 text-gray-400" /> Motivo de consulta
+								<div className="bg-white p-3 rounded-lg border border-primary">
+									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<FaQuestion className="w-3 h-3 text-primary" /> Motivo de
+										consulta
 									</p>
 									<p className="text-gray-800 text-sm line-clamp-1">
 										{evo.reason}
 									</p>
 								</div>
-								<div className="bg-white p-3 rounded-lg border border-gray-100">
-									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<CiMedicalCase className="w-3 h-3 text-gray-400" /> Diagnóstico
+								<div className="bg-white p-3 rounded-lg border border-primary">
+									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<CiMedicalCase className="w-3 h-3 text-primary" />{" "}
+										Diagnóstico
 									</p>
 									<p className="text-gray-800 text-sm line-clamp-1">
 										{evo.diagnosis}
 									</p>
 								</div>
-								<div className="bg-white p-3 rounded-lg border border-gray-100">
-									<p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<CiMedicalClipboard className="w-3 h-3 text-gray-400" /> Tratamiento
+								<div className="bg-white p-3 rounded-lg border border-primary">
+									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
+										<CiMedicalClipboard className="w-3 h-3 text-primary" />{" "}
+										Tratamiento
 									</p>
 									<p className="text-gray-700 text-sm line-clamp-2">
 										{evo.treatment}
@@ -217,7 +215,7 @@ export default function ClinicalEvolution({
 									variant="text"
 									onClick={() => handleOpenDetail(evo)}
 									icon={<LuPencilLine className="w-4 h-4 text-gray-500" />}
-									className="!p-2 !min-w-0 rounded-lg text-gray-500 hover:!bg-gray-200 hover:!text-gray-700"
+									className="p-2! min-w-0! rounded-lg! text-gray-500! hover:border-primary! hover:text-primary!"
 								/>
 							</div>
 						</div>

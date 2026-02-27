@@ -4,7 +4,9 @@ import {
 	FaCalendarAlt,
 	FaClipboardList,
 	FaFileImage,
+	FaImage,
 	FaPills,
+	FaPlus,
 	FaRegEdit,
 	FaRunning,
 	FaSave,
@@ -14,8 +16,18 @@ import {
 	FaTrash,
 	FaUserMd,
 } from "react-icons/fa"
-import type { MedicalHistory, MedicalHistoryFormData } from "../../../shared"
+import type {
+	ExtraImages,
+	MedicalHistory,
+	MedicalHistoryFormData,
+} from "../../../shared"
 import { Button, ConfirmModal } from "../../../shared"
+import {
+	deleteExtraImage,
+	getExtraImages,
+	updateExtraImage,
+	uploadExtraImages,
+} from "../services/MedicalRecordsImagesAPI"
 
 interface ClinicalEvolutionDetailModalProps {
 	isOpen: boolean
@@ -34,6 +46,7 @@ const ClinicalEvolutionDetailModal = ({
 }: ClinicalEvolutionDetailModalProps) => {
 	// Usamos MedicalHistoryFormData para el estado local
 	const [formData, setFormData] = useState<MedicalHistoryFormData | null>(null)
+	const [extraImages, setExtraImages] = useState<ExtraImages[]>([])
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 
@@ -50,8 +63,205 @@ const ClinicalEvolutionDetailModal = ({
 					? new Date(record.record_date)
 					: new Date(),
 			} as MedicalHistoryFormData)
+
+			// si tenemos un id es edición, traemos imágenes existentes
+			if ((record as MedicalHistory).id) {
+				getExtraImages((record as MedicalHistory).id).then((imgs) => {
+					setExtraImages(
+						imgs.map((i: { id: number; title: string; url?: string }) => ({
+							id: i.id,
+							title: i.title,
+							url: i.url,
+							isNew: false,
+						})),
+					)
+				})
+			} else {
+				// creación nueva: limpiar cualquier dato previo
+				setExtraImages([])
+			}
+		} else {
+			// modal cerrado o record null: reset estado
+			setFormData(null)
+			setExtraImages([])
 		}
 	}, [record])
+
+	// --- Lógica para Imágenes Extras ---
+
+	const addExtraImageField = async () => {
+		// si estamos editando ya tenemos id de record, creamos placeholder en DB
+		if (formData?.id) {
+			try {
+				const resp = await uploadExtraImages(formData.id, [""], [])
+				// resp.images puede contener un registro con url null
+				const created = resp.images[0]
+				setExtraImages((prev) => [
+					...prev,
+					{ id: created.id, title: "", url: undefined, isNew: true },
+				])
+			} catch (e) {
+				console.error("Error creando campo extra:", e)
+			}
+		} else {
+			setExtraImages((prev) => [...prev, { title: "", isNew: true }])
+		}
+	}
+
+	const handleExtraImageChange = async (
+		index: number,
+		field: keyof ExtraImages,
+		value: string | File | undefined,
+	) => {
+		const updated = [...extraImages]
+		updated[index] = { ...updated[index], [field]: value }
+		setExtraImages(updated)
+
+		// si ya existe en DB y cambió el título
+		if (field === "title" && updated[index].id) {
+			try {
+				const form = new FormData()
+				if (typeof value === "string") {
+					form.append("title", value)
+				}
+				await updateExtraImage(updated[index].id as number, form)
+			} catch (e) {
+				console.error("Error actualizando título extra:", e)
+			}
+		}
+	}
+
+	const handleFileExtraChange = async (
+		index: number,
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		if (e.target.files?.[0]) {
+			const file = e.target.files[0]
+			handleExtraImageChange(index, "url", file)
+			// si ya existe en DB, subir archivo inmediato
+			const img = extraImages[index]
+			if (img.id && formData?.id) {
+				const form = new FormData()
+				form.append("title", img.title)
+				form.append("extra_image_file", file)
+				try {
+					await updateExtraImage(img.id as number, form)
+				} catch (err) {
+					console.error("Error subiendo archivo extra:", err)
+				}
+			} else if (formData?.id) {
+				// crear en DB con archivo
+				try {
+					const resp = await uploadExtraImages(formData.id, img.title, [file])
+					const created = resp.images[0]
+					setExtraImages((prev) => {
+						const newArr = [...prev]
+						newArr[index] = {
+							...newArr[index],
+							id: created.id,
+							url: created.url,
+							isNew: false,
+						}
+						return newArr
+					})
+				} catch (err) {
+					console.error("Error creando imagen extra con archivo:", err)
+				}
+			}
+		}
+	}
+
+	const removeExtraImage = async (index: number) => {
+		const image = extraImages[index]
+
+		// Si la imagen ya existe en la DB, llamamos al delete del backend
+		if (image.id) {
+			try {
+				await deleteExtraImage(image.id as number)
+			} catch (error) {
+				console.error(error)
+				return // No eliminar de UI si falla
+			}
+		}
+
+		setExtraImages((prev) => prev.filter((_, i) => i !== index))
+	}
+
+	// --- Función auxiliar para renderizar los campos extra ---
+	const renderExtraImages = () => (
+		<div className="space-y-6 mt-6 border-t border-gray-100 pt-6">
+			<label htmlFor="rx_torax" className={labelClass}>
+				<FaFileImage /> Estudios adicionales
+			</label>
+
+			<div className="grid grid-cols-1 gap-6">
+				{extraImages.map((img, index) => (
+					<div
+						key={img.id}
+						className="bg-gray-50/50 p-4 rounded-4xl border border-gray-100 relative group"
+					>
+						{/* Botón Eliminar Campo */}
+						<button
+							type="button"
+							onClick={() => removeExtraImage(index)}
+							className="absolute -top-2 -right-2 bg-white p-2 rounded-full border-red-500 border cursor-pointer shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+						>
+							<FaTrash className="text-red-500" size={12} />
+						</button>
+
+						<div className="space-y-3">
+							{/* Input de Título */}
+							<input
+								type="text"
+								placeholder="Título del estudio (ej: Eco Renal)"
+								className={`${inputBaseClass} text-xs font-bold! h-10`}
+								value={img.title}
+								onChange={(e) =>
+									handleExtraImageChange(index, "title", e.target.value)
+								}
+							/>
+
+							{/* Dropzone de Imagen */}
+							<label className={`${fileInputClass} h-24`}>
+								<FaImage className="text-gray-300 text-2xl mb-1" />
+								<span className="text-[10px] text-gray-500 font-black uppercase text-center px-4 line-clamp-1">
+									{getFileName(img.url)}
+								</span>
+								<input
+									type="file"
+									className="hidden"
+									onChange={(e) => handleFileExtraChange(index, e)}
+									accept="image/*"
+								/>
+							</label>
+
+							{/* Botón Descargar si existe */}
+							{img.url && (
+								<Button
+									type="button"
+									variant="text"
+									onClick={() => handleDownload(img.url, img.title)}
+									className="w-full! text-[10px] font-bold! text-primary!"
+								>
+									Ver imagen actual
+								</Button>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
+
+			<Button
+				type="button"
+				variant="default"
+				onClick={addExtraImageField}
+				icon={<FaPlus />}
+				className="w-full! border-2! border-dashed! border-gray-200! text-gray-400! hover:border-primary! hover:text-primary! transition-all!"
+			>
+				Añadir otro estudio o imagen
+			</Button>
+		</div>
+	)
 
 	if (!isOpen || !record || !formData) return null
 
@@ -91,8 +301,14 @@ const ClinicalEvolutionDetailModal = ({
 
 		try {
 			setIsSaving(true)
-			// Ya no subimos aquí. Pasamos el formData (que puede tener Files) al padre.
-			await onSave(formData)
+			const dataToSave = {
+				...formData,
+			}
+			await onSave(dataToSave)
+			// si era creación limpia los campos extra para no arrastrarlos
+			if (!isEditing) {
+				setExtraImages([])
+			}
 		} finally {
 			setIsSaving(false)
 		}
@@ -179,7 +395,7 @@ const ClinicalEvolutionDetailModal = ({
 							variant="text"
 							onClick={onClose}
 							icon={<FaTimes />}
-							className="!p-2 rounded-full text-gray-400 hover:!bg-gray-200"
+							className="p-2! rounded-full text-gray-400 hover:bg-gray-200!"
 						/>
 					</div>
 
@@ -212,9 +428,7 @@ const ClinicalEvolutionDetailModal = ({
 										value={formData.doctor_id}
 										onChange={handleInputChange}
 									>
-										<option value={formData.doctor_id}>
-											ID: {formData.doctor_id}
-										</option>
+										<option value="">Seleccionar médico</option>
 										<option value="cedula1">Dr. Carlos Mendoza</option>
 										<option value="7695182">Dra. Ninive Azuaje</option>
 									</select>
@@ -330,14 +544,13 @@ const ClinicalEvolutionDetailModal = ({
 									{formData.rx_torax && (
 										<Button
 											type="button"
-											variant="default"
+											variant="text"
 											onClick={() =>
 												handleDownload(formData.rx_torax, "rx-torax")
 											}
-											icon={<FaSave size={12} />}
-											className="!w-full !py-2 !min-h-0 text-xs font-bold !bg-primary/5 hover:!bg-primary/10 !border-0"
+											className="w-full! text-[10px] font-bold! text-primary!"
 										>
-											Descargar Rx de Tórax
+											Ver imagen actual
 										</Button>
 									)}
 								</div>
@@ -361,17 +574,17 @@ const ClinicalEvolutionDetailModal = ({
 									{formData.tomography && (
 										<Button
 											type="button"
-											variant="default"
+											variant="text"
 											onClick={() =>
 												handleDownload(formData.tomography, "tomografia")
 											}
-											icon={<FaSave size={12} />}
-											className="!w-full !py-2 !min-h-0 text-xs font-bold !bg-primary/5 hover:!bg-primary/10 !border-0"
+											className="w-full! text-[10px] font-bold! text-primary!"
 										>
-											Descargar Tomografía
+											Ver imagen actual
 										</Button>
 									)}
 								</div>
+								{renderExtraImages()}
 							</div>
 						</div>
 
@@ -396,7 +609,7 @@ const ClinicalEvolutionDetailModal = ({
 									type="button"
 									variant="default"
 									onClick={onClose}
-									className="!border-2 !border-gray-200 !text-gray-500"
+									className="border-2! border-gray-200! text-gray-500!"
 								>
 									Cancelar
 								</Button>
@@ -406,7 +619,7 @@ const ClinicalEvolutionDetailModal = ({
 									loading={isSaving}
 									disabled={isSaving}
 									icon={<FaSave />}
-									className="!shadow-lg"
+									className="shadow-lg!"
 								>
 									{isSaving
 										? "Guardando..."

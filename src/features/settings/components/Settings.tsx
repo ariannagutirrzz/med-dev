@@ -1,3 +1,4 @@
+import { Tabs, type TabsProps } from "antd"
 import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { api, getStoredToken, getStoredUser } from "../../../config/axios"
@@ -12,7 +13,6 @@ import {
 } from "../services/SettingsAPI"
 import DoctorAvailabilityManagement from "./DoctorAvailabilityManagement"
 import DoctorUnavailabilityManagement from "./DoctorUnavailabilityManagement"
-import { Tabs, type TabsProps } from "antd"
 
 /**
  * Settings Component
@@ -217,23 +217,23 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 	}
 
 	const handleChangeTab = (key: string) => {
-  setActiveSection(key as SettingsSection)
-};
+		setActiveSection(key as SettingsSection)
+	}
 
-const items: TabsProps['items'] = [
-  {
-    key: 'profile',
-    label: 'Perfil',
-  },
-  {
-    key: 'security',
-    label: 'Seguridad',
-  },
-  {
-    key: 'availability',
-    label: 'Disponibilidad',
-  },
-];
+	const items: TabsProps["items"] = [
+		{
+			key: "profile",
+			label: "Perfil",
+		},
+		{
+			key: "security",
+			label: "Seguridad",
+		},
+		{
+			key: "availability",
+			label: "Disponibilidad",
+		},
+	]
 
 	if (loading) {
 		return (
@@ -269,16 +269,19 @@ const items: TabsProps['items'] = [
 			<div className="flex flex-col gap-6 w-full">
 				{/* Settings Navigation */}
 				<div className="bg-white rounded-2xl p-1 px-4 self-start border-2 border-gray-100 shadow-lg overflow-hidden">
-        <div className="px-6 pt-4"> 
-            <Tabs 
-                defaultActiveKey="1" 
-                items={items} 
-                onChange={handleChangeTab}
-				size="large"
-            />
-        </div>
-    </div>
-				
+					<div className="px-6 pt-4">
+						<Tabs
+							defaultActiveKey="1"
+							items={
+								profileData.role === "Médico"
+									? items
+									: items.filter((item) => item.key !== "availability")
+							}
+							onChange={handleChangeTab}
+							size="large"
+						/>
+					</div>
+				</div>
 
 				{/* Settings Content */}
 				<div className="w-full space-y-6">
@@ -324,7 +327,7 @@ const items: TabsProps['items'] = [
 											type="button"
 											variant="default"
 											onClick={() => fileInputRef.current?.click()}
-											className="!border-gray-300 hover:!bg-gray-50 !text-sm"
+											className="border-gray-300! hover:bg-gray-50! text-sm!"
 										>
 											Cambiar Foto
 										</Button>
@@ -414,7 +417,7 @@ const items: TabsProps['items'] = [
 										type="button"
 										onClick={handleUpdateProfile}
 										disabled={saving}
-										className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+										className="px-6 py-2 bg-primary text-white! font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
 									>
 										{saving ? "Guardando..." : "Guardar Cambios"}
 									</button>
