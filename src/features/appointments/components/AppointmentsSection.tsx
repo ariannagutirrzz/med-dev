@@ -8,12 +8,15 @@ import {
 	FaTrash,
 	FaUserMd,
 } from "react-icons/fa"
-import { MdAddCircleOutline, MdFilterList, MdSearch } from "react-icons/md"
+import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Appointment } from "../../../shared"
 import { Button, ConfirmModal, formatPrice } from "../../../shared"
 import { useAuth } from "../../auth"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import {
+	type CurrencyRates,
+	getCurrencyRates,
+} from "../../currency/services/CurrencyAPI"
 import {
 	getSettings,
 	type UserSettings,
@@ -40,12 +43,10 @@ const AppointmentsSection = () => {
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
 	const [settings, setSettings] = useState<UserSettings | null>(null)
-	const [currencyRates, setCurrencyRates] = useState<any>(null)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	// Estados de paginación
-const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 6;
-
-
+	const [currentPage, setCurrentPage] = useState(1)
+	const pageSize = 6
 
 	type AppointmentData = {
 		appointments: Appointment[]
@@ -87,9 +88,10 @@ const pageSize = 6;
 	}, [loadAppointments])
 
 	// Resetear a pag 1 cuando cambie cualquier filtro
-useEffect(() => {
-    setCurrentPage(1);
-}, [searchTerm, statusFilter, dateFilter]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [searchTerm, statusFilter, dateFilter])
 
 	const handleCreateAppointment = () => {
 		setEditingAppointment(null)
@@ -182,24 +184,43 @@ useEffect(() => {
 			const today = new Date()
 			today.setHours(0, 0, 0, 0)
 
+			// Obtenemos el inicio y fin del MES actual
+			const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+			const endOfMonth = new Date(
+				today.getFullYear(),
+				today.getMonth() + 1,
+				0,
+				23,
+				59,
+				59,
+			)
+
+			// Obtenemos el inicio y fin de la SEMANA actual (asumiendo que empieza el Lunes)
+			const startOfWeek = new Date(today)
+			const day = today.getDay() // 0 (Dom) a 6 (Sáb)
+			const diff = today.getDate() - day + (day === 0 ? -6 : 1) // Ajuste para que empiece el Lunes
+			startOfWeek.setDate(diff)
+			startOfWeek.setHours(0, 0, 0, 0)
+
+			const endOfWeek = new Date(startOfWeek)
+			endOfWeek.setDate(startOfWeek.getDate() + 6)
+			endOfWeek.setHours(23, 59, 59, 999)
+
+			// 3. El switch corregido
 			switch (dateFilter) {
 				case "today":
 					matchesDate = appointmentDate.toDateString() === today.toDateString()
 					break
-				case "week": {
-					const weekFromNow = new Date(today)
-					weekFromNow.setDate(today.getDate() + 7)
+
+				case "week":
 					matchesDate =
-						appointmentDate >= today && appointmentDate <= weekFromNow
+						appointmentDate >= startOfWeek && appointmentDate <= endOfWeek
 					break
-				}
-				case "month": {
-					const monthFromNow = new Date(today)
-					monthFromNow.setMonth(today.getMonth() + 1)
+
+				case "month":
 					matchesDate =
-						appointmentDate >= today && appointmentDate <= monthFromNow
+						appointmentDate >= startOfMonth && appointmentDate <= endOfMonth
 					break
-				}
 			}
 		}
 
@@ -207,11 +228,14 @@ useEffect(() => {
 	})
 
 	// Lógica de segmentación (Slicing)
-const indexOfLastRecord = currentPage * pageSize;
-const indexOfFirstRecord = indexOfLastRecord - pageSize;
+	const indexOfLastRecord = currentPage * pageSize
+	const indexOfFirstRecord = indexOfLastRecord - pageSize
 
-// Estos son los que realmente vas a mostrar en el .map()
-const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, indexOfLastRecord);
+	// Estos son los que realmente vas a mostrar en el .map()
+	const currentAppointments = filteredAppointments.slice(
+		indexOfFirstRecord,
+		indexOfLastRecord,
+	)
 
 	const isDoctor = user?.role === "Médico"
 	const isAdmin = user?.role === "Admin"
@@ -229,7 +253,7 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 					type="button"
 					onClick={handleCreateAppointment}
 					icon={<MdAddCircleOutline className="w-5 h-5" />}
-					className="!px-6 !py-3 !rounded-lg"
+					className="px-6! py-3! rounded-lg!"
 				>
 					Nueva Cita
 				</Button>
@@ -379,7 +403,7 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 													variant="text"
 													onClick={() => handleEditAppointment(appointment)}
 													icon={<FaEdit className="w-4 h-4" />}
-													className="!p-2 text-primary hover:!bg-primary/10 !min-w-0"
+													className="p-2! text-primary hover:bg-primary/10! min-w-0!"
 													title="Editar cita"
 												/>
 												{(isDoctor || isAdmin) && (
@@ -394,7 +418,7 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 															})
 														}
 														icon={<FaTrash className="w-4 h-4" />}
-														className="!p-2 !min-w-0 hover:!bg-red-50"
+														className="p-2! min-w-0! hover:bg-red-50!"
 														title="Eliminar cita"
 													/>
 												)}
@@ -407,14 +431,14 @@ const currentAppointments = filteredAppointments.slice(indexOfFirstRecord, index
 					</div>
 				)}
 				<div className="flex justify-center mt-8 pb-4">
-    <Pagination
-        current={currentPage}
-        total={filteredAppointments.length} // El total sigue siendo el de filtrados
-        pageSize={pageSize}
-        onChange={(page) => setCurrentPage(page)}
-        showSizeChanger={false}
-    />
-</div>
+					<Pagination
+						current={currentPage}
+						total={filteredAppointments.length} // El total sigue siendo el de filtrados
+						pageSize={pageSize}
+						onChange={(page) => setCurrentPage(page)}
+						showSizeChanger={false}
+					/>
+				</div>
 			</div>
 
 			{/* Modal de crear/editar cita */}
