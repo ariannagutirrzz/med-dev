@@ -12,6 +12,7 @@ import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Appointment } from "../../../shared"
 import { Button, ConfirmModal, formatPrice } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 import {
 	type CurrencyRates,
@@ -322,9 +323,7 @@ const AppointmentsSection = () => {
 				</h3>
 
 				{loading ? (
-					<div className="text-center py-8 text-gray-500">
-						Cargando citas...
-					</div>
+					<LoadingSpinner loadingMessage="CARGANDO CITAS MÉDICAS..." />
 				) : filteredAppointments.length === 0 ? (
 					<div className="text-center py-8 text-gray-500">
 						{appointments.length === 0

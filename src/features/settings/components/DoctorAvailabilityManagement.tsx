@@ -7,6 +7,7 @@ import { FaCalendarAlt, FaClock, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
 import { Button, ConfirmModal } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	createDoctorAvailability,
 	type DoctorAvailability,
@@ -164,11 +165,7 @@ const DoctorAvailabilityManagement: React.FC = () => {
 	}
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<div className="text-gray-600">Cargando disponibilidad...</div>
-			</div>
-		)
+		return <LoadingSpinner loadingMessage="CARGANDO HORARIOS..." />
 	}
 
 	return (
@@ -398,11 +395,7 @@ const DoctorAvailabilityManagement: React.FC = () => {
 								>
 									Cancelar
 								</Button>
-								<Button
-									type="submit"
-									variant="primary"
-									className="flex-1"
-								>
+								<Button type="submit" variant="primary" className="flex-1">
 									{editingSlot ? "Actualizar" : "Crear"}
 								</Button>
 							</div>

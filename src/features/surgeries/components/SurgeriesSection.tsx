@@ -11,6 +11,7 @@ import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Surgery } from "../../../shared"
 import { Button, ConfirmModal, formatPrice } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	type CurrencyRates,
 	getCurrencyRates,
@@ -37,13 +38,14 @@ const SurgeriesSection = () => {
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
 	// 1. Definir estados (ajusta pageSize a 5 o 6 por el tamaño de las cards)
-const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 5;
+	const [currentPage, setCurrentPage] = useState(1)
+	const pageSize = 5
 
-// 2. Resetear página al filtrar
-useEffect(() => {
-    setCurrentPage(1);
-}, [searchTerm, statusFilter, dateFilter]);
+	// 2. Resetear página al filtrar
+	// biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [searchTerm, statusFilter, dateFilter])
 
 	const loadSurgeries = useCallback(async () => {
 		setLoading(true)
@@ -200,11 +202,14 @@ useEffect(() => {
 	})
 
 	// Lógica de paginación
-const indexOfLastRecord = currentPage * pageSize;
-const indexOfFirstRecord = indexOfLastRecord - pageSize;
+	const indexOfLastRecord = currentPage * pageSize
+	const indexOfFirstRecord = indexOfLastRecord - pageSize
 
-// Estas son las cirugías que se renderizarán en el .map()
-const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLastRecord);
+	// Estas son las cirugías que se renderizarán en el .map()
+	const currentSurgeries = filteredSurgeries.slice(
+		indexOfFirstRecord,
+		indexOfLastRecord,
+	)
 
 	// Calcular estadísticas
 	const stats = {
@@ -237,7 +242,7 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 					type="button"
 					onClick={handleCreateSurgery}
 					icon={<MdAddCircleOutline className="w-5 h-5" />}
-					className="!px-6 !py-3 !rounded-lg"
+					className="px-6! py-3! rounded-lg!"
 				>
 					Nueva Reserva
 				</Button>
@@ -342,9 +347,7 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 				</h3>
 
 				{loading ? (
-					<div className="text-center py-8 text-gray-500">
-						Cargando cirugías...
-					</div>
+					<LoadingSpinner loadingMessage="CARGANDO CIRUGIAS..." />
 				) : filteredSurgeries.length === 0 ? (
 					<div className="text-center py-8 text-gray-500">
 						{surgeries.length === 0
@@ -421,7 +424,7 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 													variant="text"
 													onClick={() => handleEditSurgery(surgery)}
 													icon={<FaEdit className="w-4 h-4" />}
-													className="!p-2 text-primary hover:!bg-primary/10 !min-w-0"
+													className="p-2! text-primary hover:bg-primary/10! min-w-0!"
 													title="Editar cirugía"
 												/>
 												<Button
@@ -435,7 +438,7 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 														})
 													}
 													icon={<FaTrash className="w-4 h-4" />}
-													className="!p-2 !min-w-0 hover:!bg-red-50"
+													className="p-2! min-w-0! hover:bg-red-50!"
 													title="Eliminar cirugía"
 												/>
 											</div>
@@ -443,20 +446,18 @@ const currentSurgeries = filteredSurgeries.slice(indexOfFirstRecord, indexOfLast
 									</div>
 								</div>
 							)
-							
 						})}
 						<div className="flex justify-center mt-8 pt-4 border-t border-gray-100">
-        <Pagination
-            current={currentPage}
-            total={filteredSurgeries.length}
-            pageSize={pageSize}
-            onChange={(page) => setCurrentPage(page)}
-            showSizeChanger={false}
-            responsive={true}
-        />
-    </div>
+							<Pagination
+								current={currentPage}
+								total={filteredSurgeries.length}
+								pageSize={pageSize}
+								onChange={(page) => setCurrentPage(page)}
+								showSizeChanger={false}
+								responsive={true}
+							/>
+						</div>
 					</div>
-					
 				)}
 			</div>
 

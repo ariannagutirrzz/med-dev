@@ -1,12 +1,13 @@
 import { useEffect } from "react"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { useDashboardData } from "../hooks/useDashboardData"
 import { useSearchFilter } from "../hooks/useSearchFilter"
 import { CurrencyCard } from "./cards/CurrencyCard"
 import { GeneralStatsCard } from "./cards/GeneralStatsCard"
-import { PatientProfileCard } from "./cards/PatientProfileCard"
 import { PatientAppointmentsAndSurgeriesCard } from "./cards/PatientAppointmentsAndSurgeriesCard"
+import { PatientProfileCard } from "./cards/PatientProfileCard"
 import { PatientQuickActionsCard } from "./cards/PatientQuickActionsCard"
 import { SurgeryCalendarCard } from "./cards/SurgeryCalendarCard"
 import { UpcomingAppointmentsCard } from "./cards/UpcomingAppointmentsCard"
@@ -39,9 +40,7 @@ const DashboardHome = () => {
 			<div className="p-4 sm:p-6">
 				<DashboardHeader />
 				<div className="flex items-center justify-center min-h-screen">
-					<div className="animate-pulse text-gray-400">
-						Cargando dashboard...
-					</div>
+					<LoadingSpinner loadingMessage="cargando dashboard..." />
 				</div>
 			</div>
 		)
@@ -68,7 +67,11 @@ const DashboardHome = () => {
 					isPatient ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"
 				}`}
 			>
-				<WelcomeSection userName={user?.name} gender={user?.gender} role={user?.role} />
+				<WelcomeSection
+					userName={user?.name}
+					gender={user?.gender}
+					role={user?.role}
+				/>
 				{!isPatient && <CurrencyCard />}
 			</div>
 

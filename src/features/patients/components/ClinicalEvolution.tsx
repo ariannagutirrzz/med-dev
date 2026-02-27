@@ -11,6 +11,7 @@ import type {
 	MyTokenPayload,
 } from "../../../shared"
 import { Button } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
@@ -142,12 +143,7 @@ export default function ClinicalEvolution({
 	return (
 		<div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 min-h-screen">
 			{isLoading ? (
-				<div className="flex flex-col items-center justify-center py-20">
-					<div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-					<p className="text-gray-400 font-bold animate-pulse">
-						CARGANDO HISTORIAL...
-					</p>
-				</div>
+				<LoadingSpinner loadingMessage="Cargando Historial..." />
 			) : evolutions.length === 0 ? (
 				<div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-200">
 					<p className="text-gray-400 font-medium">

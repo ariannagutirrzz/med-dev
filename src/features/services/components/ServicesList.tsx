@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react"
 import { FaDollarSign } from "react-icons/fa"
-import { getDoctorServices, type DoctorServiceWithType } from "../services/ServicesAPI"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import { formatPrice } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
+import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
+import {
+	type DoctorServiceWithType,
+	getDoctorServices,
+} from "../services/ServicesAPI"
 
 interface ServicesListProps {
 	doctorId: string
@@ -39,18 +46,12 @@ const ServicesList: React.FC<ServicesListProps> = ({ doctorId }) => {
 
 	const getPriceInBS = (priceUsd: number): number => {
 		const exchangeRate =
-			settings?.custom_exchange_rate ||
-			currencyRates?.oficial?.promedio ||
-			0
+			settings?.custom_exchange_rate || currencyRates?.oficial?.promedio || 0
 		return priceUsd * exchangeRate
 	}
 
 	if (loading) {
-		return (
-			<div className="p-4">
-				<div className="animate-pulse text-gray-500">Cargando servicios...</div>
-			</div>
-		)
+		return <LoadingSpinner loadingMessage="CARGANDO SERVICIOS..." />
 	}
 
 	if (services.length === 0) {
