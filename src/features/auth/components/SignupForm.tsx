@@ -1,14 +1,14 @@
 import { DatePicker, Input, Select, Space, Tag } from "antd"
 import TextArea from "antd/es/input/TextArea"
+import { Option } from "antd/es/mentions"
 import dayjs from "dayjs"
 import { useState } from "react"
-import { FaEnvelope, FaPlus } from "react-icons/fa"
-import { Button, InputField, PhoneInput } from "../../../shared"
+import { FaPlus } from "react-icons/fa"
+import { Button, PhoneInput } from "../../../shared"
 import {
 	isValidPhone,
 	parsePhoneToE164,
 } from "../../../shared/utils/phoneFormat"
-import { Option } from "antd/es/mentions"
 
 export interface SignupFormData {
 	name: string
@@ -67,9 +67,9 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 	}
 
 	const validateDocumentId = (docId: string): boolean => {
-    // Acepta V-, J- o E- seguido de 4 a 8 números
-    return /^[VJE]-[0-9]{4,8}$/.test(docId);
-}
+		// Acepta V-, J- o E- seguido de 4 a 8 números
+		return /^[VJE]-[0-9]{4,8}$/.test(docId)
+	}
 
 	const addAllergy = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && allergyInput.trim() !== "") {
@@ -220,7 +220,7 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						value={formData.name}
 						onChange={handleChange("name")}
 						status={errors.name ? "error" : ""}
-						className="rounded-xl! h-12"
+						className="rounded-xl h-12"
 					/>
 					{errors.name && (
 						<span className="text-red-500 text-xs ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
@@ -230,58 +230,64 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 				</div>
 
 				{/* Document ID */}
-<div className="flex flex-col gap-1">
-    <label htmlFor="document_id" className="text-sm font-semibold text-gray-700 ml-1">
-        Documento de Identidad <span className="text-red-500">*</span>
-    </label>
-    <Input
-        id="document_id"
-        name="document_id"
-        size="large"
-        placeholder="12345678"
-        className="rounded-xl h-12 overflow-hidden"
-        status={errors.document_id ? "error" : ""}
-        maxLength={8}
-        // Extraemos solo los números para mostrar en el input
-        value={formData.document_id.split('-')[1] || ""}
-        addonBefore={
-            <Select
-                // Extraemos el prefijo del estado (V, J o E). Por defecto "V"
-                value={formData.document_id.split('-')[0] || "V"}
-                className="w-16"
-                onChange={(prefix) => {
-                    const currentNumbers = formData.document_id.split('-')[1] || "";
-                    handleChange("document_id")({
-                        target: {
-                            name: "document_id",
-                            value: `${prefix}-${currentNumbers}`,
-                        },
-                    } as React.ChangeEvent<HTMLInputElement>);
-                }}
-            >
-                <Option value="V">V-</Option>
-                <Option value="J">J-</Option>
-                <Option value="E">E-</Option>
-            </Select>
-        }
-        onChange={(e) => {
-            const onlyNumbers = e.target.value.replace(/[^\d]/g, "").slice(0, 8);
-            const currentPrefix = formData.document_id.split('-')[0] || "V";
-            
-            handleChange("document_id")({
-                target: {
-                    name: "document_id",
-                    value: `${currentPrefix}-${onlyNumbers}`,
-                },
-            } as React.ChangeEvent<HTMLInputElement>);
-        }}
-    />
-    {errors.document_id && (
-        <span className="text-red-500 text-xs ml-1 mt-1">
-            {errors.document_id}
-        </span>
-    )}
-</div>
+				<div className="flex flex-col gap-1">
+					<label
+						htmlFor="document_id"
+						className="text-sm font-semibold text-gray-700 ml-1"
+					>
+						Documento de Identidad <span className="text-red-500">*</span>
+					</label>
+					<Space.Compact>
+						<Select
+							// Extraemos el prefijo del estado (V, J o E). Por defecto "V"
+							value={formData.document_id.split("-")[0] || "V"}
+							className="w-16 h-12"
+							size="large"
+							onChange={(prefix) => {
+								const currentNumbers = formData.document_id.split("-")[1] || ""
+								handleChange("document_id")({
+									target: {
+										name: "document_id",
+										value: `${prefix}-${currentNumbers}`,
+									},
+								} as React.ChangeEvent<HTMLInputElement>)
+							}}
+						>
+							<Option value="V">V-</Option>
+							<Option value="J">J-</Option>
+							<Option value="E">E-</Option>
+						</Select>
+						<Input
+							id="document_id"
+							name="document_id"
+							size="large"
+							placeholder="12345678"
+							className="rounded-xl h-12"
+							status={errors.document_id ? "error" : ""}
+							maxLength={8}
+							// Extraemos solo los números para mostrar en el input
+							value={formData.document_id.split("-")[1] || ""}
+							onChange={(e) => {
+								const onlyNumbers = e.target.value
+									.replace(/[^\d]/g, "")
+									.slice(0, 8)
+								const currentPrefix = formData.document_id.split("-")[0] || "V"
+
+								handleChange("document_id")({
+									target: {
+										name: "document_id",
+										value: `${currentPrefix}-${onlyNumbers}`,
+									},
+								} as React.ChangeEvent<HTMLInputElement>)
+							}}
+						/>
+					</Space.Compact>
+					{errors.document_id && (
+						<span className="text-red-500 text-xs ml-1 mt-1">
+							{errors.document_id}
+						</span>
+					)}
+				</div>
 				{/* Email */}
 				<div className="flex flex-col gap-1">
 					<label
@@ -298,7 +304,6 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 						value={formData.email}
 						onChange={handleChange("email")}
 						status={errors.email ? "error" : ""}
-						prefix={<FaEnvelope className="text-gray-400 mr-2" />}
 						className="rounded-xl h-12"
 					/>
 					{errors.email && (
@@ -308,10 +313,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 					)}
 				</div>
 
-				<div>
+				<div className="flex flex-col gap-1">
 					<label
 						htmlFor="phone"
-						className="text-sm text-text ml-1 mb-1 flex justify-start"
+						className="text-sm text-gray-700 ml-1 font-semibold flex justify-start"
 					>
 						Teléfono
 						<span className="text-red-500 ml-1">*</span>
@@ -322,7 +327,7 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 							setFormData((prev) => ({ ...prev, phone: e164Value }))
 						}
 						placeholder="4XX XXX XXXX"
-						className={errors.phone ? "border-red-500" : ""}
+						className={`w-full h-12 ${errors.phone ? "border-red-500" : ""}`}
 					/>
 					{errors.phone && (
 						<p
@@ -479,7 +484,7 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 									} as React.KeyboardEvent<HTMLInputElement>)
 								}
 								icon={<FaPlus />}
-								className="!text-primary hover:!scale-110 transition-transform !p-0 !min-w-0 !h-auto"
+								className="text-primary! hover:scale-110! transition-transform p-0! min-w-0! h-auto!"
 							/>
 						}
 					/>
