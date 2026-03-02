@@ -74,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 				<Sidebar
 					user={user}
 					menuItems={menuItems}
-					isSidebarOpen={isMobile ? true : isSidebarOpen}
+					isSidebarOpen={isSidebarOpen}
 					activeMenuItem={activeMenuItem}
 					onMenuItemClick={handleMenuItemClick}
 					onToggleSidebar={onToggleSidebar}
@@ -83,23 +83,27 @@ const Dashboard: React.FC<DashboardProps> = ({
 			</div>
 
 			{/* Contenido principal; menú móvil va en el header (home) o en barra superior (resto) */}
-			<main className="flex-1 overflow-auto relative min-w-0 flex flex-col">
-				<DashboardLayoutProvider
-					value={{ isMobile, onToggleSidebar }}
-				>
+			<main
+				className={`flex-1 overflow-auto relative min-w-0 flex flex-col ${isMobile && location.pathname !== "/dashboard/home" ? "pt-7" : ""}`}
+			>
+				<DashboardLayoutProvider value={{ isMobile, onToggleSidebar }}>
 					{/* En páginas que no son home, barra con solo hamburger para abrir menú */}
 					{isMobile && location.pathname !== "/dashboard/home" && (
-						<div className="flex items-center shrink-0 h-10 px-3 border-b border-gray-200 bg-white/95">
-							<Button
-								type="button"
-								variant="text"
-								onClick={onToggleSidebar}
-								aria-label="Abrir menú"
-								className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center !text-gray-600 hover:!bg-gray-100 !rounded-md"
-							>
-								<HiOutlineBars3 className="w-5 h-5 text-gray-600" />
-							</Button>
-						</div>
+						<>
+							<div className="fixed top-2 left-0 w-full flex items-center shrink-0 h-10 px-3 bg-transparent z-20">
+								<Button
+									type="button"
+									variant="text"
+									onClick={onToggleSidebar}
+									aria-label="Abrir menú"
+									className="!w-8 !h-8 !min-w-0 !p-0 flex items-center justify-center !text-gray-600 hover:!bg-gray-100 !rounded-md"
+								>
+									<HiOutlineBars3 className="w-5 h-5 text-gray-600" />
+								</Button>
+							</div>
+							{/* spacer so content scrolls below fixed header */}
+							<div className="h-10" />
+						</>
 					)}
 					{children}
 				</DashboardLayoutProvider>

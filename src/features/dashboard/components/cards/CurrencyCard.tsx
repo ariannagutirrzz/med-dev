@@ -1,6 +1,6 @@
 import { Button, formatPrice } from "../../../../shared"
-import { useCurrencyRates } from "../../hooks/useCurrencyRates"
 import { useAuth } from "../../../auth"
+import { useCurrencyRates } from "../../hooks/useCurrencyRates"
 
 export const CurrencyCard = () => {
 	const { user } = useAuth()
@@ -37,11 +37,15 @@ export const CurrencyCard = () => {
 					<>
 						<div className="flex flex-row justify-between items-center text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
 							<span>{currencyRates.oficial.nombre}</span>
-							<span className="text-right tabular-nums">{formatPrice(currencyRates.oficial.promedio)}</span>
+							<span className="text-right tabular-nums">
+								{formatPrice(currencyRates.oficial.promedio)}
+							</span>
 						</div>
 						<div className="flex flex-row justify-between items-center text-xs sm:text-sm md:text-base font-semibold text-gray-400 px-1 sm:px-2 md:px-4">
 							<span>{currencyRates.paralelo.nombre}</span>
-							<span className="text-right tabular-nums">{formatPrice(currencyRates.paralelo.promedio)}</span>
+							<span className="text-right tabular-nums">
+								{formatPrice(currencyRates.paralelo.promedio)}
+							</span>
 						</div>
 
 						{user?.role === "Médico" && (
@@ -81,7 +85,9 @@ export const CurrencyCard = () => {
 					</>
 				) : (
 					<div className="flex items-center justify-center flex-1">
-						<span className="text-gray-400 text-xs sm:text-sm">Error al cargar tasas</span>
+						<span className="text-gray-400 text-xs sm:text-sm">
+							Error al cargar tasas
+						</span>
 					</div>
 				)}
 			</div>

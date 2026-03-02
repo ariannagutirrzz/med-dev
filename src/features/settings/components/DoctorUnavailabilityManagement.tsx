@@ -161,8 +161,8 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="flex justify-between items-center">
-				<div>
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+				<div className="w-full md:w-auto text-center md:text-left">
 					<h3 className="text-lg font-semibold text-gray-800">
 						Períodos de Indisponibilidad
 					</h3>
@@ -177,6 +177,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 					variant="primary"
 					onClick={() => handleOpenModal()}
 					icon={<FaPlus />}
+					className="w-full md:w-auto"
 				>
 					Nuevo Período
 				</Button>
@@ -232,7 +233,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 									</span>
 								)}
 							</div>
-							<div className="flex items-center gap-2 mt-auto">
+							<div className="flex sm:flex-row items-center gap-2 mt-auto">
 								<Button
 									type="button"
 									variant="default"

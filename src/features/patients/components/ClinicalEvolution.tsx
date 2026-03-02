@@ -155,7 +155,7 @@ export default function ClinicalEvolution({
 					{evolutions.map((evo) => (
 						<div
 							key={evo.id}
-							className="group bg-gray-50 rounded-xl border-2 border-gray-200 p-5 hover:shadow-md hover:border-primary transition-all duration-200 flex flex-col"
+							className="group bg-gray-100 rounded-xl border-2 border-gray-200 p-5 shadow-lg hover:border-primary transition-all duration-200 flex flex-col"
 						>
 							{/* Header de la Card */}
 							<div className="flex justify-between items-center mb-4">

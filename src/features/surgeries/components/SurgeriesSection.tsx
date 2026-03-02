@@ -294,49 +294,51 @@ const SurgeriesSection = () => {
 
 			{/* Filtros y búsqueda */}
 			<div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-				<div className="flex flex-wrap gap-4 items-center">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					{/* Input de Búsqueda */}
-					<div className="flex-1 min-w-[200px]">
+					<div className="flex-1 min-w-0">
 						<Input
 							placeholder="Buscar por paciente, médico, tipo o notas..."
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
-							className='"w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"'
+							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 							prefix={<MdSearch className="text-gray-400 w-5 h-5 mr-2" />}
 							allowClear
 							style={{ height: "45px", display: "flex", alignItems: "center" }}
 						/>
 					</div>
 
-					{/* Select de Estado */}
-					<Select
-						value={statusFilter}
-						onChange={(value) => setStatusFilter(value)}
-						className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" // !p-0 para que AntD maneje el padding interno
-						style={{ height: "45px" }}
-						options={[
-							{ value: "all", label: "Todos los estados" },
-							{ value: "scheduled", label: "Programada" },
-							{ value: "in_progress", label: "En Progreso" },
-							{ value: "completed", label: "Completada" },
-							{ value: "cancelled", label: "Cancelada" },
-							{ value: "postponed", label: "Aplazada" },
-						]}
-					/>
+					<div className="flex gap-4 flex-wrap items-center">
+						{/* Select de Estado */}
+						<Select
+							value={statusFilter}
+							onChange={(value) => setStatusFilter(value)}
+							className="w-full sm:w-[220px] px-2"
+							style={{ height: "45px" }}
+							options={[
+								{ value: "all", label: "Todos los estados" },
+								{ value: "scheduled", label: "Programada" },
+								{ value: "in_progress", label: "En Progreso" },
+								{ value: "completed", label: "Completada" },
+								{ value: "cancelled", label: "Cancelada" },
+								{ value: "postponed", label: "Aplazada" },
+							]}
+						/>
 
-					{/* Select de Fecha */}
-					<Select
-						value={dateFilter}
-						onChange={(value) => setDateFilter(value)}
-						className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-						style={{ height: "45px" }}
-						options={[
-							{ value: "all", label: "Todas las fechas" },
-							{ value: "today", label: "Hoy" },
-							{ value: "week", label: "Esta semana" },
-							{ value: "month", label: "Este mes" },
-						]}
-					/>
+						{/* Select de Fecha */}
+						<Select
+							value={dateFilter}
+							onChange={(value) => setDateFilter(value)}
+							className="w-full sm:w-[180px] px-2"
+							style={{ height: "45px" }}
+							options={[
+								{ value: "all", label: "Todas las fechas" },
+								{ value: "today", label: "Hoy" },
+								{ value: "week", label: "Esta semana" },
+								{ value: "month", label: "Este mes" },
+							]}
+						/>
+					</div>
 				</div>
 			</div>
 
@@ -366,25 +368,25 @@ const SurgeriesSection = () => {
 									key={surgery.id}
 									className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
 								>
-									<div className="flex justify-between items-center">
-										<div className="flex gap-4 flex-1">
-											<div className="bg-primary/10 p-3 flex items-center rounded-lg">
+									<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+										<div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+											<div className="bg-primary/10 p-3 flex items-center rounded-lg shrink-0">
 												<FaStethoscope className="w-6 h-6 text-primary" />
 											</div>
-											<div className="flex-1">
-												<h4 className="font-semibold text-gray-800">
+											<div className="flex-1 min-w-0">
+												<h4 className="font-semibold text-gray-800 truncate">
 													{surgery.surgery_type || "Sin tipo especificado"}
 												</h4>
-												<p className="text-gray-600 text-sm mt-1">
+												<p className="text-gray-600 text-sm mt-1 truncate">
 													Paciente: {patientName || "Sin nombre"}
 												</p>
 												{surgery.doctor_name && (
-													<p className="text-gray-600 text-sm">
+													<p className="text-gray-600 text-sm truncate">
 														Médico: {surgery.doctor_name}
 													</p>
 												)}
 												{surgery.notes && (
-													<p className="text-gray-600 text-sm mt-1">
+													<p className="text-gray-600 text-sm mt-1 truncate">
 														{surgery.notes}
 													</p>
 												)}
@@ -416,7 +418,7 @@ const SurgeriesSection = () => {
 												</div>
 											</div>
 										</div>
-										<div className="flex items-center gap-3">
+										<div className="flex items-center gap-3 justify-end">
 											{getStatusBadge(surgery.status || "scheduled")}
 											<div className="flex gap-2">
 												<Button

@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useState } from "react"
-import { FaCalendarCheck, FaChartLine, FaProcedures, FaUserPlus } from "react-icons/fa"
+import {
+	FaCalendarCheck,
+	FaChartLine,
+	FaProcedures,
+	FaUserPlus,
+} from "react-icons/fa"
 import { toast } from "react-toastify"
 import { Button } from "../../../shared"
 import {
-	getDemandPrediction,
 	type DemandPredictionResult,
+	getDemandPrediction,
 	type PredictionPeriod,
 } from "../services/DemandPredictionAPI"
 
@@ -49,12 +54,10 @@ const DemandPredictionSection = () => {
 		fetchPrediction()
 	}, [fetchPrediction])
 
-	const predictedAppointments = data?.appointments.byDate.filter(
-		(d) => d.type === "predicted",
-	) ?? []
-	const predictedSurgeries = data?.surgeries.byDate.filter(
-		(d) => d.type === "predicted",
-	) ?? []
+	const predictedAppointments =
+		data?.appointments.byDate.filter((d) => d.type === "predicted") ?? []
+	const predictedSurgeries =
+		data?.surgeries.byDate.filter((d) => d.type === "predicted") ?? []
 
 	return (
 		<div className="p-6">
@@ -64,8 +67,8 @@ const DemandPredictionSection = () => {
 					Predicción de demandas
 				</h1>
 				<p className="text-gray-600">
-					Estimación de demanda de citas, cirugías y nuevos pacientes (últimos 90
-					días). En unidades con poco volumen la predicción es orientativa.
+					Estimación de demanda de citas, cirugías y nuevos pacientes (últimos
+					90 días). En unidades con poco volumen la predicción es orientativa.
 				</p>
 			</div>
 
@@ -105,10 +108,10 @@ const DemandPredictionSection = () => {
 						data.surgeries.meta.dataQuality === "low" ||
 						data.newPatients.meta.dataQuality === "low") && (
 						<div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
-							<strong>Unidad con poco volumen.</strong> La predicción se basa
-							en pocos datos históricos y es solo orientativa. Use como
-							referencia para planificación; la precisión mejorará con más
-							registros en el tiempo.
+							<strong>Unidad con poco volumen.</strong> La predicción se basa en
+							pocos datos históricos y es solo orientativa. Use como referencia
+							para planificación; la precisión mejorará con más registros en el
+							tiempo.
 						</div>
 					)}
 
@@ -207,7 +210,7 @@ const DemandPredictionSection = () => {
 					</div>
 
 					{/* Predicted by date (selected period) */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
 						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
 							<h3 className="font-semibold text-gray-800 mb-3">
 								Citas previstas por día (próximos {period} días)
@@ -253,8 +256,7 @@ const DemandPredictionSection = () => {
 												{formatDate(row.date)}
 											</span>
 											<span className="font-medium text-primary">
-												{row.count}{" "}
-												{row.count === 1 ? "cirugía" : "cirugías"}
+												{row.count} {row.count === 1 ? "cirugía" : "cirugías"}
 											</span>
 										</div>
 									))
@@ -263,7 +265,7 @@ const DemandPredictionSection = () => {
 						</div>
 					</div>
 
-					<p className="mt-4 text-sm text-gray-500">
+					<p className="text-sm text-gray-500">
 						La predicción combina el promedio por día de la semana (cuando hay
 						suficientes datos) con el promedio global en unidades con poco
 						volumen. Útil para planificar insumos y personal.

@@ -27,6 +27,7 @@ export default function GenerateAI() {
 	}, [messages])
 
 	// Auto-scroll optimizado para streaming
+	// biome-ignore lint/correctness/useExhaustiveDependencies: false positive
 	useEffect(() => {
 		if (scrollRef.current) {
 			scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -176,7 +177,7 @@ export default function GenerateAI() {
 			<div className="shrink-0 pt-2 bg-transparent">
 				<form onSubmit={handleSubmit} className="relative group">
 					<div className="absolute inset-0 bg-primary/5 blur-xl rounded-[3rem] group-focus-within:bg-primary/10 transition-all"></div>
-					<div className="relative flex items-center bg-white border border-gray-200 shadow-2xl rounded-4xl p-1.5 transition-all focus-within:border-primary/40">
+					<div className="relative flex items-center bg-white border border-gray-200 shadow-2xl rounded-4xl p-1.5 transition-all focus-within:border-primary/40 mb-4">
 						<input
 							type="text"
 							value={prompt}
@@ -189,7 +190,12 @@ export default function GenerateAI() {
 							type="submit"
 							disabled={!prompt.trim() || isLoading}
 							loading={isLoading}
-							icon={<FaPaperPlane size={16} className={isLoading ? "animate-pulse" : ""} />}
+							icon={
+								<FaPaperPlane
+									size={16}
+									className={isLoading ? "animate-pulse" : ""}
+								/>
+							}
 							className={`!p-3.5 !rounded-2xl !min-w-0 ${
 								prompt.trim() && !isLoading
 									? "shadow-lg hover:scale-105"
@@ -198,7 +204,7 @@ export default function GenerateAI() {
 						/>
 					</div>
 				</form>
-				<p className="text-[10px] text-center text-gray-400 mt-3 uppercase tracking-widest font-bold">
+				<p className="text-[10px] text-center text-gray-400 uppercase tracking-widest font-bold">
 					Conectado al sistema: inventario, citas y pacientes
 				</p>
 			</div>

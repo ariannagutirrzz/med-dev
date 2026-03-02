@@ -262,8 +262,8 @@ const AppointmentsSection = () => {
 
 			{/* Filtros y búsqueda */}
 			<div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-				<div className="flex flex-wrap gap-4">
-					<div className="flex-1 min-w-[200px]">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div className="flex-1 min-w-0">
 						<div className="relative">
 							<MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
 							<Input
@@ -280,12 +280,12 @@ const AppointmentsSection = () => {
 							/>
 						</div>
 					</div>
-					<div className="flex gap-4">
+					<div className="flex gap-4 flex-wrap">
 						{/* Filtro de Estado */}
 						<Select
 							value={statusFilter}
 							onChange={(value) => setStatusFilter(value)}
-							className="w-[200px]" // AntD usa anchos definidos o crece según el contenido
+							className="w-full" // AntD usa anchos definidos o crece según el contenido
 							placeholder="Seleccionar estado"
 							// Estilos de Tailwind se pueden aplicar vía style o envolviendo el componente
 							style={{ height: "42px" }}
@@ -302,7 +302,7 @@ const AppointmentsSection = () => {
 						<Select
 							value={dateFilter}
 							onChange={(value) => setDateFilter(value)}
-							className="w-[200px]"
+							className="w-full"
 							placeholder="Filtrar por fecha"
 							style={{ height: "42px" }}
 							options={[
@@ -346,12 +346,12 @@ const AppointmentsSection = () => {
 									key={appointment.id}
 									className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
 								>
-									<div className="flex justify-between items-center">
-										<div className="flex gap-4 flex-1">
-											<div className="bg-primary/10 flex items-center p-3 rounded-lg">
+									<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+										<div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+											<div className="bg-primary/10 flex items-center p-3 rounded-lg shrink-0">
 												<FaCalendarCheck className="w-6 h-6 text-primary" />
 											</div>
-											<div className="flex-1">
+											<div className="flex-1 min-w-0">
 												<h4 className="font-semibold text-gray-800">
 													{displayName || "Sin nombre"}
 												</h4>
@@ -394,7 +394,7 @@ const AppointmentsSection = () => {
 												</div>
 											</div>
 										</div>
-										<div className="flex items-center gap-3">
+										<div className="flex items-center gap-3 justify-end">
 											{getStatusBadge(appointment.status)}
 											<div className="flex gap-2">
 												<Button
