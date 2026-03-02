@@ -6,6 +6,7 @@ export async function chatStream(req: Request, res: Response) {
 		message?: string
 		history?: Array<{ role: "user" | "assistant"; content: string }>
 	}
+	const doctorId = req.user?.document_id
 
 	if (!message || typeof message !== "string" || !message.trim()) {
 		return res.status(400).json({ error: "Se requiere el campo 'message'" })
@@ -19,7 +20,7 @@ export async function chatStream(req: Request, res: Response) {
 	}
 
 	try {
-		const result = await createAiStream(message.trim(), history)
+		const result = await createAiStream(message.trim(), doctorId ?? "", history)
 		result.pipeTextStreamToResponse(res)
 	} catch (err: unknown) {
 		console.error("AI chat error:", err)
