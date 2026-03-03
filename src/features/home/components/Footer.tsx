@@ -2,6 +2,10 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa"
 
 const Footer = () => {
 	const currentYear = new Date().getFullYear()
+	const whatsappMessage = encodeURIComponent(
+		"Hola, me gustaría agendar una cita para una consulta.",
+	)
+	const whatsappLink = `https://wa.me/+584246599756?text=${whatsappMessage}`
 
 	return (
 		<footer id="contact" className="bg-primary text-white mt-16">
@@ -85,7 +89,7 @@ const Footer = () => {
 								<FaInstagram className="w-6 h-6" />
 							</a>
 							<a
-								href="https://wa.me/+584246599756"
+								href={whatsappLink}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="bg-white/10 hover:bg-white/20 rounded-full p-3 transition-colors"

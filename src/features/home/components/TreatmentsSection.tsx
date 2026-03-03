@@ -111,7 +111,7 @@ const TreatmentsSection = () => {
 							className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-primary text-red-600 rounded-full p-3 hover:bg-primary-dark hover:shadow-[0_14px_30px_rgba(120,154,97,0.25)] transition-all duration-300 shadow-lg"
 							aria-label="Siguiente tratamiento"
 						>
-							<FaChevronRight className="w-5 h-5" />
+							<FaChevronRight className="w-5 h-5 text-white" />
 						</button>
 
 						{/* Treatment Card */}
