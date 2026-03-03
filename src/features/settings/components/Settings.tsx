@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { api, getStoredToken, getStoredUser } from "../../../config/axios"
 import type { MyTokenPayload } from "../../../shared"
 import { Button, PhoneInput } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { parsePhoneToE164 } from "../../../shared/utils/phoneFormat"
 import {
 	getSettings,
@@ -238,9 +239,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 	if (loading) {
 		return (
 			<div className="p-6">
-				<div className="flex items-center justify-center min-h-[400px]">
-					<div className="text-gray-600">Cargando configuración...</div>
-				</div>
+				<LoadingSpinner loadingMessage="CARGANDO CONFIGURACIÓN..." />
 			</div>
 		)
 	}

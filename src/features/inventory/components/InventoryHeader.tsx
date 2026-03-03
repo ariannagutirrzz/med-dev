@@ -26,7 +26,7 @@ const InventoryHeader = ({
 				},
 			}}
 		>
-			<div className="w-full bg-white p-1 rounded-2xl border border-gray-200 shadow-sm flex flex-row items-center transition-all focus-within:ring-2 focus-within:ring-lime-600/20">
+			<div className="w-full bg-white p-1 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row items-center transition-all focus-within:ring-2 focus-within:ring-lime-600/20 gap-2 md:gap-0">
 				{/* Buscador de Ant Design */}
 				<Input
 					placeholder="Buscar por nombre o código..."
@@ -37,11 +37,11 @@ const InventoryHeader = ({
 					allowClear // Permite borrar la búsqueda con una "X"
 				/>
 
-				{/* Línea divisoria sutil */}
-				<div className="h-8 w-px bg-gray-200 mx-2"></div>
+				{/* Línea divisoria sutil (solo en escritorio) */}
+				<div className="hidden md:block h-8 w-px bg-gray-200 mx-2"></div>
 
 				{/* Filtro de Categoría */}
-				<div className="flex items-center pr-2 min-w-[210px]">
+				<div className="flex items-center pr-2 md:pr-2 min-w-0 w-full md:w-[210px]">
 					<Select
 						id="category_filter"
 						value={categoryFilter}

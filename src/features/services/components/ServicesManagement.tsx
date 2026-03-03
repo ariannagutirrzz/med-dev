@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useState } from "react"
+import { FaDollarSign, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import { toast } from "react-toastify"
-import { FaPlus, FaEdit, FaTrash, FaDollarSign } from "react-icons/fa"
+import { Button, formatPrice } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
+import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import {
+	getSettings,
+	type UserSettings,
+} from "../../settings/services/SettingsAPI"
+import {
+	type CreateDoctorServiceInput,
 	createService,
+	type DoctorServiceWithType,
 	deleteService,
 	getMyServices,
 	updateService,
-	type CreateDoctorServiceInput,
-	type DoctorServiceWithType,
 } from "../services/ServicesAPI"
-import { getSettings, type UserSettings } from "../../settings/services/SettingsAPI"
-import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
-import { formatPrice } from "../../../shared"
-import { Button } from "../../../shared"
 
 const ServicesManagement: React.FC = () => {
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
@@ -20,7 +23,8 @@ const ServicesManagement: React.FC = () => {
 	const [currencyRates, setCurrencyRates] = useState<any>(null)
 	const [loading, setLoading] = useState(true)
 	const [showModal, setShowModal] = useState(false)
-	const [editingService, setEditingService] = useState<DoctorServiceWithType | null>(null)
+	const [editingService, setEditingService] =
+		useState<DoctorServiceWithType | null>(null)
 	const [formData, setFormData] = useState({
 		service_name: "",
 		price_usd: "",
@@ -50,7 +54,7 @@ const ServicesManagement: React.FC = () => {
 		loadData()
 	}, [loadData])
 
-		const handleOpenModal = (service?: DoctorServiceWithType) => {
+	const handleOpenModal = (service?: DoctorServiceWithType) => {
 		if (service) {
 			setEditingService(service)
 			setFormData({
@@ -111,7 +115,9 @@ const ServicesManagement: React.FC = () => {
 	}
 
 	const handleDelete = async (id: number) => {
-		if (!window.confirm("¿Estás seguro de que deseas eliminar este servicio?")) {
+		if (
+			!window.confirm("¿Estás seguro de que deseas eliminar este servicio?")
+		) {
 			return
 		}
 		try {
@@ -126,18 +132,16 @@ const ServicesManagement: React.FC = () => {
 
 	const getPriceInBS = (priceUsd: number): number => {
 		const exchangeRate =
-			settings?.custom_exchange_rate ||
-			currencyRates?.oficial?.promedio ||
-			0
+			settings?.custom_exchange_rate || currencyRates?.oficial?.promedio || 0
 		return priceUsd * exchangeRate
 	}
 
-
 	if (loading) {
 		return (
-			<div className="p-6">
-				<div className="animate-pulse">Cargando servicios...</div>
-			</div>
+			<LoadingSpinner
+				className="min-h-screen"
+				loadingMessage="CARGANDO SERVICIOS..."
+			/>
 		)
 	}
 
@@ -145,7 +149,9 @@ const ServicesManagement: React.FC = () => {
 		<div className="p-6">
 			<div className="mb-4 flex justify-between items-center">
 				<div>
-					<h1 className="text-2xl font-bold text-gray-800">Gestión de Servicios</h1>
+					<h1 className="text-2xl font-bold text-gray-800">
+						Gestión de Servicios
+					</h1>
 					<p className="text-sm text-gray-600 mt-1">
 						Administra tus servicios y precios
 					</p>
@@ -246,7 +252,9 @@ const ServicesManagement: React.FC = () => {
 			{services.length === 0 && (
 				<div className="text-center py-8 bg-white rounded-lg border border-gray-200">
 					<FaDollarSign className="text-4xl text-gray-300 mx-auto mb-3" />
-					<p className="text-gray-600 text-base">No tienes servicios configurados</p>
+					<p className="text-gray-600 text-base">
+						No tienes servicios configurados
+					</p>
 					<p className="text-gray-500 text-sm mt-1">
 						Agrega tu primer servicio para comenzar
 					</p>
@@ -264,7 +272,10 @@ const ServicesManagement: React.FC = () => {
 						<form onSubmit={handleSubmit} className="space-y-3">
 							{!editingService && (
 								<div>
-									<label htmlFor="service_name" className="block text-xs font-medium text-gray-700 mb-1">
+									<label
+										htmlFor="service_name"
+										className="block text-xs font-medium text-gray-700 mb-1"
+									>
 										Nombre del Tratamiento/Servicio *
 									</label>
 									<input
@@ -285,7 +296,10 @@ const ServicesManagement: React.FC = () => {
 							)}
 							{editingService && (
 								<div>
-									<label htmlFor="service_name_disabled" className="block text-xs font-medium text-gray-700 mb-1">
+									<label
+										htmlFor="service_name_disabled"
+										className="block text-xs font-medium text-gray-700 mb-1"
+									>
 										Nombre del Servicio
 									</label>
 									<input
@@ -302,7 +316,10 @@ const ServicesManagement: React.FC = () => {
 							)}
 
 							<div>
-								<label htmlFor="price_usd" className="block text-xs font-medium text-gray-700 mb-1">
+								<label
+									htmlFor="price_usd"
+									className="block text-xs font-medium text-gray-700 mb-1"
+								>
 									Precio (USD)
 								</label>
 								<input
@@ -329,7 +346,10 @@ const ServicesManagement: React.FC = () => {
 									}
 									className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
 								/>
-								<label htmlFor="is_active" className="text-sm text-gray-700 cursor-pointer">
+								<label
+									htmlFor="is_active"
+									className="text-sm text-gray-700 cursor-pointer"
+								>
 									Servicio activo
 								</label>
 							</div>

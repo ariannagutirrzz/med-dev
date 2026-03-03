@@ -4,6 +4,7 @@ import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 import type { Patient } from "../../../shared"
 import { Button, calcularEdad, formatPhoneDisplay } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 // 1. Importamos el service
 import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
@@ -22,11 +23,13 @@ export default function MedicalRecords() {
 	const [searchTerm, setSearchTerm] = useState("")
 	const { user } = useAuth()
 	const [currentPage, setCurrentPage] = useState(1)
+	const [isLoading, setIsLoading] = useState(false)
 	const pageSize = 8 // Número de pacientes por página
 
 	// 3. FUNCIÓN DE CARGA (Memoizada para evitar errores de linter y re-renders)
 	const loadPatients = useCallback(async () => {
 		try {
+			setIsLoading(true)
 			let data: { patients: Patient[] }
 			if (user?.role === "Admin") {
 				data = await getPatients()
@@ -41,6 +44,8 @@ export default function MedicalRecords() {
 			setRecords(formattedData)
 		} catch (error) {
 			console.error("Error al cargar pacientes:", error)
+		} finally {
+			setIsLoading(false)
 		}
 	}, [user])
 
@@ -157,128 +162,132 @@ export default function MedicalRecords() {
 					Historias Médicas
 				</h3>
 
-				<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-2">
-					<Button
-						type="button"
-						variant="default"
-						onClick={handleCreatePatient}
-						className="w-full! h-100! rounded-[2.5rem]! border-2! border-dashed! border-gray-300 flex! flex-col! items-center! justify-center! p-4! hover:border-primary! hover:bg-primary/5! bg-white! shadow-sm! group"
-					>
-						<CiSquarePlus className="text-primary w-14 h-14 transition-transform duration-300 group-hover:scale-110" />
-						<span className="text-gray-400 mt-2 font-black uppercase text-xs tracking-widest group-hover:text-primary">
-							Nuevo Registro
-						</span>
-					</Button>
+				{isLoading ? (
+					<LoadingSpinner loadingMessage="CARGANDO PACIENTES..." />
+				) : (
+					<div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-2">
+						<Button
+							type="button"
+							variant="default"
+							onClick={handleCreatePatient}
+							className="w-full! h-100! rounded-[2.5rem]! border-2! border-dashed! border-gray-300 flex! flex-col! items-center! justify-center! p-4! hover:border-primary! hover:bg-primary/5! bg-white! shadow-sm! group"
+						>
+							<CiSquarePlus className="text-primary w-14 h-14 transition-transform duration-300 group-hover:scale-110" />
+							<span className="text-gray-400 mt-2 font-black uppercase text-xs tracking-widest group-hover:text-primary">
+								Nuevo Registro
+							</span>
+						</Button>
 
-					{currentRecords.map((record) => (
-						<div key={record.document_id} className="relative group">
-							{/* Card is a div so the edit Button can live inside without nested buttons */}
-							{/* biome-ignore lint/a11y/useSemanticElements: card contains edit Button; nested <button> is invalid */}
-							<div
-								role="button"
-								tabIndex={0}
-								onClick={() => {
-									setSelectedPatient(record)
-									setView("details")
-								}}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" || e.key === " ") {
-										e.preventDefault()
+						{currentRecords.map((record) => (
+							<div key={record.document_id} className="relative group">
+								{/* Card is a div so the edit Button can live inside without nested buttons */}
+								{/* biome-ignore lint/a11y/useSemanticElements: card contains edit Button; nested <button> is invalid */}
+								<div
+									role="button"
+									tabIndex={0}
+									onClick={() => {
 										setSelectedPatient(record)
 										setView("details")
-									}
-								}}
-								className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden relative"
-							>
-								<div className="flex justify-between items-start mb-6 w-full">
-									<h4 className="text-xl font-black text-gray-800 leading-tight group-hover:text-primary transition-colors">
-										{record.first_name} <br /> {record.last_name}
-									</h4>
-									<span
-										className={`px-4 py-1.5 rounded-full text-[11px] font-black shrink-0 shadow-sm ${
-											record.gender === "M"
-												? "bg-blue-100 text-blue-600"
-												: "bg-pink-100 text-pink-600"
-										}`}
-									>
-										{record.gender}
-									</span>
-								</div>
+									}}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" || e.key === " ") {
+											e.preventDefault()
+											setSelectedPatient(record)
+											setView("details")
+										}
+									}}
+									className="w-full h-100 bg-gray-50 rounded-[2.5rem] shadow-sm border border-gray-200 p-8 hover:shadow-xl hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden relative"
+								>
+									<div className="flex justify-between items-start mb-6 w-full">
+										<h4 className="text-xl font-black text-gray-800 leading-tight group-hover:text-primary transition-colors">
+											{record.first_name} <br /> {record.last_name}
+										</h4>
+										<span
+											className={`px-4 py-1.5 rounded-full text-[11px] font-black shrink-0 shadow-sm ${
+												record.gender === "M"
+													? "bg-blue-100 text-blue-600"
+													: "bg-pink-100 text-pink-600"
+											}`}
+										>
+											{record.gender}
+										</span>
+									</div>
 
-								<div className="flex-1 space-y-4 w-full">
-									<div className="flex flex-col">
-										<div>
-											<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
-												Identificación
-											</p>
-											<p className="text-gray-700 text-sm font-bold">
-												{record.document_id}
-											</p>
+									<div className="flex-1 space-y-4 w-full">
+										<div className="flex flex-col">
+											<div>
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
+													Identificación
+												</p>
+												<p className="text-gray-700 text-sm font-bold">
+													{record.document_id}
+												</p>
+											</div>
+											<div>
+												<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
+													Edad
+												</p>
+												<p className="text-gray-700 text-sm font-bold">
+													{calcularEdad(record.birthdate)} años
+												</p>
+											</div>
 										</div>
-										<div>
-											<p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
-												Edad
+
+										<div className="border-t border-gray-100">
+											<p className="text-gray-500 text-[13px] flex items-center italic truncate">
+												<CiMail className="mr-3 text-primary w-5 h-5" />
+												{record.email}
 											</p>
-											<p className="text-gray-700 text-sm font-bold">
-												{calcularEdad(record.birthdate)} años
+											<p className="text-gray-500 text-[13px] flex items-center font-medium">
+												<CiPhone className="mr-3 text-primary w-5 h-5" />
+												{formatPhoneDisplay(record.phone ?? "")}
 											</p>
 										</div>
 									</div>
 
-									<div className="border-t border-gray-100">
-										<p className="text-gray-500 text-[13px] flex items-center italic truncate">
-											<CiMail className="mr-3 text-primary w-5 h-5" />
-											{record.email}
+									<div className="mt-2 pt-2 border-t border-gray-100 flex flex-col w-full">
+										<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
+											Fecha de Nacimiento
 										</p>
-										<p className="text-gray-500 text-[13px] flex items-center font-medium">
-											<CiPhone className="mr-3 text-primary w-5 h-5" />
-											{formatPhoneDisplay(record.phone ?? "")}
+										<p className="text-xs text-gray-600 flex items-center font-bold">
+											<CiCalendar className="mr-2 text-primary w-5 h-5" />
+											{record.birthdate.toLocaleDateString("es-ES", {
+												day: "2-digit",
+												month: "long",
+												year: "numeric",
+											})}
 										</p>
 									</div>
-								</div>
 
-								<div className="mt-2 pt-2 border-t border-gray-100 flex flex-col w-full">
-									<p className="text-[9px] text-gray-400 uppercase font-black mb-1">
-										Fecha de Nacimiento
-									</p>
-									<p className="text-xs text-gray-600 flex items-center font-bold">
-										<CiCalendar className="mr-2 text-primary w-5 h-5" />
-										{record.birthdate.toLocaleDateString("es-ES", {
-											day: "2-digit",
-											month: "long",
-											year: "numeric",
-										})}
-									</p>
+									<Button
+										type="button"
+										variant="text"
+										onClick={(e) => {
+											e.stopPropagation()
+											handleEditPatient(e, record)
+										}}
+										icon={<LuPencilLine className="h-6 w-6 text-gray-600" />}
+										className="p-2! min-w-0! bg-white! borde! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! hover:shadow-lg! rounded-2xl z-10 shadow-md"
+										style={{
+											position: "absolute",
+											right: "1.5rem",
+											bottom: "1.5rem",
+											left: "auto",
+										}}
+										title="Editar información del paciente"
+									/>
 								</div>
-
-								<Button
-									type="button"
-									variant="text"
-									onClick={(e) => {
-										e.stopPropagation()
-										handleEditPatient(e, record)
-									}}
-									icon={<LuPencilLine className="h-6 w-6 text-gray-600" />}
-									className="p-2! min-w-0! bg-white! borde! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! hover:shadow-lg! rounded-2xl z-10 shadow-md"
-									style={{
-										position: "absolute",
-										right: "1.5rem",
-										bottom: "1.5rem",
-										left: "auto",
-									}}
-									title="Editar información del paciente"
-								/>
 							</div>
-						</div>
-					))}
+						))}
 
-					{/* Opcional: Mostrar un mensaje si no hay resultados */}
-					{filteredRecords.length === 0 && searchTerm !== "" && (
-						<div className="col-span-full text-center py-10 text-gray-400">
-							No se encontraron pacientes que coincidan con "{searchTerm}"
-						</div>
-					)}
-				</div>
+						{/* Opcional: Mostrar un mensaje si no hay resultados */}
+						{filteredRecords.length === 0 && searchTerm !== "" && (
+							<div className="col-span-full text-center py-10 text-gray-400">
+								No se encontraron pacientes que coincidan con "{searchTerm}"
+							</div>
+						)}
+					</div>
+				)}
 
 				<div className="flex justify-center mt-8 pb-4">
 					<Pagination

@@ -1,21 +1,22 @@
-import { useCallback, useEffect, useState } from "react"
-import { FaPlus, FaEdit, FaTrash, FaCalendarTimes } from "react-icons/fa"
 import { DatePicker, Input } from "antd"
 import type { Dayjs } from "dayjs"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import { useCallback, useEffect, useState } from "react"
+import { FaCalendarTimes, FaEdit, FaPlus, FaTrash } from "react-icons/fa"
 import "dayjs/locale/es"
 import { toast } from "react-toastify"
-import { useAuth } from "../../auth"
+import { Button, ConfirmModal } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	createDoctorUnavailability,
+	type DoctorUnavailability,
+	type DoctorUnavailabilityFormData,
 	deleteDoctorUnavailability,
 	getDoctorUnavailability,
 	updateDoctorUnavailability,
-	type DoctorUnavailability,
-	type DoctorUnavailabilityFormData,
 } from "../../appointments/services/DoctorUnavailabilityAPI"
-import { Button, ConfirmModal } from "../../../shared"
+import { useAuth } from "../../auth"
 
 const { TextArea } = Input
 
@@ -24,10 +25,13 @@ dayjs.locale("es")
 
 const DoctorUnavailabilityManagement: React.FC = () => {
 	const { user } = useAuth()
-	const [unavailability, setUnavailability] = useState<DoctorUnavailability[]>([])
+	const [unavailability, setUnavailability] = useState<DoctorUnavailability[]>(
+		[],
+	)
 	const [loading, setLoading] = useState(true)
 	const [showModal, setShowModal] = useState(false)
-	const [editingPeriod, setEditingPeriod] = useState<DoctorUnavailability | null>(null)
+	const [editingPeriod, setEditingPeriod] =
+		useState<DoctorUnavailability | null>(null)
 	const [deleteConfirm, setDeleteConfirm] = useState<{
 		isOpen: boolean
 		period: DoctorUnavailability | null
@@ -100,11 +104,10 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 			return
 		}
 
-		if (
-			formData.end_date &&
-			formData.end_date < formData.start_date
-		) {
-			toast.error("La fecha de fin debe ser posterior o igual a la fecha de inicio")
+		if (formData.end_date && formData.end_date < formData.start_date) {
+			toast.error(
+				"La fecha de fin debe ser posterior o igual a la fecha de inicio",
+			)
 			return
 		}
 
@@ -151,23 +154,22 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 
 	if (loading) {
 		return (
-			<div className="flex items-center justify-center min-h-[400px]">
-				<div className="text-gray-600">Cargando períodos de indisponibilidad...</div>
-			</div>
+			<LoadingSpinner loadingMessage="CARGANDO PERÍODOS DE INDISPONIBILIDAD..." />
 		)
 	}
 
 	return (
 		<div className="space-y-6">
 			{/* Header */}
-			<div className="flex justify-between items-center">
-				<div>
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
+				<div className="w-full md:w-auto text-center md:text-left">
 					<h3 className="text-lg font-semibold text-gray-800">
 						Períodos de Indisponibilidad
 					</h3>
 					<p className="text-sm text-gray-600 mt-1">
 						Define períodos específicos donde no estarás disponible (vacaciones,
-						licencias, etc.). Los pacientes no podrán agendar citas durante estos períodos.
+						licencias, etc.). Los pacientes no podrán agendar citas durante
+						estos períodos.
 					</p>
 				</div>
 				<Button
@@ -175,6 +177,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 					variant="primary"
 					onClick={() => handleOpenModal()}
 					icon={<FaPlus />}
+					className="w-full md:w-auto"
 				>
 					Nuevo Período
 				</Button>
@@ -188,8 +191,8 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 						No tienes períodos de indisponibilidad configurados
 					</p>
 					<p className="text-sm text-gray-500 mb-6">
-						Agrega períodos específicos (como semanas de vacaciones) para bloquear
-						esas fechas y evitar que los pacientes agenden citas.
+						Agrega períodos específicos (como semanas de vacaciones) para
+						bloquear esas fechas y evitar que los pacientes agenden citas.
 					</p>
 					<Button
 						type="button"
@@ -230,7 +233,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 									</span>
 								)}
 							</div>
-							<div className="flex items-center gap-2 mt-auto">
+							<div className="flex sm:flex-row items-center gap-2 mt-auto">
 								<Button
 									type="button"
 									variant="default"
@@ -245,9 +248,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 									type="button"
 									variant="default"
 									danger
-									onClick={() =>
-										setDeleteConfirm({ isOpen: true, period })
-									}
+									onClick={() => setDeleteConfirm({ isOpen: true, period })}
 									icon={<FaTrash className="text-xs" />}
 									className="!flex-1 !py-2 !min-h-0 !text-sm"
 									title="Eliminar"
@@ -266,17 +267,24 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 					<div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
 						<div className="p-6 border-b border-gray-200">
 							<h3 className="text-xl font-bold text-gray-800">
-								{editingPeriod ? "Editar Período" : "Nuevo Período de Indisponibilidad"}
+								{editingPeriod
+									? "Editar Período"
+									: "Nuevo Período de Indisponibilidad"}
 							</h3>
 						</div>
 
 						<form onSubmit={handleSubmit} className="p-6 space-y-4">
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label
+									htmlFor="start_date"
+									className="block text-sm font-medium text-gray-700 mb-2"
+								>
 									Fecha de Inicio *
 								</label>
 								<DatePicker
-									value={formData.start_date ? dayjs(formData.start_date) : null}
+									value={
+										formData.start_date ? dayjs(formData.start_date) : null
+									}
 									onChange={(date: Dayjs | null) =>
 										setFormData({
 											...formData,
@@ -286,12 +294,17 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 									format="DD/MM/YYYY"
 									className="w-full"
 									placeholder="Seleccionar fecha de inicio"
-									disabledDate={(current) => current && current < dayjs().startOf("day")}
+									disabledDate={(current) =>
+										current && current < dayjs().startOf("day")
+									}
 								/>
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label
+									htmlFor="end_date"
+									className="block text-sm font-medium text-gray-700 mb-2"
+								>
 									Fecha de Fin (Opcional)
 								</label>
 								<DatePicker
@@ -306,7 +319,8 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 									className="w-full"
 									placeholder="Seleccionar fecha de fin (dejar vacío para un solo día)"
 									disabledDate={(current) => {
-										if (!formData.start_date) return current && current < dayjs().startOf("day")
+										if (!formData.start_date)
+											return current && current < dayjs().startOf("day")
 										return current && current < dayjs(formData.start_date)
 									}}
 								/>
@@ -316,7 +330,10 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-2">
+								<label
+									htmlFor="reason"
+									className="block text-sm font-medium text-gray-700 mb-2"
+								>
 									Motivo (Opcional)
 								</label>
 								<TextArea
@@ -363,11 +380,7 @@ const DoctorUnavailabilityManagement: React.FC = () => {
 								>
 									Cancelar
 								</Button>
-								<Button
-									type="submit"
-									variant="primary"
-									className="flex-1"
-								>
+								<Button type="submit" variant="primary" className="flex-1">
 									{editingPeriod ? "Actualizar" : "Crear"}
 								</Button>
 							</div>

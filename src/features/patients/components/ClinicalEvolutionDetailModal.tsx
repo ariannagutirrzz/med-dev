@@ -439,7 +439,7 @@ const ClinicalEvolutionDetailModal = ({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<label htmlFor="reason" className={labelClass}>
-										<FaClipboardList className="text-purple-400" /> Motivo
+										<FaClipboardList className="text-primary" /> Motivo
 									</label>
 									<textarea
 										name="reason"
@@ -451,7 +451,7 @@ const ClinicalEvolutionDetailModal = ({
 								</div>
 								<div>
 									<label htmlFor="background" className={labelClass}>
-										<FaStickyNote className="text-blue-400" /> Antecedentes
+										<FaStickyNote className="text-primary" /> Antecedentes
 									</label>
 									<textarea
 										name="background"
@@ -466,12 +466,12 @@ const ClinicalEvolutionDetailModal = ({
 							{/* Examen Físico */}
 							<div>
 								<label htmlFor="physical_exam" className={labelClass}>
-									<FaRunning className="text-green-400" /> Examen Físico
+									<FaRunning className="text-primary" /> Examen Físico
 								</label>
 								<textarea
 									name="physical_exam"
 									rows={3}
-									className={`${inputBaseClass} border-l-4 border-l-green-400`}
+									className={`${inputBaseClass} border-l-4 border-l-primary`}
 									value={formData.physical_exam}
 									onChange={handleInputChange}
 								/>
@@ -481,26 +481,26 @@ const ClinicalEvolutionDetailModal = ({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div>
 									<label htmlFor="diagnosis" className={labelClass}>
-										<FaStethoscope className="text-red-400" /> Diagnóstico
+										<FaStethoscope className="text-primary" /> Diagnóstico
 									</label>
 									<textarea
 										name="diagnosis"
 										rows={3}
 										required
-										className={`${inputBaseClass} border-l-4 border-l-red-400`}
+										className={`${inputBaseClass} border-l-4 border-l-primary`}
 										value={formData.diagnosis}
 										onChange={handleInputChange}
 									/>
 								</div>
 								<div>
 									<label htmlFor="treatment" className={labelClass}>
-										<FaPills className="text-blue-400" /> Tratamiento
+										<FaPills className="text-primary" /> Tratamiento
 									</label>
 									<textarea
 										name="treatment"
 										rows={3}
 										required
-										className={`${inputBaseClass} border-l-4 border-l-blue-400`}
+										className={`${inputBaseClass} border-l-4 border-l-primary`}
 										value={formData.treatment}
 										onChange={handleInputChange}
 									/>
@@ -510,12 +510,12 @@ const ClinicalEvolutionDetailModal = ({
 							{/* Notas */}
 							<div>
 								<label htmlFor="notes" className={labelClass}>
-									<FaRegEdit className="text-amber-500" /> Notas
+									<FaRegEdit className="text-primary" /> Notas
 								</label>
 								<textarea
 									name="notes"
 									rows={2}
-									className={`${inputBaseClass} border-l-4 border-l-amber-500`}
+									className={`${inputBaseClass} border-l-4 border-l-primary`}
 									value={formData.notes || ""}
 									onChange={handleInputChange}
 								/>
@@ -632,7 +632,6 @@ const ClinicalEvolutionDetailModal = ({
 					</form>
 				</div>
 			</div>
-
 			<ConfirmModal
 				isOpen={showDeleteConfirm}
 				onClose={() => setShowDeleteConfirm(false)}

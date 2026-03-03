@@ -1,13 +1,14 @@
+import { Pagination } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import { FaBoxOpen } from "react-icons/fa"
 import { toast } from "react-toastify"
-import { deleteSupplyById, getSupplies } from "../services/SuppliesAPI"
 import type { Supply } from "../../../shared"
 import { Button, ConfirmModal } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
+import { deleteSupplyById, getSupplies } from "../services/SuppliesAPI"
 import CreateSupplyModal from "./CreateSupplyModal" // Asegúrate de importarlo
 import InventoryHeader from "./InventoryHeader"
 import InventoryRow from "./InventoryRow"
-import { Pagination } from "antd"
 
 const Inventory = () => {
 	const [supplies, setSupplies] = useState<Supply[]>([])
@@ -21,13 +22,14 @@ const Inventory = () => {
 	)
 	const [supplyToEdit, setSupplyToEdit] = useState<Supply | null>(null)
 	// Estados de paginación
-const [currentPage, setCurrentPage] = useState(1);
-const pageSize = 10;
+	const [currentPage, setCurrentPage] = useState(1)
+	const pageSize = 10
 
-// Resetear página al filtrar (Busqueda o Categoría)
-useEffect(() => {
-    setCurrentPage(1);
-}, [searchTerm, categoryFilter]);
+	// Resetear página al filtrar (Busqueda o Categoría)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+	useEffect(() => {
+		setCurrentPage(1)
+	}, [searchTerm, categoryFilter])
 
 	const openEditModal = (supply: Supply) => {
 		setSupplyToEdit(supply)
@@ -87,11 +89,11 @@ useEffect(() => {
 		return matchesSearch && matchesCategory
 	})
 
-	const indexOfLastItem = currentPage * pageSize;
-const indexOfFirstItem = indexOfLastItem - pageSize;
+	const indexOfLastItem = currentPage * pageSize
+	const indexOfFirstItem = indexOfLastItem - pageSize
 
-// Esta es la lista que usaremos para el .map()
-const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem);
+	// Esta es la lista que usaremos para el .map()
+	const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem)
 
 	return (
 		<div className="p-6 space-y-6">
@@ -110,7 +112,7 @@ const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem);
 				<Button
 					type="button"
 					onClick={() => setIsModalOpen(true)}
-					className="!px-6 !py-3 !rounded-xl font-bold whitespace-nowrap"
+					className="px-6! py-3! rounded-xl! font-bold whitespace-nowrap"
 				>
 					+ Nuevo Insumo
 				</Button>
@@ -119,9 +121,7 @@ const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem);
 			<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 				<div className="overflow-x-auto">
 					{isLoading ? (
-						<div className="p-20 text-center text-gray-400 font-bold animate-pulse">
-							CARGANDO INVENTARIO...
-						</div>
+						<LoadingSpinner loadingMessage="CARGANDO INVENTARIO..." />
 					) : (
 						<table className="w-full text-left">
 							<thead className="bg-gray-50 border-b border-gray-100">
@@ -172,15 +172,15 @@ const currentItems = filteredSupplies.slice(indexOfFirstItem, indexOfLastItem);
 					)}
 				</div>
 				<div className="p-4 border-t border-gray-100 flex justify-center bg-gray-50/50">
-                <Pagination
-                    current={currentPage}
-                    total={filteredSupplies.length}
-                    pageSize={pageSize}
-                    onChange={(page) => setCurrentPage(page)}
-                    showSizeChanger={false}
-                    size="small"
-                />
-            </div>
+					<Pagination
+						current={currentPage}
+						total={filteredSupplies.length}
+						pageSize={pageSize}
+						onChange={(page) => setCurrentPage(page)}
+						showSizeChanger={false}
+						size="small"
+					/>
+				</div>
 			</div>
 
 			<ConfirmModal

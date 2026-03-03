@@ -1,8 +1,13 @@
 import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useState } from "react"
-import { CiCalendar, CiMedicalCase, CiMedicalClipboard } from "react-icons/ci"
-import { FaQuestion } from "react-icons/fa"
-import { LuPencilLine } from "react-icons/lu"
+import {
+	LuActivity,
+	LuCalendarDays,
+	LuChevronRight,
+	LuClipboardList,
+	LuFileText,
+	LuStethoscope,
+} from "react-icons/lu"
 import { toast } from "react-toastify"
 import { getStoredToken } from "../../../config/axios"
 import type {
@@ -10,7 +15,7 @@ import type {
 	MedicalHistoryFormData,
 	MyTokenPayload,
 } from "../../../shared"
-import { Button } from "../../../shared"
+import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
@@ -35,10 +40,10 @@ export default function ClinicalEvolution({
 		MedicalHistory | MedicalHistoryFormData | null
 	>(null)
 	const [isLoading, setIsLoading] = useState(true)
+
 	const token = getStoredToken()
 	const doctor_id = token ? jwtDecode<MyTokenPayload>(token).id : ""
 
-	// 1. Cargar evoluciones desde el Backend
 	const fetchEvolutions = useCallback(async () => {
 		try {
 			setIsLoading(true)
@@ -56,7 +61,6 @@ export default function ClinicalEvolution({
 		fetchEvolutions()
 	}, [fetchEvolutions])
 
-	// 2. Manejar la creación de una nueva evolución (Trigger desde el padre)
 	useEffect(() => {
 		if (newEvolution) {
 			const newRecord: MedicalHistoryFormData = {
@@ -84,141 +88,176 @@ export default function ClinicalEvolution({
 	const handleSaveRecord = async (formData: MedicalHistoryFormData) => {
 		try {
 			const data = new FormData()
-
-			// Iteramos sobre las llaves de forma segura
 			Object.entries(formData).forEach(([key, value]) => {
 				if (value !== null && value !== undefined) {
 					if (value instanceof File) {
-						// Si es un archivo (Rx o Tomografía)
 						data.append(key, value)
 					} else if (value instanceof Date) {
-						// Convertimos la fecha a string para el backend
 						data.append(key, value.toISOString())
 					} else {
-						// Para strings y números
 						data.append(key, String(value))
 					}
 				}
 			})
 
 			if (formData.id) {
-				// Edición: Usamos el ID del formData
 				await updateMedicalRecordById(formData.id, data)
-				toast.success("Evolución actualizada correctamente")
+				toast.success("Evolución actualizada")
 			} else {
-				// Creación
 				await createMedicalRecord(data)
 				toast.success("Nueva evolución registrada")
 			}
 
 			await fetchEvolutions()
 			handleCloseModal()
-		} catch (error: unknown) {
+		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Error al guardar"
 			toast.error(message)
 		}
 	}
 
-	const handleOpenDetail = (record: MedicalHistory) => {
-		setSelectedRecord(record)
-		setIsModalOpen(true)
-	}
-
 	const handleDeleteRecord = async (id: number) => {
 		try {
 			await deleteMedicalRecordById(id)
-			toast.success("Evolución clínica eliminada con éxito")
-
-			// Paso crucial: Refrescar la lista de registros después de borrar
+			toast.success("Registro eliminado")
 			await fetchEvolutions()
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Error al eliminar"
 			toast.error(message)
-			throw error // Lanzamos el error para que el modal sepa que falló si es necesario
+			throw error
 		}
 	}
+
 	return (
-		<div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 min-h-screen">
+		<div className="bg-white rounded-[3rem] border border-gray-100 p-6 md:p-10 shadow-xl shadow-gray-200/50 min-h-screen">
+			{/* 1. TIMELINE SUPERIOR (Indicador Visual) */}
+			{!isLoading && evolutions.length > 0 && (
+				<div className="mb-10 px-4">
+					<div className="flex items-center gap-4 mb-4">
+						<LuActivity className="text-primary w-5 h-5" />
+						<span className="text-lg font-black uppercase tracking-[0.2em] text-gray-400">
+							Evolución Clínica
+						</span>
+					</div>
+					<div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+						<div className="absolute top-0 left-0 h-full bg-primary w-full transition-all duration-1000" />
+					</div>
+				</div>
+			)}
+
+			{/* 3. CONTENIDO PRINCIPAL */}
 			{isLoading ? (
-				<div className="flex flex-col items-center justify-center py-20">
-					<div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-					<p className="text-gray-400 font-bold animate-pulse">
-						CARGANDO HISTORIAL...
+				<div className="flex flex-col items-center justify-center py-32 gap-4">
+					<LoadingSpinner />
+					<p className="text-gray-400 animate-pulse font-bold text-xs uppercase tracking-widest">
+						Sincronizando Historial...
 					</p>
 				</div>
 			) : evolutions.length === 0 ? (
-				<div className="text-center py-20 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-200">
-					<p className="text-gray-400 font-medium">
-						No hay registros de evolución para este paciente.
+				<div className="flex flex-col items-center justify-center py-32 bg-gray-50/50 rounded-[3rem] border-2 border-dashed border-gray-200">
+					<LuClipboardList className="w-16 h-16 text-primary mb-6" />
+					<p className="text-gray-400 font-black uppercase text-sm tracking-widest">
+						Sin registros previos
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 					{evolutions.map((evo) => (
-						<div
+						<button
+							type="button"
 							key={evo.id}
-							className="group bg-gray-50 rounded-xl border-2 border-gray-200 p-5 hover:shadow-md hover:border-primary transition-all duration-200 flex flex-col"
+							onClick={() => {
+								setSelectedRecord(evo)
+								setIsModalOpen(true)
+							}}
+							className="group relative h-[420px] bg-gray-50/50 rounded-[2.5rem] border border-gray-100 p-8 hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:border-primary transition-all duration-500 cursor-pointer flex flex-col overflow-hidden isolate mask-image-radial-fade"
+							style={{
+								WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+								maskImage: "radial-gradient(white, black)",
+								transform: "translateZ(0)",
+							}}
 						>
-							{/* Header de la Card */}
-							<div className="flex justify-between items-center mb-4">
-								<div className="flex items-center gap-2 text-gray-600">
-									<CiCalendar className="w-4 h-4 text-primary" />
-									<span className="text-sm font-bold">
-										{new Date(evo.record_date).toLocaleDateString()}
+							{/* Decoración superior: Fecha */}
+							<div className="flex justify-between items-start mb-8">
+								<div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 group-hover:border-primary transition-colors">
+									<LuCalendarDays className="w-6 h-6 text-primary" />
+								</div>
+								<div className="text-right">
+									<p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter leading-none">
+										Consulta
+									</p>
+									<p className="text-xl font-black text-gray-900 leading-none mt-1">
+										#{evo.id}
+									</p>
+								</div>
+							</div>
+
+							{/* Cuerpo: Motivo y Diagnóstico */}
+							<div className="flex-1 flex flex-col gap-6">
+								<div>
+									<span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">
+										Motivo
+									</span>
+									<h3 className="text-lg font-bold text-gray-800 leading-tight line-clamp-2">
+										{evo.reason || "Consulta de rutina"}
+									</h3>
+								</div>
+
+								<div className="space-y-4">
+									<div className="flex items-start justify-start gap-2">
+										<div className="bg-primary/20 p-1.5 rounded-lg">
+											<LuStethoscope className="w-4 h-4 text-primary" />
+										</div>
+										<div className="flex flex-col items-start justify-center gap-1">
+											<span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+												Diagnóstico
+											</span>
+											<span className="text-xs text-gray-600 font-bold line-clamp-3 leading-relaxed">
+												{evo.diagnosis}
+											</span>
+										</div>
+									</div>
+
+									<div className="flex items-start justify-start gap-2">
+										<div className="bg-primary/20 p-1.5 rounded-lg">
+											<LuFileText className="w-4 h-4 text-primary" />
+										</div>
+										<div className="flex flex-col items-start justify-center gap-1">
+											<span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+												Tratamiento
+											</span>
+											<span className="text-xs text-gray-600 font-bold line-clamp-3 leading-relaxed">
+												{evo.treatment}
+											</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							{/* Footer del Card */}
+							<div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
+								<div className="flex flex-col">
+									<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+										Fecha
+									</span>
+									<span className="text-xs font-black text-gray-700">
+										{new Date(evo.record_date).toLocaleDateString("es-ES", {
+											day: "2-digit",
+											month: "short",
+											year: "numeric",
+										})}
 									</span>
 								</div>
-								<span className="text-md font-bold text-primary">
-									#{evo.id}
-								</span>
-							</div>
-
-							{/* Contenido */}
-							<div className="space-y-3 flex-1">
-								<div className="bg-white p-3 rounded-lg border border-primary">
-									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<FaQuestion className="w-3 h-3 text-primary" /> Motivo de
-										consulta
-									</p>
-									<p className="text-gray-800 text-sm line-clamp-1">
-										{evo.reason}
-									</p>
-								</div>
-								<div className="bg-white p-3 rounded-lg border border-primary">
-									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<CiMedicalCase className="w-3 h-3 text-primary" />{" "}
-										Diagnóstico
-									</p>
-									<p className="text-gray-800 text-sm line-clamp-1">
-										{evo.diagnosis}
-									</p>
-								</div>
-								<div className="bg-white p-3 rounded-lg border border-primary">
-									<p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1 flex items-center gap-1.5">
-										<CiMedicalClipboard className="w-3 h-3 text-primary" />{" "}
-										Tratamiento
-									</p>
-									<p className="text-gray-700 text-sm line-clamp-2">
-										{evo.treatment}
-									</p>
+								<div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+									<LuChevronRight className="w-5 h-5" />
 								</div>
 							</div>
 
-							{/* Acciones */}
-							<div className="mt-4 pt-3 border-t border-gray-200 flex justify-between items-end">
-								<div className="text-xs text-gray-400">
-									Creado: {new Date(evo.created_at).toLocaleDateString()}
-								</div>
-								<Button
-									type="button"
-									variant="text"
-									onClick={() => handleOpenDetail(evo)}
-									icon={<LuPencilLine className="w-4 h-4 text-gray-500" />}
-									className="p-2! min-w-0! rounded-lg! text-gray-500! hover:border-primary! hover:text-primary!"
-								/>
-							</div>
-						</div>
+							{/* Overlay decorativo en hover */}
+							<div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700 -z-10" />
+						</button>
 					))}
 				</div>
 			)}
