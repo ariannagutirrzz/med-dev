@@ -107,3 +107,10 @@ export type SurgeryFormData = {
 	notes?: string | null
 	service_id?: number | null
 }
+
+export type ExtraImages = {
+	id?: number
+	title: string
+	url?: string | File
+	isNew?: boolean
+}

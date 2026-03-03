@@ -2,16 +2,17 @@ import cors from "cors"
 import dotenv from "dotenv"
 import express from "express"
 import swaggerUI from "swagger-ui-express"
+import aiRoutes from "./routes/aiRoutes.js"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
-import aiRoutes from "./routes/aiRoutes.js"
 import currencyRoutes from "./routes/currencyRoutes.js"
+import demandPredictionRoutes from "./routes/demandPredictionRoutes.js"
 import doctorAvailabilityRoutes from "./routes/doctorAvailabilityRoutes.js"
 import doctorUnavailabilityRoutes from "./routes/doctorUnavailabilityRoutes.js"
+import medicalRecordsImagesRouter from "./routes/medicalRecordsImagesRoutes.js"
 import medicalRecordsRoutes from "./routes/medicalRecordsRoutes.js"
 import notificationRoutes from "./routes/notificationRoutes.js"
 import patientsRoutes from "./routes/patientsRoutes.js"
-import demandPredictionRoutes from "./routes/demandPredictionRoutes.js"
 import reportRoutes from "./routes/reportRoutes.js"
 import serviceRoutes from "./routes/serviceRoutes.js"
 import settingsRoutes from "./routes/settingsRoutes.js"
@@ -54,6 +55,7 @@ app.use("/api/reports", reportRoutes)
 app.use("/api/demand-prediction", demandPredictionRoutes)
 app.use("/api/doctor-availability", doctorAvailabilityRoutes)
 app.use("/api/doctor-unavailability", doctorUnavailabilityRoutes)
+app.use("/api/medical-records-images", medicalRecordsImagesRouter)
 
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
