@@ -2,8 +2,8 @@
 
 @theme {
 	/* Primary theme colors (from your Coolors palette) */
-	--color-primary: #789a61; /* sage green */
-	--color-primary-dark: #35524a; /* dark slate grey */
+	--color-primary: #35524a; /* sage green */
+	--color-primary-green: #789a61; /* dark slate grey */
 	--color-secondary: #522a27; /* lavender purple */
 	--color-accent: #9b5de5; /* espresso */
 	--color-accent-soft: #d8dbe2; /* alabaster grey */

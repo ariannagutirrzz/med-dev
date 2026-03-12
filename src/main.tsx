@@ -22,7 +22,7 @@ createRoot(rootElement).render(
 			locale={esES}
 			theme={{
 				token: {
-					colorPrimary: "#789a61",
+					colorPrimary: "#35524a",
 				},
 			}}
 		>

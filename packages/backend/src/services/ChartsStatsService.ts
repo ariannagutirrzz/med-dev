@@ -130,7 +130,7 @@ export async function getAppointmentsByMonth(
 }
 
 /**
- * Surgeries per month (Scheduled, Completed). Optional doctor filter and date range.
+ * Surgeries per month (scheduled, completed — any casing). Optional doctor filter and date range.
  */
 export async function getSurgeriesByMonth(
 	doctorId: string | null,
@@ -144,7 +144,7 @@ export async function getSurgeriesByMonth(
          COUNT(*)::int as count
      FROM surgeries s
      WHERE s.surgery_date >= $1::date AND s.surgery_date <= $2::date
-     AND s.status = ANY(ARRAY['Scheduled','Completed']::text[])
+     AND LOWER(TRIM(s.status)) IN ('scheduled', 'completed')
      AND s.doctor_id = $3
      GROUP BY DATE_TRUNC('month', s.surgery_date)
      ORDER BY period`
@@ -152,7 +152,7 @@ export async function getSurgeriesByMonth(
          COUNT(*)::int as count
      FROM surgeries s
      WHERE s.surgery_date >= $1::date AND s.surgery_date <= $2::date
-     AND s.status = ANY(ARRAY['Scheduled','Completed']::text[])
+     AND LOWER(TRIM(s.status)) IN ('scheduled', 'completed')
      GROUP BY DATE_TRUNC('month', s.surgery_date)
      ORDER BY period`
 	const params = doctorId ? [startStr, endStr, doctorId] : [startStr, endStr]

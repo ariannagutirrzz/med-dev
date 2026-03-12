@@ -611,9 +611,10 @@ const SignupForm = ({ onSignUp }: SignupFormProps) => {
 			<div className="mt-6">
 				<Button
 					text={isSubmitting ? "Registrando..." : "Registrarse"}
-					onClick={() => {}}
 					type="submit"
 					disabled={isSubmitting}
+					block
+					className="w-full rounded-xl font-semibold"
 				/>
 			</div>
 		</form>
