@@ -1,10 +1,39 @@
 import { Router } from "express"
-import { getDemandPredictionHandler } from "../controllers/DemandPredictionController"
+import {
+	getChartsStatsHandler,
+	getDemandPredictionHandler,
+} from "../controllers/DemandPredictionController"
 import { authenticate } from "../middleware/auth"
 
 const demandPredictionRoutes: Router = Router()
 
 demandPredictionRoutes.use(authenticate)
+
+/**
+ * @swagger
+ * /api/demand-prediction/charts:
+ *   get:
+ *     summary: Estadísticas por mes para gráficos
+ *     description: Devuelve conteos por mes (citas, cirugías, nuevos pacientes) e ingresos para los últimos 12 meses.
+ *     tags:
+ *       - Demand Prediction
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: doctorId
+ *         schema:
+ *           type: string
+ *         description: document_id del médico (solo Admin; opcional)
+ *     responses:
+ *       200:
+ *         description: appointmentsByMonth, surgeriesByMonth, newPatientsByMonth, revenueByMonth
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno
+ */
+demandPredictionRoutes.get("/charts", getChartsStatsHandler)
 
 /**
  * @swagger

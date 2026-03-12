@@ -56,3 +56,43 @@ export async function getDemandPrediction(
 	)
 	return data
 }
+
+export interface MonthCount {
+	year: number
+	month: number
+	monthLabel: string
+	count: number
+}
+
+export interface MonthRevenue {
+	year: number
+	month: number
+	monthLabel: string
+	revenue_usd: number
+}
+
+export interface ChartsStatsResult {
+	appointmentsByMonth: MonthCount[]
+	surgeriesByMonth: MonthCount[]
+	newPatientsByMonth: MonthCount[]
+	revenueByMonth: MonthRevenue[]
+}
+
+/**
+ * Fetch monthly stats for charts (grouped by month).
+ * If startDate/endDate are not provided, backend defaults to the last 12 months.
+ */
+export async function getChartsStats(
+	doctorId?: string,
+	startDate?: string,
+	endDate?: string,
+): Promise<ChartsStatsResult> {
+	const params = new URLSearchParams()
+	if (doctorId) params.set("doctorId", doctorId)
+	if (startDate) params.set("startDate", startDate)
+	if (endDate) params.set("endDate", endDate)
+	const { data } = await api.get<ChartsStatsResult>(
+		`/demand-prediction/charts?${params.toString()}`,
+	)
+	return data
+}

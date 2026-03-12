@@ -46,7 +46,7 @@ const Footer = () => {
 							</li>
 							<li>
 								<a
-									href="#schedule"
+									href="/login"
 									className="text-muted-light hover:text-white transition-colors text-sm"
 								>
 									Agendar Cita
@@ -107,20 +107,6 @@ const Footer = () => {
 						<p className="text-muted-light text-sm">
 							© {currentYear} Unidad de Pleura. Todos los derechos reservados.
 						</p>
-						<div className="flex gap-6 text-sm">
-							<a
-								href="#privacy"
-								className="text-muted-light hover:text-white transition-colors"
-							>
-								Política de Privacidad
-							</a>
-							<a
-								href="#terms"
-								className="text-muted-light hover:text-white transition-colors"
-							>
-								Términos de Uso
-							</a>
-						</div>
 					</div>
 				</div>
 			</div>
