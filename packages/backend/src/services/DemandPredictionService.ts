@@ -88,7 +88,7 @@ async function getSurgeryCountsByDay(
 				`SELECT DATE(s.surgery_date)::text as date, COUNT(*)::int as count
        FROM surgeries s
        WHERE DATE(s.surgery_date) >= $1 AND DATE(s.surgery_date) <= $2
-       AND s.status = ANY(ARRAY['Scheduled','Completed']::text[])
+       AND LOWER(TRIM(s.status)) IN ('scheduled', 'completed')
        AND s.doctor_id = $3
        GROUP BY DATE(s.surgery_date)
        ORDER BY date`,
@@ -98,7 +98,7 @@ async function getSurgeryCountsByDay(
 				`SELECT DATE(s.surgery_date)::text as date, COUNT(*)::int as count
        FROM surgeries s
        WHERE DATE(s.surgery_date) >= $1 AND DATE(s.surgery_date) <= $2
-       AND s.status = ANY(ARRAY['Scheduled','Completed']::text[])
+       AND LOWER(TRIM(s.status)) IN ('scheduled', 'completed')
        GROUP BY DATE(s.surgery_date)
        ORDER BY date`,
 				[fromDate, toDate],

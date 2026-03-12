@@ -12,6 +12,7 @@ import {
 	getDemandPrediction,
 	type PredictionPeriod,
 } from "../services/DemandPredictionAPI"
+import ChartsSection from "./ChartsSection"
 
 const PERIOD_OPTIONS: { value: PredictionPeriod; label: string }[] = [
 	{ value: 7, label: "Próximos 7 días" },
@@ -272,6 +273,11 @@ const DemandPredictionSection = () => {
 					</p>
 				</>
 			) : null}
+
+			{/* Charts: monthly comparison (always shown) */}
+			<div className="mt-10 pt-8 border-t border-gray-200">
+				<ChartsSection />
+			</div>
 		</div>
 	)
 }

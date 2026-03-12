@@ -88,10 +88,10 @@ const LoginPage = () => {
 			<div className="w-full max-w-5xl">
 				<div className="text-center mb-8">
 					<h1 className="text-4xl md:text-5xl font-semibold text-primary-dark mb-2">
-						Bienvenido/a
-					</h1>
-					<p className="text-lg md:text-xl font-semibold text-secondary mb-6">
 						Elige una opción
+					</h1>
+					<p className="text-lg md:text-xl  text-secondary mb-6">
+						
 					</p>
 
 					{/* Selection Buttons */}

@@ -236,10 +236,10 @@ const ServicesManagement: React.FC = () => {
 								<Button
 									type="button"
 									size="middle"
-									danger
+									variant="default"
 									onClick={() => handleDelete(service.id)}
 									icon={<FaTrash className="w-3.5 h-3.5" />}
-									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm"
+									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm !text-red-700 !border-red-300 bg-white hover:!bg-red-50"
 								>
 									Eliminar
 								</Button>
