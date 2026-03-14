@@ -1,7 +1,7 @@
 import type { Appointment, Patient, Surgery } from "../../../shared"
 import { getFilteredAppointments } from "../../appointments"
 import { getLowStockSupplies } from "../../inventory"
-import { getDoctorPatients } from "../../patients"
+import { getDoctorPatients, getPatients } from "../../patients"
 import { getSurgeries } from "../../surgeries"
 import type { DashboardStats } from "../types/dashboard.types"
 import { getTodayRange } from "../utils/dateUtils"
@@ -33,7 +33,7 @@ export const fetchDashboardData = async (
 		console.error("Error cargando citas:", error)
 	}
 
-	// Fetch patients (only for doctors)
+	// Fetch patients (Médico: their patients; Admin: all patients)
 	let patients: Patient[] = []
 	if (userRole === "Médico") {
 		try {
@@ -42,9 +42,16 @@ export const fetchDashboardData = async (
 		} catch (error) {
 			console.error("Error cargando pacientes:", error)
 		}
+	} else if (userRole === "Admin") {
+		try {
+			const patientsData = await getPatients()
+			patients = (patientsData?.patients || []) as Patient[]
+		} catch (error) {
+			console.error("Error cargando pacientes:", error)
+		}
 	}
 
-	// Fetch surgeries (for Médico: all/filtered by doctor; for Paciente: only their own via API)
+	// Fetch surgeries (Médico: filtered by doctor; Admin: all; Paciente: their own via API)
 	let surgeries: Surgery[] = []
 	if (userRole === "Médico") {
 		try {
@@ -57,6 +64,13 @@ export const fetchDashboardData = async (
 		} catch (error) {
 			console.error("Error cargando cirugías:", error)
 		}
+	} else if (userRole === "Admin") {
+		try {
+			const surgeriesData = await getSurgeries()
+			surgeries = surgeriesData.surgeries || []
+		} catch (error) {
+			console.error("Error cargando cirugías:", error)
+		}
 	} else if (userRole === "Paciente") {
 		try {
 			const surgeriesData = await getSurgeries()
@@ -66,14 +80,14 @@ export const fetchDashboardData = async (
 		}
 	}
 
-	// Fetch supplies (only for doctors)
+	// Fetch supplies (Médico and Admin)
 	let supplies = 0
-	if (userRole === "Médico") {
+	if (userRole === "Médico" || userRole === "Admin") {
 		try {
 			const suppliesData = await getLowStockSupplies()
 			supplies = suppliesData.count
 		} catch (error) {
-			console.error("Error cargando cirugías:", error)
+			console.error("Error cargando insumos:", error)
 		}
 	}
 

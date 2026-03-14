@@ -60,7 +60,7 @@ export const SearchResults = ({
 						</div>
 					)}
 
-					{surgeries.length > 0 && userRole === "Médico" && (
+					{surgeries.length > 0 && (userRole === "Médico" || userRole === "Admin") && (
 						<div>
 							<h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 sm:gap-2">
 								<FaStethoscope className="text-primary text-sm sm:text-base" />
@@ -94,7 +94,7 @@ export const SearchResults = ({
 						</div>
 					)}
 
-					{patients.length > 0 && userRole === "Médico" && (
+					{patients.length > 0 && (userRole === "Médico" || userRole === "Admin") && (
 						<div>
 							<h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1 sm:gap-2">
 								<FaUserInjured className="text-blue-600 text-sm sm:text-base" />

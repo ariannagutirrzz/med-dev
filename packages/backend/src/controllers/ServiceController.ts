@@ -2,6 +2,7 @@ import type { Request, Response } from "express"
 import {
 	createDoctorService,
 	deleteDoctorService,
+	getAllDoctorServices,
 	getDoctorServiceById,
 	getDoctorServices,
 	getServiceTypeById,
@@ -62,16 +63,22 @@ export const getMyServices = async (req: Request, res: Response) => {
 
 		const { document_id: userId, role } = req.user
 
-		if (role !== "Médico") {
+		if (role !== "Médico" && role !== "Admin") {
 			return res.status(403).json({
-				error: "Only doctors can access their services",
+				error: "Only doctors and admins can access services",
 			})
 		}
 
-		const services = await getDoctorServices(userId)
+		const services =
+			role === "Admin"
+				? await getAllDoctorServices()
+				: await getDoctorServices(userId)
 		res.json({
 			services,
-			message: "Doctor services fetched successfully",
+			message:
+				role === "Admin"
+					? "All doctor services fetched successfully"
+					: "Doctor services fetched successfully",
 		})
 	} catch (error) {
 		console.error("Error in getMyServices:", error)

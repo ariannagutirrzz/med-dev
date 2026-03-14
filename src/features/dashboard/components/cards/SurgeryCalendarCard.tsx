@@ -12,7 +12,7 @@ export const SurgeryCalendarCard = ({
 	loading,
 }: SurgeryCalendarCardProps) => {
 	return (
-		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 min-h-[320px] sm:min-h-[380px] md:min-h-[420px] h-full flex flex-col">
+		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 min-h-[320px] sm:min-h-[380px] md:min-h-[420px] h-full flex flex-col overflow-visible">
 			<h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4 flex items-center gap-1 sm:gap-2">
 				<FaStethoscope className="text-primary text-sm sm:text-base" />
 				<span>Calendario de Cirugías</span>
@@ -22,7 +22,7 @@ export const SurgeryCalendarCard = ({
 					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">Cargando calendario...</div>
 				</div>
 			) : (
-				<div className="flex-1 flex items-center justify-center overflow-hidden">
+				<div className="flex-1 flex items-center justify-center overflow-visible min-h-0">
 					<Calendar surgeries={surgeries} showLegend={false} size="lg" />
 				</div>
 			)}

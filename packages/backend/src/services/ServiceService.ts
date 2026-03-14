@@ -91,25 +91,54 @@ export async function getDoctorServices(
 			[doctorId],
 		)
 
-		return result.rows.map((row) => ({
-			id: row.id,
-			doctor_id: row.doctor_id,
-			service_type_id: row.service_type_id,
-			price_usd: parseFloat(row.price_usd),
-			is_active: row.is_active,
-			created_at: row.created_at,
-			updated_at: row.updated_at,
-			service_type: {
-				id: row.service_type_id,
-				name: row.service_type_name,
-				description: row.service_type_description,
-				category: row.service_type_category,
-				created_at: row.service_type_created_at,
-				updated_at: row.service_type_updated_at,
-			},
-		}))
+		return result.rows.map((row) => mapRowToDoctorServiceWithType(row))
 	} catch (error) {
 		console.error("Error fetching doctor services:", error)
+		throw new Error("Failed to fetch doctor services")
+	}
+}
+
+function mapRowToDoctorServiceWithType(row: Record<string, unknown>): DoctorServiceWithType {
+	return {
+		id: row.id as number,
+		doctor_id: row.doctor_id as string,
+		service_type_id: row.service_type_id as number,
+		price_usd: parseFloat(row.price_usd as string),
+		is_active: row.is_active as boolean,
+		created_at: row.created_at as Date,
+		updated_at: row.updated_at as Date | null,
+		service_type: {
+			id: row.service_type_id as number,
+			name: row.service_type_name as string,
+			description: row.service_type_description as string | null,
+			category: row.service_type_category as string,
+			created_at: row.service_type_created_at as Date,
+			updated_at: row.service_type_updated_at as Date | null,
+		},
+	}
+}
+
+/**
+ * Get all services from all doctors (for Admin)
+ */
+export async function getAllDoctorServices(): Promise<DoctorServiceWithType[]> {
+	try {
+		const result = await query(
+			`SELECT 
+				ds.*,
+				st.id as service_type_id,
+				st.name as service_type_name,
+				st.description as service_type_description,
+				st.category as service_type_category,
+				st.created_at as service_type_created_at,
+				st.updated_at as service_type_updated_at
+			FROM doctor_services ds
+			INNER JOIN service_types st ON ds.service_type_id = st.id
+			ORDER BY ds.doctor_id ASC, st.name ASC`,
+		)
+		return result.rows.map((row) => mapRowToDoctorServiceWithType(row as Record<string, unknown>))
+	} catch (error) {
+		console.error("Error fetching all doctor services:", error)
 		throw new Error("Failed to fetch doctor services")
 	}
 }

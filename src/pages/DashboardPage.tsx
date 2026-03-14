@@ -114,7 +114,7 @@ const DashboardPage: React.FC = () => {
 			label: "Servicios",
 			icon: <FaDollarSign className="w-5 h-5" />,
 			path: "/dashboard/servicios",
-			allowedRoles: ["Médico"], // Solo médicos
+			allowedRoles: ["Médico", "Admin"],
 		},
 		{
 			id: "reports",

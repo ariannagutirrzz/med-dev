@@ -20,8 +20,8 @@ const InventoryHeader = ({
 				},
 				components: {
 					Input: {
-						activeBorderColor: "#35524a",
-						hoverBorderColor: "#35524a",
+						activeBorderColor: "#789a61",
+						hoverBorderColor: "#789a61",
 					},
 				},
 			}}

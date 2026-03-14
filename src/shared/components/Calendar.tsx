@@ -1,11 +1,153 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import Button from "./common/Button"
+
+interface DayCellProps {
+	day: number
+	isToday: boolean
+	hasSurgeries: boolean
+	surgeries: Surgery[]
+	cellClass: string
+	monthName: string
+	year: number
+}
+
+const TOOLTIP_WIDTH = 256
+
+function DayCell({
+	day,
+	isToday,
+	hasSurgeries,
+	surgeries,
+	cellClass,
+	monthName,
+	year,
+}: DayCellProps) {
+	const [isHovered, setIsHovered] = useState(false)
+	const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null)
+	const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
+		if (!hasSurgeries) return
+		if (leaveTimeoutRef.current) {
+			clearTimeout(leaveTimeoutRef.current)
+			leaveTimeoutRef.current = null
+		}
+		const rect = e.currentTarget.getBoundingClientRect()
+		setTooltipRect(rect)
+		setIsHovered(true)
+	}
+
+	const handleMouseLeave = () => {
+		leaveTimeoutRef.current = setTimeout(() => {
+			setIsHovered(false)
+			setTooltipRect(null)
+			leaveTimeoutRef.current = null
+		}, 150)
+	}
+
+	const handleTooltipMouseEnter = () => {
+		if (leaveTimeoutRef.current) {
+			clearTimeout(leaveTimeoutRef.current)
+			leaveTimeoutRef.current = null
+		}
+		setIsHovered(true)
+	}
+
+	const handleTooltipMouseLeave = () => {
+		setIsHovered(false)
+		setTooltipRect(null)
+	}
+
+	const content = (
+		<>
+			<span
+				className={`inline-flex items-center justify-center w-full h-full text-sm rounded-full ${
+					isToday ? "bg-primary text-white" : "text-gray-700"
+				}`}
+			>
+				{day}
+			</span>
+			{hasSurgeries && (
+				<div
+					className={`absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full ${
+						isToday ? "bg-white" : "bg-primary"
+					}`}
+				/>
+			)}
+		</>
+	)
+
+	const tooltipContent = isHovered && hasSurgeries && tooltipRect && createPortal(
+		<div
+			className="fixed z-[9999] w-64 max-w-[90vw] p-3 bg-white text-left rounded-lg shadow-lg border border-gray-200 ring-1 ring-black/5"
+			role="tooltip"
+			style={{
+				left: Math.max(8, tooltipRect.left + tooltipRect.width / 2 - TOOLTIP_WIDTH / 2),
+				top: tooltipRect.top - 8,
+				transform: "translateY(-100%)",
+			}}
+			onMouseEnter={handleTooltipMouseEnter}
+			onMouseLeave={handleTooltipMouseLeave}
+		>
+			<p className="font-semibold text-xs text-gray-500 mb-2">
+				{day} {monthName} {year}
+			</p>
+			<ul className="space-y-2">
+				{surgeries.map((s) => (
+					<li
+						key={s.id ?? `${day}-${s.type}-${s.patientName ?? ""}`}
+						className="text-xs border-b border-gray-100 last:border-0 pb-2 last:pb-0"
+					>
+						<span className="font-medium text-primary">{s.type}</span>
+						{s.patientName && (
+							<p className="mt-0.5 text-gray-700">Paciente: {s.patientName}</p>
+						)}
+						{s.doctorName && (
+							<p className="text-gray-500">Médico: {s.doctorName}</p>
+						)}
+						{s.notes && (
+							<p className="mt-0.5 text-gray-500 line-clamp-2">{s.notes}</p>
+						)}
+					</li>
+				))}
+			</ul>
+		</div>,
+		document.body,
+	)
+
+	return (
+		<>
+			{hasSurgeries ? (
+				<button
+					type="button"
+					className={`${cellClass} relative flex items-center justify-center cursor-pointer border-0 bg-transparent`}
+					onMouseEnter={handleMouseEnter}
+					onMouseLeave={handleMouseLeave}
+					aria-label={`${day} ${monthName}: ${surgeries.length} cirugía(s)`}
+				>
+					{content}
+				</button>
+			) : (
+				<div className={`${cellClass} relative flex items-center justify-center`}>
+					{content}
+				</div>
+			)}
+			{tooltipContent}
+		</>
+	)
+}
 
 export interface Surgery {
 	day: number
 	month: number
 	year: number
 	type: "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada"
+	/** Optional details for hover tooltip */
+	id?: number
+	patientName?: string
+	doctorName?: string
+	notes?: string | null
 }
 
 interface CalendarProps {
@@ -82,12 +224,12 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
 		)
 	}
 
-	const getSurgeryForDay = (day: number) => {
-		return surgeriesThisMonth.find((surgery) => surgery.day === day)
+	const getSurgeriesForDay = (day: number) => {
+		return surgeriesThisMonth.filter((surgery) => surgery.day === day)
 	}
 
 	return (
-		<div className="w-full">
+		<div className="w-full overflow-visible">
 			<div className={`flex justify-between items-center mb-4 ${classes.gap}`}>
 				<Button
 					type="button"
@@ -121,34 +263,31 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
 				))}
 			</div>
 
-			<div className={`grid grid-cols-7 ${classes.gap}`}>
+			<div className={`grid grid-cols-7 ${classes.gap} overflow-visible`}>
 				{Array.from({ length: startingDay }).map((_, i) => {
 					const key = `empty-${currentDate.getFullYear()}-${currentDate.getMonth()}-${i}`
 					return <div key={key} className={classes.cell}></div>
 				})}
 
 				{days.map((day) => {
-					const surgery = getSurgeryForDay(day)
+					const daySurgeries = getSurgeriesForDay(day)
+					const hasSurgeries = daySurgeries.length > 0
 					const isToday =
 						day === new Date().getDate() &&
 						currentDate.getMonth() === new Date().getMonth() &&
 						currentDate.getFullYear() === new Date().getFullYear()
 
 					return (
-						<div
+						<DayCell
 							key={day}
-							className={`${classes.cell} flex items-center justify-center text-sm relative ${
-								isToday ? "bg-primary text-white rounded-full" : "text-gray-700"
-							}`}
-						>
-							{day}
-							{surgery && (
-								<div
-									className={`absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full bg-primary`}
-									title={surgery.type}
-								></div>
-							)}
-						</div>
+							day={day}
+							isToday={isToday}
+							hasSurgeries={hasSurgeries}
+							surgeries={daySurgeries}
+							cellClass={classes.cell}
+							monthName={monthNames[currentDate.getMonth()]}
+							year={currentDate.getFullYear()}
+						/>
 					)
 				})}
 			</div>

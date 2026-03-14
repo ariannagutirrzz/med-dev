@@ -76,6 +76,10 @@ export interface ChartsStatsResult {
 	surgeriesByMonth: MonthCount[]
 	newPatientsByMonth: MonthCount[]
 	revenueByMonth: MonthRevenue[]
+	appointmentsByMonthPredicted?: MonthCount[]
+	surgeriesByMonthPredicted?: MonthCount[]
+	newPatientsByMonthPredicted?: MonthCount[]
+	revenueByMonthPredicted?: MonthRevenue[]
 }
 
 /**
