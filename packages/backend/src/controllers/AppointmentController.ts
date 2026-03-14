@@ -310,16 +310,33 @@ export const getFilteredAppointments = async (req: Request, res: Response) => {
 	}
 	const { document_id: userId, role } = req.user
 
-	// If I'm a doctor, filter by doctor_id. If I'm a patient, filter by patient_id.
-	const filterColumn = role === "Médico" ? "a.doctor_id" : "a.patient_id"
-	const joinTable =
-		role === "Médico" ? "u.name as patient_name" : "u.name as doctor_name"
-	const joinOn =
-		role === "Médico"
-			? "a.patient_id = u.document_id"
-			: "a.doctor_id = u.document_id"
-
 	try {
+		// Admin: return ALL appointments with both doctor_name and patient_name
+		if (role === "Admin") {
+			const result = await query(
+				`SELECT a.*,
+            u_doctor.name AS doctor_name,
+            p.first_name || ' ' || p.last_name AS patient_name
+         FROM appointments a
+         LEFT JOIN users u_doctor ON a.doctor_id = u_doctor.document_id
+         INNER JOIN patients p ON a.patient_id = p.document_id
+         ORDER BY a.appointment_date DESC`,
+			)
+			return res.json({
+				appointments: result.rows,
+				message: "Appointments fetched successfully",
+			})
+		}
+
+		// Médico: filter by doctor_id. Paciente: filter by patient_id.
+		const filterColumn = role === "Médico" ? "a.doctor_id" : "a.patient_id"
+		const joinTable =
+			role === "Médico" ? "u.name as patient_name" : "u.name as doctor_name"
+		const joinOn =
+			role === "Médico"
+				? "a.patient_id = u.document_id"
+				: "a.doctor_id = u.document_id"
+
 		const result = await query(
 			`SELECT a.*, ${joinTable}
          FROM appointments a

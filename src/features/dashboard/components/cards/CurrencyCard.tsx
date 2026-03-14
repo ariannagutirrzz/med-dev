@@ -48,7 +48,7 @@ export const CurrencyCard = () => {
 							</span>
 						</div>
 
-						{user?.role === "Médico" && (
+						{(user?.role === "Médico" || user?.role === "Admin") && (
 							<div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 text-xs sm:text-sm text-gray-500 flex flex-col items-end">
 								<p className="mb-1 sm:mb-2 text-xs sm:text-sm text-right">
 									Tu tasa personalizada actual:{" "}

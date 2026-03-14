@@ -75,8 +75,8 @@ const DashboardHome = () => {
 				{!isPatient && <CurrencyCard />}
 			</div>
 
-			{/* Contenido según rol */}
-			{user?.role === "Médico" && (
+			{/* Contenido según rol: Médico y Admin ven estadísticas, calendario y citas (Admin ve todo por doctor) */}
+			{(user?.role === "Médico" || user?.role === "Admin") && (
 				<div className="mt-3 sm:mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
 					<GeneralStatsCard stats={data.stats} loading={loading} />
 					<SurgeryCalendarCard

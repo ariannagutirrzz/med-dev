@@ -2,6 +2,7 @@ import {
 	Bar,
 	BarChart,
 	CartesianGrid,
+	Legend,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -9,6 +10,8 @@ import {
 } from "recharts"
 
 const PRIMARY_COLOR = "var(--color-primary)"
+const PREDICTED_COLOR = "var(--color-primary)"
+const PREDICTED_OPACITY = 0.5
 const GRID_COLOR = "var(--color-muted-light)"
 
 type ChartDataPoint = { monthLabel: string; [key: string]: string | number }
@@ -18,10 +21,14 @@ interface BarChartCardProps {
 	description?: string
 	data: ChartDataPoint[]
 	dataKey: string
+	/** Optional second series for predicted values (e.g. dataKeyPrediccion="prediccion"). Shows legend "Histórico" / "Predicción". */
+	dataKeyPrediccion?: string
 	valueLabel?: string
 	formatValue?: (n: number) => string
 	/** When true, do not render the outer card; content only (for use inside a parent card). */
 	embedded?: boolean
+	/** Width reserved for Y-axis labels (e.g. 64 for currency to avoid clipping). Default 36. */
+	yAxisWidth?: number
 }
 
 export function BarChartCard({
@@ -29,10 +36,13 @@ export function BarChartCard({
 	description,
 	data,
 	dataKey,
+	dataKeyPrediccion,
 	valueLabel,
 	formatValue = (n) => String(n),
 	embedded = false,
+	yAxisWidth = 36,
 }: BarChartCardProps) {
+	const showPrediction = Boolean(dataKeyPrediccion && data.some((d) => Number(d[dataKeyPrediccion]) > 0))
 	const content = (
 		<>
 			<div className="mb-3">
@@ -45,7 +55,7 @@ export function BarChartCard({
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart
 						data={data}
-						margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+						margin={{ top: 8, right: 8, left: yAxisWidth > 40 ? 12 : 0, bottom: 0 }}
 					>
 						<CartesianGrid
 							strokeDasharray="3 3"
@@ -66,7 +76,7 @@ export function BarChartCard({
 							tickMargin={8}
 							tickFormatter={formatValue}
 							allowDecimals={false}
-							width={36}
+							width={yAxisWidth}
 						/>
 						<Tooltip
 							contentStyle={{
@@ -76,15 +86,36 @@ export function BarChartCard({
 								fontSize: "12px",
 							}}
 							labelStyle={{ color: "var(--color-text)" }}
-							formatter={(value: number) => [formatValue(value), valueLabel ?? dataKey]}
+							formatter={(value: number, name: string) => [
+								formatValue(value),
+								name === "prediccion" ? "Predicción" : valueLabel ?? dataKey,
+							]}
 							labelFormatter={(label) => label}
 						/>
+						{showPrediction && (
+							<Legend
+								verticalAlign="top"
+								height={24}
+								formatter={(value) => (value === "prediccion" ? "Predicción" : "Histórico")}
+							/>
+						)}
 						<Bar
 							dataKey={dataKey}
+							name="historico"
 							fill={PRIMARY_COLOR}
 							radius={[4, 4, 0, 0]}
-							maxBarSize={48}
+							maxBarSize={showPrediction ? 32 : 48}
 						/>
+						{showPrediction && dataKeyPrediccion && (
+							<Bar
+								dataKey={dataKeyPrediccion}
+								name="prediccion"
+								fill={PREDICTED_COLOR}
+								fillOpacity={PREDICTED_OPACITY}
+								radius={[4, 4, 0, 0]}
+								maxBarSize={32}
+							/>
+						)}
 					</BarChart>
 				</ResponsiveContainer>
 			</div>

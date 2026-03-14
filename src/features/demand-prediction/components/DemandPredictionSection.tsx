@@ -73,6 +73,7 @@ const DemandPredictionSection = () => {
 				</p>
 			</div>
 
+			
 			{/* Period selector */}
 			<div className="mb-6 flex flex-wrap gap-2">
 				{PERIOD_OPTIONS.map((opt) => (
@@ -91,6 +92,27 @@ const DemandPredictionSection = () => {
 					</Button>
 				))}
 			</div>
+{/* Resumen de predicción destacado (solo cuando hay datos) */}
+{!loading && data && (
+					<p className="text-gray-700 m-0 leading-snug">
+						Según el historial de los últimos 90 días (promedio por día de la
+						semana), se prevén aproximadamente{" "}
+						<strong className="text-primary">
+							{Math.round(data.appointments.summary.next30Days)} citas
+						</strong>
+						,{" "}
+						<strong className="text-primary">
+							{Math.round(data.surgeries.summary.next30Days)} cirugías
+						</strong>
+						{" "}
+						y{" "}
+						<strong className="text-primary">
+							{Math.round(data.newPatients.summary.next30Days)} nuevos pacientes
+						</strong>
+						{" "}
+						en los próximos 30 días. Use estos valores para planificar recursos y agenda.
+					</p>
+			)}
 
 			{error && (
 				<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
@@ -132,21 +154,24 @@ const DemandPredictionSection = () => {
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next7Days}
 									</p>
-									<p className="text-xs text-gray-600">7 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 7 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next14Days}
 									</p>
-									<p className="text-xs text-gray-600">14 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 14 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.appointments.summary.next30Days}
 									</p>
-									<p className="text-xs text-gray-600">30 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 30 días</p>
 								</div>
 							</div>
+							<p className="text-xs text-gray-500 mt-2 text-center">
+								Basado en promedio por día de la semana (histórico 90 días)
+							</p>
 						</div>
 						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
 							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
@@ -162,21 +187,24 @@ const DemandPredictionSection = () => {
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next7Days}
 									</p>
-									<p className="text-xs text-gray-600">7 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 7 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next14Days}
 									</p>
-									<p className="text-xs text-gray-600">14 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 14 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.surgeries.summary.next30Days}
 									</p>
-									<p className="text-xs text-gray-600">30 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 30 días</p>
 								</div>
 							</div>
+							<p className="text-xs text-gray-500 mt-2 text-center">
+								Basado en promedio por día de la semana (histórico 90 días)
+							</p>
 						</div>
 						<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col">
 							<h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
@@ -192,21 +220,24 @@ const DemandPredictionSection = () => {
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next7Days}
 									</p>
-									<p className="text-xs text-gray-600">7 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 7 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next14Days}
 									</p>
-									<p className="text-xs text-gray-600">14 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 14 días</p>
 								</div>
 								<div className="bg-primary/10 rounded-xl p-3 flex flex-col items-center justify-center">
 									<p className="text-2xl font-bold text-primary">
 										{data.newPatients.summary.next30Days}
 									</p>
-									<p className="text-xs text-gray-600">30 d</p>
+									<p className="text-xs font-medium text-gray-700">Predicción 30 días</p>
 								</div>
 							</div>
+							<p className="text-xs text-gray-500 mt-2 text-center">
+								Basado en promedio por día de la semana (histórico 90 días)
+							</p>
 						</div>
 					</div>
 

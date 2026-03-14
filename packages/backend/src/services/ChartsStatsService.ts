@@ -38,6 +38,18 @@ function getLastMonths(n: number): { year: number; month: number }[] {
 	return out.reverse()
 }
 
+/** Build list of next N months starting from the month after today. */
+function getNextMonths(n: number): { year: number; month: number }[] {
+	const out: { year: number; month: number }[] = []
+	const d = new Date()
+	d.setMonth(d.getMonth() + 1)
+	for (let i = 0; i < n; i++) {
+		out.push({ year: d.getFullYear(), month: d.getMonth() + 1 })
+		d.setMonth(d.getMonth() + 1)
+	}
+	return out
+}
+
 /**
  * Build list of months between a start and end date (inclusive, by month),
  * and the concrete date strings used for SQL filtering.
@@ -292,11 +304,18 @@ export async function getRevenueByMonth(
 	}))
 }
 
+const PREDICTED_MONTHS_AHEAD = 3
+
 export interface ChartsStatsResult {
 	appointmentsByMonth: MonthCount[]
 	surgeriesByMonth: MonthCount[]
 	newPatientsByMonth: MonthCount[]
 	revenueByMonth: MonthRevenue[]
+	/** Predicted next months (average of last 12); only when no custom date range. */
+	appointmentsByMonthPredicted?: MonthCount[]
+	surgeriesByMonthPredicted?: MonthCount[]
+	newPatientsByMonthPredicted?: MonthCount[]
+	revenueByMonthPredicted?: MonthRevenue[]
 }
 
 export async function getChartsStats(
@@ -311,10 +330,50 @@ export async function getChartsStats(
 			getNewPatientsByMonth(startDate, endDate),
 			getRevenueByMonth(doctorId, startDate, endDate),
 		])
-	return {
+
+	const result: ChartsStatsResult = {
 		appointmentsByMonth,
 		surgeriesByMonth,
 		newPatientsByMonth,
 		revenueByMonth,
 	}
+
+	// When using default range (last 12 months), add predicted next N months (average per month).
+	if (!startDate || !endDate) {
+		const sum = (arr: MonthCount[]) => arr.reduce((s, m) => s + m.count, 0)
+		const sumRev = (arr: MonthRevenue[]) => arr.reduce((s, m) => s + m.revenue_usd, 0)
+		const n = Math.max(1, appointmentsByMonth.length)
+		const avgApp = Math.round((sum(appointmentsByMonth) / n) * 10) / 10
+		const avgSurg = Math.round((sum(surgeriesByMonth) / n) * 10) / 10
+		const avgPatients = Math.round((sum(newPatientsByMonth) / n) * 10) / 10
+		const avgRevenue = Math.round((sumRev(revenueByMonth) / n) * 100) / 100
+
+		const nextMonths = getNextMonths(PREDICTED_MONTHS_AHEAD)
+		result.appointmentsByMonthPredicted = nextMonths.map(({ year, month }) => ({
+			year,
+			month,
+			monthLabel: toMonthLabel(year, month),
+			count: avgApp,
+		}))
+		result.surgeriesByMonthPredicted = nextMonths.map(({ year, month }) => ({
+			year,
+			month,
+			monthLabel: toMonthLabel(year, month),
+			count: avgSurg,
+		}))
+		result.newPatientsByMonthPredicted = nextMonths.map(({ year, month }) => ({
+			year,
+			month,
+			monthLabel: toMonthLabel(year, month),
+			count: avgPatients,
+		}))
+		result.revenueByMonthPredicted = nextMonths.map(({ year, month }) => ({
+			year,
+			month,
+			monthLabel: toMonthLabel(year, month),
+			revenue_usd: avgRevenue,
+		}))
+	}
+
+	return result
 }

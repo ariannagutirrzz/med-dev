@@ -24,11 +24,19 @@ export const convertSurgeriesToCalendarFormat = (
 ): CalendarSurgery[] => {
 	return surgeries.map((surgery) => {
 		const surgeryDate = new Date(surgery.surgery_date)
+		const patientName = [surgery.patient_first_name, surgery.patient_last_name]
+			.filter(Boolean)
+			.join(" ")
+			.trim() || undefined
 		return {
+			id: surgery.id,
 			day: surgeryDate.getDate(),
 			month: surgeryDate.getMonth(),
 			year: surgeryDate.getFullYear(),
 			type: mapSurgeryType(surgery.surgery_type),
+			patientName: patientName || undefined,
+			doctorName: surgery.doctor_name || undefined,
+			notes: surgery.notes ?? undefined,
 		}
 	})
 }
