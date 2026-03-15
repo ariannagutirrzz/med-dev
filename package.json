@@ -7,7 +7,7 @@
 		"dev": "concurrently \"pnpm dev:frontend\" \"pnpm dev:backend\"",
 		"dev:frontend": "vite",
 		"dev:backend": "pnpm --filter backend dev",
-		"build": "cd packages/backend && pnpm install && pnpm run build && cd ../.. && pnpm run build:frontend",
+		"build": "cd packages/backend && pnpm install --no-frozen-lockfile && pnpm run build && cd ../.. && pnpm run build:frontend",
 		"build:frontend": "vite build",
 		"build:backend": "pnpm --filter backend build",
 		"start": "vite",
