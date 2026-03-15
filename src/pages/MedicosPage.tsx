@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { getApiBase } from "../config/axios"
 import { TeamCard } from "../features/home"
 
 interface Medico {
@@ -15,7 +16,7 @@ const MedicosPage = () => {
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
-		fetch("http://localhost:3001/medicos")
+		fetch(`${getApiBase()}/medicos`)
 			.then((res) => res.json())
 			.then((data) => {
 				setMedicos(data.medicos)

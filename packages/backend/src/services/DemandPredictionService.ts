@@ -72,7 +72,7 @@ async function getAppointmentCountsByDay(
 				[fromDate, toDate],
 			)
 
-	return result.rows.map((r) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
 }
 
 /**
@@ -104,7 +104,7 @@ async function getSurgeryCountsByDay(
 				[fromDate, toDate],
 			)
 
-	return result.rows.map((r) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
 }
 
 /**
@@ -122,7 +122,7 @@ async function getNewPatientCountsByDay(
      ORDER BY date`,
 		[fromDate, toDate],
 	)
-	return result.rows.map((r) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
 }
 
 /**

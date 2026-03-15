@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
+import { getApiBase } from "../config/axios"
 import {
 	LoginForm,
 	SelectionButtons,
@@ -40,7 +41,7 @@ const LoginPage = () => {
 	) => {
 		setSignupError(null)
 		try {
-			const response = await fetch("http://localhost:3001/api/auth/signup", {
+			const response = await fetch(`${getApiBase()}/auth/signup`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),
@@ -100,7 +101,7 @@ const LoginPage = () => {
 					</div>
 				</div>
 
-				{/* Error Messages */}
+				{/* Signup error banner (login errors are shown inline in LoginForm) */}
 				{signupError && (
 					<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg max-w-3xl mx-auto">
 						<p className="text-red-700 text-sm flex items-center gap-2">
@@ -109,20 +110,16 @@ const LoginPage = () => {
 						</p>
 					</div>
 				)}
-				{loginError && (
-					<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg max-w-3xl mx-auto">
-						<p className="text-red-700 text-sm flex items-center gap-2">
-							<span className="text-red-500 font-bold">⚠</span>
-							{loginError}
-						</p>
-					</div>
-				)}
 
 				{/* Form Container */}
 				<div className="max-w-3xl mx-auto">
 					{/* Conditional Rendering for Login or Signup Form */}
 					{isLogin ? (
-						<LoginForm onLogin={handleLogin} />
+						<LoginForm
+							onLogin={handleLogin}
+							error={loginError}
+							onClearError={() => setLoginError(null)}
+						/>
 					) : (
 						<SignupForm onSignUp={handleSignUp} />
 					)}

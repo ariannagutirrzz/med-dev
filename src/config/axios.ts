@@ -11,8 +11,16 @@ export function getStoredUser(): string | null {
 	return sessionStorage.getItem("user")
 }
 
+/** API base URL: same-origin /api in production, localhost in dev. Override with VITE_API_URL. */
+export function getApiBase(): string {
+	return (
+		import.meta.env.VITE_API_URL ??
+		(import.meta.env.PROD ? "/api" : "http://localhost:3001/api")
+	)
+}
+
 export const api = axios.create({
-	baseURL: "http://localhost:3001/api",
+	baseURL: getApiBase(),
 	headers: { "Content-Type": "application/json" },
 })
 

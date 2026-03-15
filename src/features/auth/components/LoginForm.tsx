@@ -1,5 +1,6 @@
 import { Checkbox, Input } from "antd"
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Button } from "../../../shared"
 
@@ -9,16 +10,29 @@ interface LoginFormProps {
 		password: string
 		rememberDevice: boolean
 	}) => void
+	error?: string | null
+	onClearError?: () => void
 }
 
-const LoginForm = ({ onLogin }: LoginFormProps) => {
+const LoginForm = ({ onLogin, error, onClearError }: LoginFormProps) => {
 	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
 	const [rememberDevice, setRememberDevice] = useState(false)
+	const hasError = Boolean(error)
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 		onLogin({ email, password, rememberDevice })
+	}
+
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setEmail(e.target.value)
+		if (hasError) onClearError?.()
+	}
+
+	const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setPassword(e.target.value)
+		if (hasError) onClearError?.()
 	}
 
 	return (
@@ -38,7 +52,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 					placeholder="correo@ejemplo.com"
 					prefix={<FaEnvelope className="text-gray-400 mr-2" />}
 					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					onChange={handleEmailChange}
+					status={hasError ? "error" : ""}
 					className="rounded-xl h-12"
 				/>
 			</div>
@@ -56,9 +71,18 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 					placeholder="Ingresa tu contraseña"
 					prefix={<FaLock className="text-gray-400 mr-2" />}
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					onChange={handlePasswordChange}
+					status={hasError ? "error" : ""}
 					className="rounded-xl h-12"
 				/>
+				{hasError && (
+					<p
+						role="alert"
+						className="text-red-500 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200"
+					>
+						{error}
+					</p>
+				)}
 			</div>
 
 			{/* "Remember this device" & Forgot Password */}
@@ -72,12 +96,12 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
 					Recordar este dispositivo
 				</Checkbox>
 
-				<a
-					href="/"
+				<Link
+					to="/recuperar-contrasena"
 					className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
 				>
 					¿Olvidaste tu contraseña?
-				</a>
+				</Link>
 			</div>
 
 			{/* Login Button */}
