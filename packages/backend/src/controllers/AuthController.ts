@@ -1,7 +1,10 @@
+import crypto from "node:crypto"
 import type { Request, Response } from "express"
 import { query } from "../db"
 import { comparePassword, hashPassword } from "../utils/auth"
 import { generateJWT } from "../utils/jwt"
+
+const RESET_TOKEN_EXPIRY_HOURS = 1
 
 export const createAccount = async (req: Request, res: Response) => {
 	try {
@@ -103,7 +106,7 @@ export const login = async (req: Request, res: Response) => {
 		)
 
 		if (result.rows.length === 0) {
-			return res.status(401).json({ error: "Invalid email or password" })
+			return res.status(401).json({ error: "Invalid credentials" })
 		}
 
 		const user = result.rows[0]
@@ -112,7 +115,7 @@ export const login = async (req: Request, res: Response) => {
 		const isPasswordValid = await comparePassword(password, user.password)
 
 		if (!isPasswordValid) {
-			return res.status(401).json({ error: "Invalid email or password" })
+			return res.status(401).json({ error: "Invalid credentials" })
 		}
 
 		const token = generateJWT({ id: user.id.toString() })
@@ -134,6 +137,123 @@ export const login = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.error("Login error:", error)
 		res.status(500).json({ error: "Internal server error" })
+	}
+}
+
+/**
+ * Request password reset (forgot password).
+ * POST /api/auth/forgot-password { email }
+ * Creates a token and returns success. In development, can return resetLink for testing without email.
+ */
+export const forgotPassword = async (req: Request, res: Response) => {
+	try {
+		const { email } = req.body
+		if (!email || typeof email !== "string") {
+			return res.status(400).json({ error: "El correo es requerido" })
+		}
+
+		const emailLower = email.toLowerCase().trim()
+
+		const userResult = await query(
+			"SELECT id FROM users WHERE email = $1",
+			[emailLower],
+		)
+		if (userResult.rows.length === 0) {
+			// Same response as success to avoid email enumeration
+			return res.json({
+				success: true,
+				message:
+					"Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
+			})
+		}
+
+		await query(
+			"DELETE FROM password_reset_tokens WHERE email = $1",
+			[emailLower],
+		)
+
+		const token = crypto.randomBytes(32).toString("hex")
+		const expiresAt = new Date()
+		expiresAt.setHours(expiresAt.getHours() + RESET_TOKEN_EXPIRY_HOURS)
+
+		await query(
+			`INSERT INTO password_reset_tokens (token, email, expires_at)
+       VALUES ($1, $2, $3)`,
+			[token, emailLower, expiresAt.toISOString()],
+		)
+
+		// TODO: send email with reset link. For now we return the link in dev for testing.
+		const baseUrl =
+			process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173"
+		const resetLink = `${baseUrl}/restablecer-contrasena?token=${token}`
+
+		if (process.env.NODE_ENV !== "production") {
+			return res.json({
+				success: true,
+				message:
+					"Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
+				resetLink,
+			})
+		}
+
+		res.json({
+			success: true,
+			message:
+				"Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.",
+		})
+	} catch (error) {
+		console.error("Forgot password error:", error)
+		res.status(500).json({ error: "Error al procesar la solicitud" })
+	}
+}
+
+/**
+ * Reset password with token from email link.
+ * POST /api/auth/reset-password { token, newPassword }
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+	try {
+		const { token, newPassword } = req.body
+		if (!token || !newPassword) {
+			return res.status(400).json({
+				error: "El enlace de restablecimiento y la nueva contraseña son requeridos.",
+			})
+		}
+
+		if (newPassword.length < 8) {
+			return res.status(400).json({
+				error: "La contraseña debe tener al menos 8 caracteres.",
+			})
+		}
+
+		const tokenResult = await query(
+			`SELECT email FROM password_reset_tokens
+       WHERE token = $1 AND expires_at > NOW()`,
+			[token],
+		)
+
+		if (tokenResult.rows.length === 0) {
+			return res.status(400).json({
+				error: "El enlace ha expirado o no es válido. Solicita uno nuevo.",
+			})
+		}
+
+		const { email } = tokenResult.rows[0]
+		const hashedPassword = await hashPassword(newPassword)
+
+		await query("UPDATE users SET password = $1 WHERE email = $2", [
+			hashedPassword,
+			email,
+		])
+		await query("DELETE FROM password_reset_tokens WHERE token = $1", [token])
+
+		res.json({
+			success: true,
+			message: "Contraseña actualizada. Ya puedes iniciar sesión.",
+		})
+	} catch (error) {
+		console.error("Reset password error:", error)
+		res.status(500).json({ error: "Error al restablecer la contraseña" })
 	}
 }
 

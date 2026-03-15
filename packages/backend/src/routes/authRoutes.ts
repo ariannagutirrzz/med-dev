@@ -1,5 +1,11 @@
 import { Router } from "express"
-import { changePassword, createAccount, login } from "../controllers/AuthController"
+import {
+	changePassword,
+	createAccount,
+	forgotPassword,
+	login,
+	resetPassword,
+} from "../controllers/AuthController"
 import { authenticate } from "../middleware/auth"
 
 const authRoutes: Router = Router()
@@ -65,6 +71,10 @@ const authRoutes: Router = Router()
 // Signup endpoint
 authRoutes.post("/signup", createAccount)
 authRoutes.post("/login", login)
+
+// Password recovery (no auth required)
+authRoutes.post("/forgot-password", forgotPassword)
+authRoutes.post("/reset-password", resetPassword)
 
 // Protected routes
 authRoutes.use(authenticate)
