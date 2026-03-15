@@ -36,7 +36,7 @@ const ConfirmModal = ({
 					type="button"
 					variant="text"
 					onClick={onClose}
-					className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 !p-0 !min-w-0 !h-auto"
+					className="absolute top-0 left-35 text-gray-400 hover:text-gray-600 p-0! min-w-0! h-auto!"
 				>
 					<FaTimes />
 				</Button>
@@ -57,7 +57,7 @@ const ConfirmModal = ({
 						danger
 						onClick={onConfirm}
 						block
-						className="!py-4 font-black uppercase tracking-widest text-xs rounded-2xl"
+						className="py-4! font-black uppercase tracking-widest text-xs rounded-2xl"
 					>
 						{confirmText}
 					</Button>
@@ -66,7 +66,7 @@ const ConfirmModal = ({
 						variant="default"
 						onClick={onClose}
 						block
-						className="!py-4 font-bold rounded-2xl bg-gray-100 text-gray-600 border-0 hover:!bg-gray-200 hover:!text-gray-700"
+						className="py-4! font-bold rounded-2xl bg-gray-100 text-gray-600 border-0 hover:bg-gray-200! hover:text-gray-700!"
 					>
 						{cancelText}
 					</Button>
