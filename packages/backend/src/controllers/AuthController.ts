@@ -1,6 +1,7 @@
 import crypto from "node:crypto"
 import type { Request, Response } from "express"
 import { query } from "../db"
+import { sendPasswordResetEmail } from "../services/EmailService"
 import { comparePassword, hashPassword } from "../utils/auth"
 import { generateJWT } from "../utils/jwt"
 
@@ -182,12 +183,18 @@ export const forgotPassword = async (req: Request, res: Response) => {
 			[token, emailLower, expiresAt.toISOString()],
 		)
 
-		// TODO: send email with reset link. For now we return the link in dev for testing.
 		const baseUrl =
 			process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173"
 		const resetLink = `${baseUrl}/restablecer-contrasena?token=${token}`
 
-		if (process.env.NODE_ENV !== "production") {
+		const sent = await sendPasswordResetEmail(
+			emailLower,
+			resetLink,
+			RESET_TOKEN_EXPIRY_HOURS,
+		)
+
+		// In dev, if email is not configured, return link for testing
+		if (!sent.ok && process.env.NODE_ENV !== "production") {
 			return res.json({
 				success: true,
 				message:
