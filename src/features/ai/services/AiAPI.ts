@@ -1,9 +1,6 @@
-import { getStoredToken } from "../../../config/axios"
+import { getApiBase, getStoredToken } from "../../../config/axios"
 
-const API_BASE =
-	typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL
-		? import.meta.env.VITE_API_URL
-		: "http://localhost:3001/api"
+const API_BASE = getApiBase()
 
 /** Timeout para la petición al asistente (ms). Modelos "reasoning" pueden tardar mucho. */
 const CHAT_TIMEOUT_MS = 75_000

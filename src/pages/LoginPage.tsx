@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
+import { getApiBase } from "../config/axios"
 import {
 	LoginForm,
 	SelectionButtons,
@@ -40,7 +41,7 @@ const LoginPage = () => {
 	) => {
 		setSignupError(null)
 		try {
-			const response = await fetch("http://localhost:3001/api/auth/signup", {
+			const response = await fetch(`${getApiBase()}/auth/signup`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(formData),

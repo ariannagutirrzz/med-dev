@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import { api } from "../../../config/axios"
+import { api, getApiBase } from "../../../config/axios"
 
 export interface User {
 	name: string
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		password: string,
 		rememberMe: boolean = true,
 	) => {
-		const response = await fetch("http://localhost:3001/api/auth/login", {
+		const response = await fetch(`${getApiBase()}/auth/login`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ email, password }),
