@@ -17,7 +17,7 @@ import {
 	type CurrencyRates,
 	getCurrencyRates,
 } from "../../currency/services/CurrencyAPI"
-import { getPatients, getDoctorPatients } from "../../patients"
+import { getDoctorPatients, getPatients } from "../../patients"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
 import { getDoctorServices } from "../../services"
@@ -345,7 +345,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 						type="button"
 						variant="text"
 						onClick={onClose}
-						className="hover:bg-white/20 !p-2 rounded-full"
+						className="hover:bg-white/20 p-2! rounded-full"
 					>
 						<FaTimes size={20} />
 					</Button>
@@ -662,7 +662,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 							type="button"
 							variant="default"
 							onClick={onClose}
-							className="flex-1 !py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
+							className="flex-1 py-3! border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
 						>
 							Cancelar
 						</Button>
@@ -671,7 +671,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 							disabled={loading || loadingData}
 							loading={loading}
 							icon={<FaSave />}
-							className="flex-1 !py-3 font-bold rounded-2xl"
+							className="flex-1 py-3! font-bold rounded-2xl"
 						>
 							{editingAppointment ? "Actualizar" : "Crear"} Cita
 						</Button>

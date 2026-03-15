@@ -37,6 +37,14 @@ interface SurgeryModalProps {
 	editingSurgery?: Surgery | null
 }
 
+interface PatientsData {
+	patients: Patient[]
+}
+
+interface UsersData {
+	doctors: Doctor[]
+}
+
 const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	isOpen,
 	onClose,
@@ -95,17 +103,18 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	const loadInitialData = useCallback(async () => {
 		setLoadingData(true)
 		try {
-		const promises: Promise<unknown>[] = [getPatients()]
+			const promises: Promise<unknown>[] = [getPatients()]
 			if (isAdmin) {
 				promises.push(getDoctors()) // O la función que traiga solo médicos
 			}
 
 			const [patientsData, usersData] = await Promise.all(promises)
 
-			if (patientsData?.patients) setPatients(patientsData.patients)
-			if (isAdmin && usersData) {
+			if ((patientsData as PatientsData).patients)
+				setPatients((patientsData as PatientsData).patients)
+			if (isAdmin && (usersData as UsersData)) {
 				// Filtrar solo usuarios con rol médico
-				setDoctors(usersData.doctors)
+				setDoctors((usersData as UsersData).doctors)
 			}
 		} catch (error) {
 			console.error("Error cargando datos iniciales:", error)
@@ -227,10 +236,10 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	]
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
-			<div className="bg-gray-100 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+		<div className="fixed inset-0 z-60 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
+			<div className="relative bg-gray-100 w-full my-auto max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
 				{/* Header del Modal */}
-				<div className="p-6 flex justify-between items-center">
+				<div className="p-6 pb-0 flex justify-between items-center">
 					<div>
 						<h2 className="text-xl font-bold text-gray-800">
 							{editingSurgery ? "Editar Cirugía" : "Nueva Reserva de Cirugía"}
@@ -240,15 +249,18 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 						type="button"
 						variant="text"
 						onClick={onClose}
-						className="hover:bg-white/20 !p-2 rounded-full"
+						className="hover:bg-white/20 p-2! rounded-full"
 					>
 						<FaTimes size={20} />
 					</Button>
 				</div>
 
 				{/* Formulario */}
-				<form onSubmit={handleSubmit} className="p-6 space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-3xl shadow-lg">
+				<form
+					onSubmit={handleSubmit}
+					className="p-4 space-y-4 overflow-y-auto flex-1"
+				>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-3xl shadow-lg">
 						{isAdmin && (
 							<div className="md:col-span-2 relative">
 								<label
@@ -520,12 +532,12 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 					</div>
 
 					{/* Botones de Acción */}
-					<div className="flex gap-3 pt-4">
+					<div className="flex gap-3 pt-2">
 						<Button
 							type="button"
 							variant="default"
 							onClick={onClose}
-							className="flex-1 !py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
+							className="flex-1 py-3! border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
 						>
 							Cancelar
 						</Button>
@@ -534,7 +546,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 							disabled={loading || loadingData}
 							loading={loading}
 							icon={<FaSave />}
-							className="flex-1 !py-3 font-bold rounded-2xl"
+							className="flex-1 py-3! font-bold rounded-2xl"
 						>
 							{editingSurgery ? "Actualizar" : "Programar"} Cirugía
 						</Button>

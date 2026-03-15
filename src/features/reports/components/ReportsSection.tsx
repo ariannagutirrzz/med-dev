@@ -143,7 +143,7 @@ const ReportsSection = () => {
 								key={option.value}
 								type="button"
 								onClick={() => setSelectedReport(option.value)}
-								className={`w-full min-h-[3.5rem] p-3 rounded-lg border text-left transition-colors cursor-pointer flex flex-col ${
+								className={`w-full min-h-14 p-3 rounded-lg border text-left transition-colors cursor-pointer flex flex-col ${
 									selectedReport === option.value
 										? "border-primary bg-primary/5"
 										: "border-gray-200 hover:border-gray-300 bg-white"
@@ -172,10 +172,10 @@ const ReportsSection = () => {
 							variant={format === "pdf" ? "primary" : "default"}
 							onClick={() => setFormat("pdf")}
 							icon={<FaFilePdf className="w-4 h-4" />}
-							className={`!min-h-0 !text-sm ${
+							className={`min-h-0! text-sm! ${
 								format === "pdf"
-									? "!border !border-primary"
-									: "!border !border-gray-300 text-gray-700 hover:!border-gray-400"
+									? "border! border-primary!"
+									: "border! border-gray-300! text-gray-700 hover:border-gray-400!"
 							}`}
 						>
 							PDF
@@ -186,10 +186,10 @@ const ReportsSection = () => {
 							variant={format === "excel" ? "primary" : "default"}
 							onClick={() => setFormat("excel")}
 							icon={<FaFileExcel className="w-4 h-4" />}
-							className={`!min-h-0 !text-sm ${
+							className={`min-h-0! text-sm! ${
 								format === "excel"
-									? "!border !border-primary"
-									: "!border !border-gray-300 text-gray-700 hover:!border-gray-400"
+									? "border! border-primary!"
+									: "border! border-gray-300! text-gray-700 hover:border-gray-400!"
 							}`}
 						>
 							Excel
@@ -217,9 +217,7 @@ const ReportsSection = () => {
 											id="start_date"
 											size="middle"
 											value={
-												filters.startDate
-													? dayjs(filters.startDate)
-													: null
+												filters.startDate ? dayjs(filters.startDate) : null
 											}
 											onChange={(date: Dayjs | null) =>
 												setFilters({
@@ -230,9 +228,6 @@ const ReportsSection = () => {
 											format="DD/MM/YYYY"
 											className="w-full"
 											placeholder="Seleccionar fecha"
-											disabledDate={(current) =>
-												current && current < dayjs().startOf("day")
-											}
 										/>
 									</div>
 									<div>
@@ -245,9 +240,7 @@ const ReportsSection = () => {
 										<DatePicker
 											id="end_date"
 											size="middle"
-											value={
-												filters.endDate ? dayjs(filters.endDate) : null
-											}
+											value={filters.endDate ? dayjs(filters.endDate) : null}
 											onChange={(date: Dayjs | null) =>
 												setFilters({
 													...filters,
@@ -257,13 +250,6 @@ const ReportsSection = () => {
 											format="DD/MM/YYYY"
 											className="w-full"
 											placeholder="Seleccionar fecha"
-											disabledDate={(current) => {
-												if (!filters.startDate) return false
-												return (
-													current != null &&
-													current < dayjs(filters.startDate).startOf("day")
-												)
-											}}
 										/>
 									</div>
 								</>
@@ -337,7 +323,7 @@ const ReportsSection = () => {
 					loading={loading}
 					icon={<FaDownload className="w-4 h-4" />}
 					block
-					className="!min-h-0 !px-4 !py-2 !rounded-lg !text-sm"
+					className="min-h-0! px-4! py-2! rounded-lg! text-sm!"
 				>
 					Generar y Descargar Reporte
 				</Button>

@@ -34,9 +34,9 @@ export const generateAppointmentsReport = async (
 
 		const { document_id: userId, role } = req.user
 
-		if (role !== "Médico") {
+		if (role !== "Médico" && role !== "Admin") {
 			return res.status(403).json({
-				error: "Only doctors can generate reports",
+				error: "Only authorized staff can generate reports",
 			})
 		}
 
@@ -47,7 +47,14 @@ export const generateAppointmentsReport = async (
 			status: status as string,
 		}
 
-		const data = await getAppointmentsReport(userId, filters)
+		let doctorIdParam: string | null
+		if (role === "Admin") {
+			doctorIdParam = null
+		} else {
+			doctorIdParam = userId
+		}
+
+		const data = await getAppointmentsReport(doctorIdParam, filters)
 
 		if (format === "excel") {
 			const buffer = await generateAppointmentsExcel(data, filters)
@@ -88,9 +95,9 @@ export const generateSurgeriesReport = async (req: Request, res: Response) => {
 
 		const { document_id: userId, role } = req.user
 
-		if (role !== "Médico") {
+		if (role !== "Médico" && role !== "Admin") {
 			return res.status(403).json({
-				error: "Only doctors can generate reports",
+				error: "Only authorized staff can generate reports",
 			})
 		}
 
@@ -101,7 +108,14 @@ export const generateSurgeriesReport = async (req: Request, res: Response) => {
 			status: status as string,
 		}
 
-		const data = await getSurgeriesReport(userId, filters)
+		let doctorIdParam: string | null
+		if (role === "Admin") {
+			doctorIdParam = null
+		} else {
+			doctorIdParam = userId
+		}
+
+		const data = await getSurgeriesReport(doctorIdParam, filters)
 
 		if (format === "excel") {
 			const buffer = await generateSurgeriesExcel(data, filters)
@@ -142,15 +156,22 @@ export const generatePatientsReport = async (req: Request, res: Response) => {
 
 		const { document_id: userId, role } = req.user
 
-		if (role !== "Médico") {
+		if (role !== "Médico" && role !== "Admin") {
 			return res.status(403).json({
-				error: "Only doctors can generate reports",
+				error: "Only authorized staff can generate reports",
 			})
 		}
 
 		const { format = "pdf" } = req.query
 
-		const data = await getPatientsReport(userId)
+		let doctorIdParam: string | null
+		if (role === "Admin") {
+			doctorIdParam = null
+		} else {
+			doctorIdParam = userId
+		}
+
+		const data = await getPatientsReport(doctorIdParam)
 
 		if (format === "excel") {
 			const buffer = await generatePatientsExcel(data)
@@ -191,9 +212,9 @@ export const generateFinancialReport = async (req: Request, res: Response) => {
 
 		const { document_id: userId, role } = req.user
 
-		if (role !== "Médico") {
+		if (role !== "Médico" && role !== "Admin") {
 			return res.status(403).json({
-				error: "Only doctors can generate reports",
+				error: "Only authorized staff can generate reports",
 			})
 		}
 
@@ -204,7 +225,14 @@ export const generateFinancialReport = async (req: Request, res: Response) => {
 			status: status as string,
 		}
 
-		const data = await getFinancialReport(userId, filters)
+		let doctorIdParam: string | null
+		if (role === "Admin") {
+			doctorIdParam = null
+		} else {
+			doctorIdParam = userId
+		}
+
+		const data = await getFinancialReport(doctorIdParam, filters)
 
 		if (format === "excel") {
 			const buffer = await generateFinancialExcel(data, filters)

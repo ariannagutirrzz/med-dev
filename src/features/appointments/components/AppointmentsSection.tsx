@@ -285,7 +285,7 @@ const AppointmentsSection = () => {
 						<Select
 							value={statusFilter}
 							onChange={(value) => setStatusFilter(value)}
-							className="w-full" // AntD usa anchos definidos o crece según el contenido
+							className="w-full sm:w-[180px]" // AntD usa anchos definidos o crece según el contenido
 							placeholder="Seleccionar estado"
 							// Estilos de Tailwind se pueden aplicar vía style o envolviendo el componente
 							style={{ height: "42px" }}
@@ -302,7 +302,7 @@ const AppointmentsSection = () => {
 						<Select
 							value={dateFilter}
 							onChange={(value) => setDateFilter(value)}
-							className="w-full"
+							className="w-full sm:w-[180px]"
 							placeholder="Filtrar por fecha"
 							style={{ height: "42px" }}
 							options={[
