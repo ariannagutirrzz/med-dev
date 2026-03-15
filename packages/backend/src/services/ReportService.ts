@@ -225,10 +225,10 @@ export async function getPatientsReport(
 			[doctorId],
 		)
 
-		return result.rows.map((row) => ({
+		return result.rows.map((row: Record<string, unknown>) => ({
 			...row,
-			total_appointments: parseInt(row.total_appointments, 10),
-			total_surgeries: parseInt(row.total_surgeries, 10),
+			total_appointments: parseInt(row.total_appointments as string, 10),
+			total_surgeries: parseInt(row.total_surgeries as string, 10),
 		})) as PatientReportData[]
 	} catch (error) {
 		console.error("Error fetching patients report:", error)
@@ -325,23 +325,23 @@ export async function getFinancialReport(
 		)
 
 		const combined = [
-			...appointmentsResult.rows.map((row) => ({
+			...appointmentsResult.rows.map((row: Record<string, unknown>) => ({
 				date: row.date,
 				type: "appointment" as const,
 				patient_name: row.patient_name,
 				service_name: row.service_name,
-				price_usd: parseFloat(row.price_usd),
+				price_usd: parseFloat(row.price_usd as string),
 				status: row.status,
 			})),
-			...surgeriesResult.rows.map((row) => ({
+			...surgeriesResult.rows.map((row: Record<string, unknown>) => ({
 				date: row.date,
 				type: "surgery" as const,
 				patient_name: row.patient_name,
 				service_name: row.service_name,
-				price_usd: parseFloat(row.price_usd),
+				price_usd: parseFloat(row.price_usd as string),
 				status: row.status,
 			})),
-		].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+		].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime())
 
 		return combined as FinancialReportData[]
 	} catch (error) {
@@ -384,7 +384,7 @@ export async function getInventoryReport(
 			params,
 		)
 
-		return result.rows.map((row) => ({
+		return result.rows.map((row: Record<string, unknown>) => ({
 			...row,
 			quantity: Number(row.quantity),
 			min_stock: Number(row.min_stock),

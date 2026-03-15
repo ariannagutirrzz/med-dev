@@ -1,6 +1,6 @@
 import cors from "cors"
 import dotenv from "dotenv"
-import express from "express"
+import express, { type Express } from "express"
 import swaggerUI from "swagger-ui-express"
 import aiRoutes from "./routes/aiRoutes.js"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
@@ -23,7 +23,7 @@ import swaggerSpec from "./utils/swagger.js"
 
 dotenv.config()
 
-const app = express()
+const app: Express = express()
 const PORT = process.env.PORT || 3001
 
 // Middleware
@@ -60,7 +60,11 @@ app.use("/api/medical-records-images", medicalRecordsImagesRouter)
 // Docs
 app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 
-// Start server
-app.listen(PORT, () => {
-	console.log(`Backend server running on http://localhost:${PORT}`)
-})
+// On Vercel the app is run as a serverless function; no listen()
+if (!process.env.VERCEL) {
+	app.listen(PORT, () => {
+		console.log(`Backend server running on http://localhost:${PORT}`)
+	})
+}
+
+export default app

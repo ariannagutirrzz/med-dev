@@ -91,7 +91,7 @@ export async function getDoctorServices(
 			[doctorId],
 		)
 
-		return result.rows.map((row) => mapRowToDoctorServiceWithType(row))
+		return result.rows.map((row: Record<string, unknown>) => mapRowToDoctorServiceWithType(row))
 	} catch (error) {
 		console.error("Error fetching doctor services:", error)
 		throw new Error("Failed to fetch doctor services")
@@ -136,7 +136,7 @@ export async function getAllDoctorServices(): Promise<DoctorServiceWithType[]> {
 			INNER JOIN service_types st ON ds.service_type_id = st.id
 			ORDER BY ds.doctor_id ASC, st.name ASC`,
 		)
-		return result.rows.map((row) => mapRowToDoctorServiceWithType(row as Record<string, unknown>))
+		return result.rows.map((row: Record<string, unknown>) => mapRowToDoctorServiceWithType(row))
 	} catch (error) {
 		console.error("Error fetching all doctor services:", error)
 		throw new Error("Failed to fetch doctor services")
