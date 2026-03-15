@@ -1,20 +1,14 @@
+import { DatePicker, Select } from "antd"
+import dayjs from "dayjs"
 import type React from "react"
 import { useEffect, useState } from "react"
 import {
-	FaCalendarAlt,
-	FaClipboardList,
 	FaFileImage,
 	FaImage,
-	FaPills,
 	FaPlus,
-	FaRegEdit,
-	FaRunning,
 	FaSave,
-	FaStethoscope,
-	FaStickyNote,
 	FaTimes,
 	FaTrash,
-	FaUserMd,
 } from "react-icons/fa"
 import type {
 	ExtraImages,
@@ -189,18 +183,16 @@ const ClinicalEvolutionDetailModal = ({
 
 	// --- Función auxiliar para renderizar los campos extra ---
 	const renderExtraImages = () => (
-		<div className="space-y-6 mt-6 border-t border-gray-100 pt-6">
-			<label htmlFor="rx_torax" className={labelClass}>
-				<FaFileImage /> Estudios adicionales
+		<div className="md:col-span-2 space-y-4 border-t border-gray-100 pt-4">
+			<label htmlFor="image" className={labelClass}>
+				Estudios adicionales
 			</label>
-
-			<div className="grid grid-cols-1 gap-6">
+			<div className="grid grid-cols-1 gap-4">
 				{extraImages.map((img, index) => (
 					<div
 						key={img.id}
-						className="bg-gray-50/50 p-4 rounded-4xl border border-gray-100 relative group"
+						className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 relative group"
 					>
-						{/* Botón Eliminar Campo */}
 						<button
 							type="button"
 							onClick={() => removeExtraImage(index)}
@@ -208,9 +200,7 @@ const ClinicalEvolutionDetailModal = ({
 						>
 							<FaTrash className="text-red-500" size={12} />
 						</button>
-
 						<div className="space-y-3">
-							{/* Input de Título */}
 							<input
 								type="text"
 								placeholder="Título del estudio (ej: Eco Renal)"
@@ -220,8 +210,6 @@ const ClinicalEvolutionDetailModal = ({
 									handleExtraImageChange(index, "title", e.target.value)
 								}
 							/>
-
-							{/* Dropzone de Imagen */}
 							<label className={`${fileInputClass} h-24`}>
 								<FaImage className="text-gray-300 text-2xl mb-1" />
 								<span className="text-[10px] text-gray-500 font-black uppercase text-center px-4 line-clamp-1">
@@ -234,8 +222,6 @@ const ClinicalEvolutionDetailModal = ({
 									accept="image/*"
 								/>
 							</label>
-
-							{/* Botón Descargar si existe */}
 							{img.url && (
 								<Button
 									type="button"
@@ -250,7 +236,6 @@ const ClinicalEvolutionDetailModal = ({
 					</div>
 				))}
 			</div>
-
 			<Button
 				type="button"
 				variant="default"
@@ -360,8 +345,7 @@ const ClinicalEvolutionDetailModal = ({
 	}
 
 	// Estilos (se mantienen igual para no romper tu UI)
-	const labelClass =
-		"text-xs font-black text-primary uppercase tracking-wider mb-2 flex items-center gap-2"
+	const labelClass = "text-xs font-bold text-gray-700 mb-1 block ml-1"
 	const inputBaseClass =
 		"w-full bg-gray-50 p-3 rounded-xl border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none"
 	const fileInputClass =
@@ -369,77 +353,85 @@ const ClinicalEvolutionDetailModal = ({
 
 	return (
 		<>
-			<div className="fixed inset-0 z-100 flex items-center justify-center p-4 w-full bg-black/80 backdrop-blur-sm">
-				<div className="bg-white w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+			<div className="fixed inset-0 z-100 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
+				<div className="relative bg-gray-100 w-full my-auto max-w-3xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
 					{/* Header */}
-					<div className="p-6 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-						<div className="flex items-center gap-4">
-							<div className="bg-primary/10 p-3 rounded-2xl text-primary">
-								<FaClipboardList size={24} />
-							</div>
-							<div>
-								<h2 className="text-xl font-bold text-gray-800">
-									{isEditing
-										? "Detalle de Evolución Clínica"
-										: "Nueva Evolución Clínica"}
-								</h2>
-								<p className="text-xs font-bold text-gray-400 uppercase">
-									{isEditing
-										? `Registro #${(record as MedicalHistory).id}`
-										: "Completar información"}
-								</p>
-							</div>
+					<div className="p-6 pb-0 flex justify-between items-center">
+						<div>
+							<h2 className="text-xl font-bold text-gray-800">
+								{isEditing
+									? "Detalle de Evolución Clínica"
+									: "Nueva Evolución Clínica"}
+							</h2>
 						</div>
 						<Button
 							type="button"
 							variant="text"
 							onClick={onClose}
-							icon={<FaTimes />}
-							className="p-2! rounded-full text-gray-400 hover:bg-gray-200!"
-						/>
+							className="hover:bg-white/20 p-2! rounded-full"
+						>
+							<FaTimes size={20} />
+						</Button>
 					</div>
 
-					<form onSubmit={handleSubmit}>
-						<div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+					{/* Formulario */}
+					<form
+						onSubmit={handleSubmit}
+						className="p-4 space-y-4 overflow-y-auto flex-1"
+					>
+						<div className="bg-white p-4 rounded-3xl shadow-lg space-y-4">
 							{/* Fecha y Médico */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="record_date" className={labelClass}>
-										<FaCalendarAlt /> Fecha de Consulta
+										Fecha de Consulta
 									</label>
-									<input
-										type="date"
-										name="record_date"
-										required
-										className={inputBaseClass}
+									<DatePicker
+										id="record_date"
+										placeholder="Seleccionar fecha"
+										className="w-full h-10"
+										format="DD/MM/YYYY"
 										value={
-											formData.record_date?.toISOString().split("T")[0] || ""
+											formData.record_date ? dayjs(formData.record_date) : null
 										}
-										onChange={handleInputChange}
+										onChange={(date) => {
+											setFormData((prev) => {
+												if (!prev) return null
+												return {
+													...prev,
+													record_date: date ? date.toDate() : new Date(),
+												}
+											})
+										}}
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="doctor_id" className={labelClass}>
-										<FaUserMd /> Médico Tratante
+										Médico Tratante
 									</label>
-									<select
-										name="doctor_id"
-										className={inputBaseClass}
-										value={formData.doctor_id}
-										onChange={handleInputChange}
-									>
-										<option value="">Seleccionar médico</option>
-										<option value="cedula1">Dr. Carlos Mendoza</option>
-										<option value="7695182">Dra. Ninive Azuaje</option>
-									</select>
+									<Select
+										id="doctor_id"
+										className="w-full h-10"
+										placeholder="Seleccionar médico"
+										value={formData.doctor_id || undefined}
+										onChange={(value) =>
+											setFormData((prev) =>
+												prev ? { ...prev, doctor_id: value } : null,
+											)
+										}
+										options={[
+											{ value: "cedula1", label: "Dr. Carlos Mendoza" },
+											{ value: "7695182", label: "Dra. Ninive Azuaje" },
+										]}
+									/>
 								</div>
 							</div>
 
 							{/* Motivo y Antecedentes */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div>
+								<div className="flex flex-col">
 									<label htmlFor="reason" className={labelClass}>
-										<FaClipboardList className="text-primary" /> Motivo
+										Motivo
 									</label>
 									<textarea
 										name="reason"
@@ -449,9 +441,9 @@ const ClinicalEvolutionDetailModal = ({
 										onChange={handleInputChange}
 									/>
 								</div>
-								<div>
+								<div className="flex flex-col">
 									<label htmlFor="background" className={labelClass}>
-										<FaStickyNote className="text-primary" /> Antecedentes
+										Antecedentes
 									</label>
 									<textarea
 										name="background"
@@ -464,14 +456,14 @@ const ClinicalEvolutionDetailModal = ({
 							</div>
 
 							{/* Examen Físico */}
-							<div>
+							<div className="flex flex-col">
 								<label htmlFor="physical_exam" className={labelClass}>
-									<FaRunning className="text-primary" /> Examen Físico
+									Examen Físico
 								</label>
 								<textarea
 									name="physical_exam"
 									rows={3}
-									className={`${inputBaseClass} border-l-4 border-l-primary`}
+									className={inputBaseClass}
 									value={formData.physical_exam}
 									onChange={handleInputChange}
 								/>
@@ -479,28 +471,28 @@ const ClinicalEvolutionDetailModal = ({
 
 							{/* Diagnóstico y Tratamiento */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div>
+								<div className="flex flex-col">
 									<label htmlFor="diagnosis" className={labelClass}>
-										<FaStethoscope className="text-primary" /> Diagnóstico
+										Diagnóstico
 									</label>
 									<textarea
 										name="diagnosis"
 										rows={3}
 										required
-										className={`${inputBaseClass} border-l-4 border-l-primary`}
+										className={inputBaseClass}
 										value={formData.diagnosis}
 										onChange={handleInputChange}
 									/>
 								</div>
-								<div>
+								<div className="flex flex-col">
 									<label htmlFor="treatment" className={labelClass}>
-										<FaPills className="text-primary" /> Tratamiento
+										Tratamiento
 									</label>
 									<textarea
 										name="treatment"
 										rows={3}
 										required
-										className={`${inputBaseClass} border-l-4 border-l-primary`}
+										className={inputBaseClass}
 										value={formData.treatment}
 										onChange={handleInputChange}
 									/>
@@ -508,24 +500,24 @@ const ClinicalEvolutionDetailModal = ({
 							</div>
 
 							{/* Notas */}
-							<div>
+							<div className="flex flex-col">
 								<label htmlFor="notes" className={labelClass}>
-									<FaRegEdit className="text-primary" /> Notas
+									Notas
 								</label>
 								<textarea
 									name="notes"
 									rows={2}
-									className={`${inputBaseClass} border-l-4 border-l-primary`}
+									className={inputBaseClass}
 									value={formData.notes || ""}
 									onChange={handleInputChange}
 								/>
 							</div>
 
 							{/* Imágenes */}
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-								<div>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="flex flex-col">
 									<label htmlFor="rx_torax" className={labelClass}>
-										<FaFileImage /> Rx de Tórax
+										Rx de Tórax
 									</label>
 									<label className={fileInputClass}>
 										<FaFileImage className="text-gray-300 text-3xl mb-2" />
@@ -540,7 +532,6 @@ const ClinicalEvolutionDetailModal = ({
 											accept="image/*"
 										/>
 									</label>
-
 									{formData.rx_torax && (
 										<Button
 											type="button"
@@ -554,9 +545,9 @@ const ClinicalEvolutionDetailModal = ({
 										</Button>
 									)}
 								</div>
-								<div>
+								<div className="flex flex-col">
 									<label htmlFor="tomography" className={labelClass}>
-										<FaFileImage /> Tomografía
+										Tomografía
 									</label>
 									<label className={fileInputClass}>
 										<FaFileImage className="text-gray-300 text-3xl mb-2" />
@@ -584,54 +575,52 @@ const ClinicalEvolutionDetailModal = ({
 										</Button>
 									)}
 								</div>
+
+								{/* Estudios adicionales */}
 								{renderExtraImages()}
 							</div>
 						</div>
 
-						{/* Footer */}
-						<div className="p-6 bg-gray-50 flex flex-wrap justify-between items-center gap-3 border-t border-gray-100">
-							<div>
-								{isEditing && (
-									<Button
-										type="button"
-										variant="default"
-										danger
-										onClick={() => setShowDeleteConfirm(true)}
-										icon={<FaTrash />}
-									>
-										Eliminar Evolución
-									</Button>
-								)}
-							</div>
-
-							<div className="flex gap-3">
+						{/* Botones de Acción */}
+						<div className="flex gap-3 pt-2">
+							{isEditing && (
 								<Button
 									type="button"
 									variant="default"
-									onClick={onClose}
-									className="border-2! border-gray-200! text-gray-500!"
+									danger
+									onClick={() => setShowDeleteConfirm(true)}
+									icon={<FaTrash />}
+									className="py-3! border-2 border-red-200 rounded-2xl"
 								>
-									Cancelar
+									Eliminar
 								</Button>
-								<Button
-									type="submit"
-									variant="primary"
-									loading={isSaving}
-									disabled={isSaving}
-									icon={<FaSave />}
-									className="shadow-lg!"
-								>
-									{isSaving
-										? "Guardando..."
-										: isEditing
-											? "Actualizar Registro"
-											: "Crear Evolución"}
-								</Button>
-							</div>
+							)}
+							<Button
+								type="button"
+								variant="default"
+								onClick={onClose}
+								className="flex-1 py-3! border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
+							>
+								Cancelar
+							</Button>
+							<Button
+								type="submit"
+								loading={isSaving}
+								disabled={isSaving}
+								icon={<FaSave />}
+								className="flex-1 py-3! font-bold rounded-2xl"
+							>
+								{isSaving
+									? "Guardando..."
+									: isEditing
+										? "Actualizar Registro"
+										: "Crear Evolución"}
+							</Button>
 						</div>
 					</form>
 				</div>
 			</div>
+
 			<ConfirmModal
 				isOpen={showDeleteConfirm}
 				onClose={() => setShowDeleteConfirm(false)}

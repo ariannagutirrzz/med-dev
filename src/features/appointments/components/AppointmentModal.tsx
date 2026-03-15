@@ -333,9 +333,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
-			<div className="bg-gray-100 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+			<div className="bg-gray-100 w-full my-auto max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
 				{/* Header del Modal */}
-				<div className="p-6 flex justify-between items-center">
+				<div className="p-6 pb-0 flex justify-between items-center">
 					<div>
 						<h2 className="text-xl font-bold text-gray-800">
 							{editingAppointment ? "Editar Cita" : "Nueva Cita"}
@@ -352,7 +352,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 				</div>
 
 				{/* Formulario */}
-				<form onSubmit={handleSubmit} className="p-6 space-y-4">
+				<form
+					onSubmit={handleSubmit}
+					className="p-6 space-y-4 overflow-y-auto flex-1"
+				>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-6 rounded-3xl shadow-lg">
 						{/* Paciente - Visible para Médicos y Admins */}
 						{(isDoctor || isAdmin) && (
