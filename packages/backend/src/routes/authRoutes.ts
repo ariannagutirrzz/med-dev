@@ -5,7 +5,7 @@ import {
 	forgotPassword,
 	login,
 	resetPassword,
-} from "../controllers/AuthController"
+} from "../controllers/AuthController.js"
 import { authenticate } from "../middleware/auth"
 
 const authRoutes: Router = Router()

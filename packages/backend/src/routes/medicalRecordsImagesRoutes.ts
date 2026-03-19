@@ -5,7 +5,7 @@ import {
 	getImagesByRecord,
 	updateExtraImage,
 	uploadExtraImages,
-} from "../controllers/medicalRecordsImagesController"
+} from "../controllers/medicalRecordsImagesController.js"
 
 const medicalRecordsImagesRouter: Router = Router()
 

@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { getSettings, updateSettings } from "../controllers/SettingsController"
+import { getSettings, updateSettings } from "../controllers/SettingsController.js"
 import { authenticate } from "../middleware/auth"
 
 /**

@@ -6,7 +6,7 @@ import {
 	getAppointmentById,
 	getFilteredAppointments,
 	updateAppointment,
-} from "../controllers/AppointmentController"
+} from "../controllers/AppointmentController.js"
 import { authenticate } from "../middleware/auth"
 import { isMedic } from "../middleware/roleAuth"
 

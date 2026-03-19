@@ -5,7 +5,7 @@ import {
 	markAsRead,
 	markAllAsRead,
 	deleteNotificationById,
-} from "../controllers/NotificationController"
+} from "../controllers/NotificationController.js"
 import { authenticate } from "../middleware/auth"
 
 const notificationRoutes: Router = Router()

@@ -6,7 +6,7 @@ import {
 	getPatientHistory,
 	getRecordById,
 	updateMedicalRecord,
-} from "../controllers/MedicalRecordsController"
+} from "../controllers/MedicalRecordsController.js"
 import { authenticate } from "../middleware/auth"
 import { isMedic } from "../middleware/roleAuth"
 

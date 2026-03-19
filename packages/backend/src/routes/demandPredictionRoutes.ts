@@ -2,7 +2,7 @@ import { Router } from "express"
 import {
 	getChartsStatsHandler,
 	getDemandPredictionHandler,
-} from "../controllers/DemandPredictionController"
+} from "../controllers/DemandPredictionController.js"
 import { authenticate } from "../middleware/auth"
 
 const demandPredictionRoutes: Router = Router()

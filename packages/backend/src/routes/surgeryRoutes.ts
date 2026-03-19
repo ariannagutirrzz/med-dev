@@ -5,7 +5,7 @@ import {
 	getAllSurgeries,
 	getSurgeryById,
 	updateSurgery,
-} from "../controllers/SurgeryController"
+} from "../controllers/SurgeryController.js"
 import { authenticate } from "../middleware/auth"
 import { isMedic } from "../middleware/roleAuth"
 

@@ -6,7 +6,7 @@ import {
 	getLowStockSupplies,
 	getSupplyById,
 	updateSupply,
-} from "../controllers/SuppliesController"
+} from "../controllers/SuppliesController.js"
 import { authenticate } from "../middleware/auth"
 import { isMedic } from "../middleware/roleAuth"
 

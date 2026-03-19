@@ -5,7 +5,7 @@ import {
 	getAvailableTimeSlots,
 	getDoctorAvailability,
 	updateDoctorAvailability,
-} from "../controllers/DoctorAvailabilityController"
+} from "../controllers/DoctorAvailabilityController.js"
 import { authenticate } from "../middleware/auth"
 
 const doctorAvailabilityRoutes: Router = Router()

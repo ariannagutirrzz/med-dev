@@ -8,7 +8,7 @@ import {
 	getService,
 	getServiceType,
 	updateService,
-} from "../controllers/ServiceController"
+} from "../controllers/ServiceController.js"
 import { authenticate } from "../middleware/auth"
 
 const serviceRoutes: Router = Router()

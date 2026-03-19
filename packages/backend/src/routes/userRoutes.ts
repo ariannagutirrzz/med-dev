@@ -6,7 +6,7 @@ import {
 	getCurrentUser,
 	getUserById,
 	updateUser,
-} from "../controllers/UserController"
+} from "../controllers/UserController.js"
 import { authenticate } from "../middleware/auth"
 import { upload } from "../middleware/multer"
 
