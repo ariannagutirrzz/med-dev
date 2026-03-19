@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 
 // 1. Create doctor unavailability period
 export const createDoctorUnavailability = async (req: Request, res: Response) => {

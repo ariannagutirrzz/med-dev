@@ -6,7 +6,7 @@ import type {
 	InventoryReportData,
 	PatientReportData,
 	SurgeryReportData,
-} from "../services/ReportService"
+} from "../services/ReportService.js"
 
 /**
  * Generate PDF report for appointments

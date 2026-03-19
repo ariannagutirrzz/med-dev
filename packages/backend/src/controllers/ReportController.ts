@@ -6,7 +6,7 @@ import {
 	getPatientsReport,
 	getSurgeriesReport,
 	type ReportFilters,
-} from "../services/ReportService"
+} from "../services/ReportService.js"
 import {
 	generateAppointmentsExcel,
 	generateAppointmentsPDF,

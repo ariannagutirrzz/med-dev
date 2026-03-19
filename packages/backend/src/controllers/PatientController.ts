@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 import { hashPassword } from "../utils/auth.js"
 
 export const createPatient = async (req: Request, res: Response) => {

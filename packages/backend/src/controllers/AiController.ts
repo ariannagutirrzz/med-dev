@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { createAiStream } from "../services/AiService"
+import { createAiStream } from "../services/AiService.js"
 
 export async function chatStream(req: Request, res: Response) {
 	const { message, history = [] } = req.body as {

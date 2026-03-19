@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { getCurrencyRates } from "../services/CurrencyService"
+import { getCurrencyRates } from "../services/CurrencyService.js"
 
 /**
  * CurrencyController

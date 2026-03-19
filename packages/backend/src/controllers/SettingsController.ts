@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { updateSettingsSchema } from "../schemas/settingsSchema"
+import { updateSettingsSchema } from "../schemas/settingsSchema.js"
 import {
 	getOrCreateSettings,
 	updateSettings as updateUserSettings,

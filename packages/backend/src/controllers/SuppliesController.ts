@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 
 // 1. Obtener todos los insumos
 export const getAllSupplies = async (_req: Request, res: Response) => {

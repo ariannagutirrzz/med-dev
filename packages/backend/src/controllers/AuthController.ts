@@ -1,6 +1,6 @@
 import crypto from "node:crypto"
 import type { Request, Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 import { sendPasswordResetEmail } from "../services/EmailService.js"
 import { comparePassword, hashPassword } from "../utils/auth.js"
 import { generateJWT } from "../utils/jwt.js"

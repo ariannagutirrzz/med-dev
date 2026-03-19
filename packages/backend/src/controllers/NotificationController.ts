@@ -6,7 +6,7 @@ import {
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
 	deleteNotification,
-} from "../services/NotificationService"
+} from "../services/NotificationService.js"
 
 /**
  * Get all notifications for the authenticated user

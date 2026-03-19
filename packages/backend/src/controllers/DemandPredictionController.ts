@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { getChartsStats } from "../services/ChartsStatsService"
+import { getChartsStats } from "../services/ChartsStatsService.js"
 import { getDemandPrediction } from "../services/DemandPredictionService.js"
 
 const PERIODS = [7, 14, 30] as const

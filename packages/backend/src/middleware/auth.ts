@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express"
 import jwt from "jsonwebtoken"
-import { query } from "../db"
-import type { User } from "../types"
+import { query } from "../db.js"
+import type { User } from "../types/index.js"
 
 declare global {
 	namespace Express {

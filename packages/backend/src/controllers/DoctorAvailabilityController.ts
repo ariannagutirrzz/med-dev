@@ -1,5 +1,5 @@
 import type { Request, Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 
 // 1. Create doctor availability slot
 export const createDoctorAvailability = async (req: Request, res: Response) => {
@@ -181,8 +181,8 @@ export const getAvailableTimeSlots = async (req: Request, res: Response) => {
 			[doctor_id, date],
 		)
 
-		const bookedTimes = appointmentsResult.rows.map((row) => {
-			const appointmentDate = new Date(row.appointment_date)
+		const bookedTimes = appointmentsResult.rows.map((row: Record<string, unknown>) => {
+			const appointmentDate = new Date(row.appointment_date as string)
 			return appointmentDate.toTimeString().slice(0, 5) // HH:MM format
 		})
 

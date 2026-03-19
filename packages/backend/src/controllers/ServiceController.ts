@@ -8,7 +8,7 @@ import {
 	getServiceTypeById,
 	getServiceTypes,
 	updateDoctorService,
-} from "../services/ServiceService"
+} from "../services/ServiceService.js"
 
 /**
  * Get all service types
@@ -97,7 +97,7 @@ export const getDoctorServicesByDoctorId = async (req: Request, res: Response) =
 
 		const services = await getDoctorServices(doctorId)
 		res.json({
-			services: services.filter((s) => s.is_active),
+			services: services.filter((s: { is_active: boolean }) => s.is_active),
 			message: "Doctor services fetched successfully",
 		})
 	} catch (error) {

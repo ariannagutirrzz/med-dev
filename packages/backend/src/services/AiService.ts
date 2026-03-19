@@ -1,7 +1,7 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { streamText } from "ai"
 import type { Response } from "express"
-import { query } from "../db"
+import { query } from "../db.js"
 
 // Modelo gratuito. Solo el id (ej: meta-llama/llama-3.2-3b-instruct:free).
 const AI_MODEL = (
