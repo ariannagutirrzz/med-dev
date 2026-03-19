@@ -16,10 +16,11 @@ const MedicosPage = () => {
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
-		fetch(`${getApiBase()}/medicos`)
+		fetch(`${getApiBase()}/users/medicos`)
 			.then((res) => res.json())
 			.then((data) => {
-				setMedicos(data.medicos)
+				// Backend returns: { doctors: [...] }
+				setMedicos(data.doctors || [])
 				setLoading(false)
 			})
 			.catch((error) => {
