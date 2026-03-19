@@ -1,9 +1,9 @@
 import crypto from "node:crypto"
 import type { Request, Response } from "express"
 import { query } from "../db"
-import { sendPasswordResetEmail } from "../services/EmailService"
-import { comparePassword, hashPassword } from "../utils/auth"
-import { generateJWT } from "../utils/jwt"
+import { sendPasswordResetEmail } from "../services/EmailService.js"
+import { comparePassword, hashPassword } from "../utils/auth.js"
+import { generateJWT } from "../utils/jwt.js"
 
 const RESET_TOKEN_EXPIRY_HOURS = 1
 

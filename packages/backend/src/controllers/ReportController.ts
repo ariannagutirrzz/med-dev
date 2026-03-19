@@ -18,7 +18,7 @@ import {
 	generatePatientsPDF,
 	generateSurgeriesExcel,
 	generateSurgeriesPDF,
-} from "../utils/reportGenerators"
+} from "../utils/reportGenerators.js"
 
 /**
  * Generate appointments report (PDF or Excel)

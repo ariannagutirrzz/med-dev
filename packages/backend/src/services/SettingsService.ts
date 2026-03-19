@@ -1,4 +1,4 @@
-import { query } from "../db"
+import { query } from "../db.js"
 import type { CreateSettingsInput, UpdateSettingsInput } from "../schemas/settingsSchema"
 
 /**

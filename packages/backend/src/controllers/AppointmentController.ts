@@ -4,8 +4,8 @@ import { query } from "../db"
 import {
 	notifyAppointmentCreated,
 	notifyAppointmentUpdated,
-} from "../utils/notificationHelpers"
-import { sendWhatsApp } from "../utils/twilio"
+} from "../utils/notificationHelpers.js"
+import { sendWhatsApp } from "../utils/twilio.js"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 

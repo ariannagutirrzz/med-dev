@@ -1,4 +1,4 @@
-import { createNotification } from "../services/NotificationService"
+import { createNotification } from "../services/NotificationService.js"
 
 /**
  * Create notification for appointment creation

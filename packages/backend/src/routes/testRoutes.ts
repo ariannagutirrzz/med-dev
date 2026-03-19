@@ -1,7 +1,7 @@
 import { Router } from "express"
-import { authenticate } from "../middleware/auth"
-import { notificationService } from "../services/NotificationService"
-import { whatsAppService } from "../services/WhatsAppService"
+import { authenticate } from "../middleware/auth.js"
+import { notificationService } from "../services/NotificationService.js"
+import { whatsAppService } from "../services/WhatsAppService.js"
 
 const testRoutes: Router = Router()
 

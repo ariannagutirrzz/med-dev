@@ -9,7 +9,7 @@ import {
 	getServiceType,
 	updateService,
 } from "../controllers/ServiceController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 const serviceRoutes: Router = Router()
 

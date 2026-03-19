@@ -3,8 +3,8 @@ import { query } from "../db"
 import {
 	notifySurgeryCreated,
 	notifySurgeryUpdated,
-} from "../utils/notificationHelpers"
-import { sendWhatsApp } from "../utils/twilio"
+} from "../utils/notificationHelpers.js"
+import { sendWhatsApp } from "../utils/twilio.js"
 
 // 1. Create Surgery (Reservation)
 export const createSurgery = async (req: Request, res: Response) => {

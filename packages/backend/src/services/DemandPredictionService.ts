@@ -1,4 +1,4 @@
-import { query } from "../db"
+import { query } from "../db.js"
 
 const HISTORY_DAYS = 90
 /** Minimum observations per weekday to trust that day's average; otherwise use overall average (better for small units). */

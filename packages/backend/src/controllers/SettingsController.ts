@@ -3,7 +3,7 @@ import { updateSettingsSchema } from "../schemas/settingsSchema"
 import {
 	getOrCreateSettings,
 	updateSettings as updateUserSettings,
-} from "../services/SettingsService"
+} from "../services/SettingsService.js"
 
 /**
  * SettingsController

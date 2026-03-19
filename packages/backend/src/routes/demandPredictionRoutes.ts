@@ -3,7 +3,7 @@ import {
 	getChartsStatsHandler,
 	getDemandPredictionHandler,
 } from "../controllers/DemandPredictionController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 const demandPredictionRoutes: Router = Router()
 

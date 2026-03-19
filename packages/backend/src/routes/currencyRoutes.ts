@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { getCurrencyRatesController } from "../controllers/CurrencyController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 /**
  * @swagger

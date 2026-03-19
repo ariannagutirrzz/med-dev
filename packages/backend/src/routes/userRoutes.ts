@@ -7,8 +7,8 @@ import {
 	getUserById,
 	updateUser,
 } from "../controllers/UserController.js"
-import { authenticate } from "../middleware/auth"
-import { upload } from "../middleware/multer"
+import { authenticate } from "../middleware/auth.js"
+import { upload } from "../middleware/multer.js"
 
 /**
  * @swagger

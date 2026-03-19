@@ -6,7 +6,7 @@ import {
 	getDoctorAvailability,
 	updateDoctorAvailability,
 } from "../controllers/DoctorAvailabilityController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 const doctorAvailabilityRoutes: Router = Router()
 

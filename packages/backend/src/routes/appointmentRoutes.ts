@@ -7,8 +7,8 @@ import {
 	getFilteredAppointments,
 	updateAppointment,
 } from "../controllers/AppointmentController.js"
-import { authenticate } from "../middleware/auth"
-import { isMedic } from "../middleware/roleAuth"
+import { authenticate } from "../middleware/auth.js"
+import { isMedic } from "../middleware/roleAuth.js"
 
 const appointmentRoutes: Router = Router()
 

@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { getSettings, updateSettings } from "../controllers/SettingsController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 /**
  * Settings Routes

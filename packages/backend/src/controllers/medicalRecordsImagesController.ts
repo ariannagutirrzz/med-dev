@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
-import { supabase } from "../utils/supabase"
-import { uploadToSupabase } from "../utils/uploadImage"
+import { supabase } from "../utils/supabase.js"
+import { uploadToSupabase } from "../utils/uploadImage.js"
 
 export const uploadExtraImages = async (req: Request, res: Response) => {
 	const { medical_record_id } = req.params

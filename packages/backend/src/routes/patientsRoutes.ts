@@ -7,8 +7,8 @@ import {
 	getPatientById,
 	updatePatient,
 } from "../controllers/PatientController.js"
-import { authenticate } from "../middleware/auth"
-import { isMedic } from "../middleware/roleAuth"
+import { authenticate } from "../middleware/auth.js"
+import { isMedic } from "../middleware/roleAuth.js"
 
 const patientsRoutes: Router = Router()
 

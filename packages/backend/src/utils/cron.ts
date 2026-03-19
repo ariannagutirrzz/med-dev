@@ -1,9 +1,9 @@
 import cron from "node-cron"
-import { query } from "../db"
+import { query } from "../db.js"
 import {
 	notifyUpcomingAppointment,
 	notifyUpcomingSurgery,
-} from "./notificationHelpers"
+} from "./notificationHelpers.js"
 
 // Se ejecuta cada hora al minuto 0
 cron.schedule("0 * * * *", async () => {

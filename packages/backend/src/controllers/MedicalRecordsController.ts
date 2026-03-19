@@ -1,6 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db"
-import { uploadToSupabase } from "../utils/uploadImage"
+import { uploadToSupabase } from "../utils/uploadImage.js"
 
 // 1. Create Medical Record
 export const createMedicalRecord = async (req: Request, res: Response) => {

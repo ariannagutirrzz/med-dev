@@ -6,7 +6,7 @@ import {
 	generatePatientsReport,
 	generateSurgeriesReport,
 } from "../controllers/ReportController.js"
-import { authenticate } from "../middleware/auth"
+import { authenticate } from "../middleware/auth.js"
 
 const reportRoutes: Router = Router()
 

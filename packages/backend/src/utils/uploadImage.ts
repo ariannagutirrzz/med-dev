@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid" // Para generar nombres de archivo únicos
-import { supabase } from "./supabase"
+import { supabase } from "./supabase.js"
 
 /**
  * Sube un archivo a un bucket de Supabase en una carpeta específica.
