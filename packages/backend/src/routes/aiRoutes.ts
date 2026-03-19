@@ -1,6 +1,6 @@
 import type { Router } from "express"
 import { Router as createRouter } from "express"
-import { chatStream } from "../controllers/AiController"
+import { chatStream } from "../controllers/AiController.js"
 import { authenticate } from "../middleware/auth.js"
 
 const aiRoutes: Router = createRouter()
