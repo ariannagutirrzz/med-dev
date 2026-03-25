@@ -150,11 +150,22 @@ export const getAllPatients = async (req: Request, res: Response) => {
 						JOIN users u ON mr2.doctor_id = u.document_id
 						WHERE mr2.patient_id = p.document_id
 					) d
-				) AS attending_doctors
+				) AS attending_doctors,
+				(
+					NOT EXISTS (
+						SELECT 1 FROM medical_records mr_u WHERE mr_u.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM appointments a_u WHERE a_u.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM surgeries s_u WHERE s_u.patient_id = p.document_id
+					)
+				) AS is_unassigned
 			FROM patients p
 			WHERE 1=1
 			${doctorExistsClause}
-			ORDER BY p.last_name ASC`,
+			ORDER BY is_unassigned DESC, p.last_name ASC`,
 			params,
 		)
 		res.json({ patients: result.rows })
@@ -175,22 +186,55 @@ export const getDoctorPatients = async (req: Request, res: Response) => {
 	}
 
 	try {
-		// Buscamos pacientes que cumplan AL MENOS una de las tres condiciones con este médico
+		// Pacientes vinculados a este médico (evolución, cita o cirugía) O pacientes sin
+		// ningún vínculo clínico aún (recién creados — visibles para poder asignar la primera cita/cirugía).
 		const result = await query(
-			`SELECT p.* FROM patients p
-             WHERE EXISTS (
-                 SELECT 1 FROM medical_records mr 
-                 WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
-             )
-             OR EXISTS (
-                 SELECT 1 FROM appointments a 
-                 WHERE a.patient_id = p.document_id AND a.doctor_id = $1
-             )
-             OR EXISTS (
-                 SELECT 1 FROM surgeries s 
-                 WHERE s.patient_id = p.document_id AND s.doctor_id = $1
-             )
-             ORDER BY p.last_name ASC`,
+			`SELECT p.*,
+				(
+					SELECT COALESCE(string_agg(name, ', ' ORDER BY name), '')
+					FROM (
+						SELECT DISTINCT u.name AS name
+						FROM medical_records mr2
+						JOIN users u ON mr2.doctor_id = u.document_id
+						WHERE mr2.patient_id = p.document_id
+					) d
+				) AS attending_doctors,
+				(
+					NOT EXISTS (
+						SELECT 1 FROM medical_records mr0 WHERE mr0.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM appointments a0 WHERE a0.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM surgeries s0 WHERE s0.patient_id = p.document_id
+					)
+				) AS is_unassigned
+			FROM patients p
+			WHERE EXISTS (
+				SELECT 1 FROM medical_records mr
+				WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+			)
+			OR EXISTS (
+				SELECT 1 FROM appointments a
+				WHERE a.patient_id = p.document_id AND a.doctor_id = $1
+			)
+			OR EXISTS (
+				SELECT 1 FROM surgeries s
+				WHERE s.patient_id = p.document_id AND s.doctor_id = $1
+			)
+			OR (
+				NOT EXISTS (
+					SELECT 1 FROM medical_records mr3 WHERE mr3.patient_id = p.document_id
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM appointments a3 WHERE a3.patient_id = p.document_id
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM surgeries s3 WHERE s3.patient_id = p.document_id
+				)
+			)
+			ORDER BY is_unassigned DESC, p.last_name ASC`,
 			[doctorId],
 		)
 

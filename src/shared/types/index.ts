@@ -21,6 +21,8 @@ export type Patient = {
 	allergies: string[]
 	/** Distinct doctor names from medical_records, comma-separated (API). */
 	attending_doctors?: string | null
+	/** True when patient has no medical_records, appointments, or surgeries yet. */
+	is_unassigned?: boolean
 }
 
 // PatientFormData hereda todo de Patient EXCEPTO birthdate, que lo definimos como string

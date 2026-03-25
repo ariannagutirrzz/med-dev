@@ -100,17 +100,27 @@ export default function MedicalRecords() {
 
 	// Filtrado de la barra de busqueda
 
-	const filteredRecords = records.filter((record) => {
-		const search = searchTerm.toLowerCase()
-		const fullName = `${record.first_name} ${record.last_name}`.toLowerCase()
-		const fullNameReverse =
-			`${record.last_name} ${record.first_name}`.toLowerCase()
-		return (
-			fullName.includes(search) ||
-			fullNameReverse.includes(search) ||
-			record.document_id.toString().includes(search)
-		)
-	})
+	const filteredRecords = records
+		.filter((record) => {
+			const search = searchTerm.toLowerCase()
+			const fullName = `${record.first_name} ${record.last_name}`.toLowerCase()
+			const fullNameReverse =
+				`${record.last_name} ${record.first_name}`.toLowerCase()
+			return (
+				fullName.includes(search) ||
+				fullNameReverse.includes(search) ||
+				record.document_id.toString().includes(search)
+			)
+		})
+		.sort((a, b) => {
+			const ua = a.is_unassigned ? 1 : 0
+			const ub = b.is_unassigned ? 1 : 0
+			if (ua !== ub) return ub - ua
+			return `${a.last_name} ${a.first_name}`.localeCompare(
+				`${b.last_name} ${b.first_name}`,
+				"es",
+			)
+		})
 
 	// Lógica de paginación
 	const indexOfLastRecord = currentPage * pageSize
@@ -242,21 +252,32 @@ export default function MedicalRecords() {
 											setView("details")
 										}
 									}}
-									className="w-full min-h-[280px] h-full bg-gray-50 rounded-2xl shadow-sm border border-gray-200 p-4 hover:shadow-lg hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden"
+									className={`w-full min-h-[280px] h-full rounded-2xl shadow-sm p-4 transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden ${
+										record.is_unassigned
+											? "bg-primary/10 border-2 border-dashed border-primary/45 hover:border-primary hover:bg-primary/5"
+											: "bg-gray-50 border border-gray-200 hover:shadow-lg hover:border-primary hover:bg-white"
+									}`}
 								>
 									<div className="flex justify-between items-start gap-2 mb-3 w-full">
 										<h4 className="text-base font-bold text-gray-800 leading-snug group-hover:text-primary transition-colors pr-1">
 											{record.first_name} <br /> {record.last_name}
 										</h4>
-										<span
-											className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-												record.gender === "M"
-													? "bg-blue-100 text-blue-600"
-													: "bg-pink-100 text-pink-600"
-											}`}
-										>
-											{record.gender}
-										</span>
+										<div className="flex flex-col items-end gap-1 shrink-0">
+											{record.is_unassigned ? (
+												<span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-primary/20 text-primary-green uppercase tracking-wide">
+													Sin asignar
+												</span>
+											) : null}
+											<span
+												className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+													record.gender === "M"
+														? "bg-blue-100 text-blue-600"
+														: "bg-pink-100 text-pink-600"
+												}`}
+											>
+												{record.gender}
+											</span>
+										</div>
 									</div>
 
 									<div className="flex-1 space-y-2.5 w-full">
@@ -306,8 +327,20 @@ export default function MedicalRecords() {
 													})}
 												</p>
 											</div>
-											{record.attending_doctors &&
-											record.attending_doctors.trim() !== "" ? (
+											{record.is_unassigned ? (
+												<div className="text-right min-w-0 max-w-[58%]">
+													<p className="text-[8px] text-gray-400 uppercase font-semibold mb-px leading-none">
+														Estado
+													</p>
+													<p className="text-[10px] text-primary-green font-semibold leading-snug">
+														Sin médico asignado
+													</p>
+													<p className="text-[9px] text-gray-500 leading-tight mt-0.5 line-clamp-2">
+														La primera cita, cirugía o evolución con usted los vincula.
+													</p>
+												</div>
+											) : record.attending_doctors &&
+												record.attending_doctors.trim() !== "" ? (
 												<div className="text-right min-w-0 max-w-[58%]">
 													<p className="text-[8px] text-gray-400 uppercase font-semibold mb-px flex items-center justify-end gap-1 leading-none">
 														<LuStethoscope className="w-3 h-3 text-primary" />
@@ -356,7 +389,7 @@ export default function MedicalRecords() {
 					</div>
 				)}
 
-				<div className="flex justify-start mt-8 pb-4 px-2">
+				<div className="mt-8 flex w-full justify-center pb-4 px-2">
 					<Pagination
 						current={currentPage}
 						total={filteredRecords.length}
