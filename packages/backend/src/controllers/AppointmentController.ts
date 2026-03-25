@@ -476,14 +476,20 @@ export const updateAppointment = async (req: Request, res: Response) => {
 	if (!req.user) return res.status(401).json({ error: "Unauthorized" })
 
 	const { document_id: userId, role } = req.user
-	const updates = req.body
+	const updates: Record<string, unknown> = { ...req.body }
+	// El precio se recalcula en servidor a partir del servicio (igual que en create)
+	delete updates.price_usd
 
-	const allowedFields = ["appointment_date", "status", "notes", "doctor_id"]
+	const allowedFields = [
+		"appointment_date",
+		"status",
+		"notes",
+		"doctor_id",
+		"service_id",
+	]
 	const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
 
-	const keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
-	if (keys.length === 0)
-		return res.status(400).json({ error: "No valid fields" })
+	let keys = Object.keys(updates).filter((key) => allowedFields.includes(key))
 
 	// Validación de permisos para status
 	if (keys.includes("status") && role !== "Médico" && role !== "Admin") {
@@ -496,22 +502,69 @@ export const updateAppointment = async (req: Request, res: Response) => {
 	for (const key of keys) {
 		if (
 			key === "status" &&
-			!allowedStatuses.includes(updates[key].toLowerCase())
+			typeof updates[key] === "string" &&
+			!allowedStatuses.includes((updates[key] as string).toLowerCase())
 		) {
 			return res.status(400).json({ error: "Estado inválido." })
 		}
 		if (
 			key === "appointment_date" &&
-			Number.isNaN(new Date(updates[key]).getTime())
+			Number.isNaN(new Date(updates[key] as string).getTime())
 		) {
 			return res.status(400).json({ error: "Fecha inválida." })
 		}
 	}
 
+	// Resolver service_id + price_usd (misma lógica que createAppointment)
+	if (keys.includes("service_id")) {
+		const existing = await query(
+			`SELECT doctor_id FROM appointments WHERE id = $1`,
+			[id],
+		)
+		if (existing.rowCount === 0) {
+			return res.status(404).json({ error: "Cita no encontrada." })
+		}
+		const doctorForService =
+			updates.doctor_id !== undefined
+				? String(updates.doctor_id)
+				: String(existing.rows[0].doctor_id)
+
+		const raw = updates.service_id
+		if (raw === null || raw === undefined || raw === "") {
+			updates.service_id = null
+			updates.price_usd = null
+		} else {
+			const sid = Number(raw)
+			if (Number.isNaN(sid)) {
+				return res.status(400).json({ error: "service_id inválido." })
+			}
+			const serviceResult = await query(
+				`SELECT id, price_usd FROM doctor_services 
+				WHERE id = $1 AND doctor_id = $2 AND is_active = TRUE`,
+				[sid, doctorForService],
+			)
+			if (serviceResult.rows.length === 0) {
+				return res.status(400).json({
+					error:
+						"El servicio no pertenece a este médico o no está activo.",
+				})
+			}
+			updates.service_id = serviceResult.rows[0].id
+			updates.price_usd = parseFloat(serviceResult.rows[0].price_usd)
+		}
+		keys.push("price_usd")
+		keys = [...new Set(keys)]
+	}
+
+	if (keys.length === 0)
+		return res.status(400).json({ error: "No valid fields" })
+
 	const setClause = keys.map((key, i) => `${key} = $${i + 1}`).join(", ")
-	const values = keys.map((k) =>
-		k === "status" ? updates[k].toLowerCase() : updates[k],
-	)
+	const values = keys.map((k) => {
+		const v = updates[k]
+		if (k === "status" && typeof v === "string") return v.toLowerCase()
+		return v
+	})
 
 	try {
 		let queryStr = ""

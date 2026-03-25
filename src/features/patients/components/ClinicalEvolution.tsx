@@ -1,4 +1,3 @@
-import { jwtDecode } from "jwt-decode"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
 	LuActivity,
@@ -10,13 +9,9 @@ import {
 	LuUser,
 } from "react-icons/lu"
 import { toast } from "react-toastify"
-import { getStoredToken } from "../../../config/axios"
-import type {
-	MedicalHistory,
-	MedicalHistoryFormData,
-	MyTokenPayload,
-} from "../../../shared"
+import type { MedicalHistory, MedicalHistoryFormData } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
+import { useAuth } from "../../auth"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
@@ -47,8 +42,11 @@ export default function ClinicalEvolution({
 	>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
-	const token = getStoredToken()
-	const doctor_id = token ? jwtDecode<MyTokenPayload>(token).id : ""
+	const { user } = useAuth()
+	/** Cédula / documento del usuario (coincide con `doctor_id` en BD y lista de médicos), no el id numérico del JWT */
+	const sessionDoctorDocumentId = user?.document_id
+		? String(user.document_id)
+		: ""
 
 	const displayEvolutions = useMemo(
 		() =>
@@ -81,7 +79,8 @@ export default function ClinicalEvolution({
 		if (newEvolution) {
 			const newRecord: MedicalHistoryFormData = {
 				patient_id: patientId,
-				doctor_id: doctor_id,
+				doctor_id: sessionDoctorDocumentId,
+				doctor_name: user?.name ? String(user.name) : undefined,
 				record_date: new Date(),
 				diagnosis: "",
 				treatment: "",
@@ -93,7 +92,7 @@ export default function ClinicalEvolution({
 			setSelectedRecord(newRecord)
 			setIsModalOpen(true)
 		}
-	}, [newEvolution, patientId, doctor_id])
+	}, [newEvolution, patientId, sessionDoctorDocumentId, user?.name])
 
 	const handleCloseModal = () => {
 		setIsModalOpen(false)
