@@ -12,4 +12,5 @@ export const calcularEdad = (fechaNacimiento: Date): number => {
 }
 
 export * from "./formatPrice"
+export * from "./getApiErrorMessage"
 export * from "./phoneFormat"

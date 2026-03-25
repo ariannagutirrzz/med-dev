@@ -1,4 +1,5 @@
 import axios from "axios"
+import { getApiErrorMessage } from "../shared/utils/getApiErrorMessage"
 
 /** Token from either "recordar dispositivo" (localStorage) or session-only (sessionStorage). */
 export function getStoredToken(): string | null {
@@ -54,7 +55,17 @@ api.interceptors.response.use(
 			if (window.location.pathname !== "/login") {
 				window.location.href = "/login"
 			}
+			return Promise.reject(
+				new Error(
+					getApiErrorMessage(
+						error,
+						"Sesión expirada o no autorizado. Inicia sesión de nuevo.",
+					),
+				),
+			)
 		}
-		return Promise.reject(error)
+
+		// Un solo `Error` con mensaje listo para toast.error(err.message) / getApiErrorMessage redundante
+		return Promise.reject(new Error(getApiErrorMessage(error)))
 	}
 )
