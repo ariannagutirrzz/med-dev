@@ -76,8 +76,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		})
 
 		if (!response.ok) {
-			const error = await response.json()
-			throw new Error(error.error || "Login failed")
+			const errorBody = (await response.json().catch(() => ({}))) as {
+				error?: string
+				code?: string
+			}
+			const message =
+				typeof errorBody.error === "string"
+					? errorBody.error
+					: "Login failed"
+			const err = new Error(message) as Error & { code?: string }
+			if (typeof errorBody.code === "string") {
+				err.code = errorBody.code
+			}
+			throw err
 		}
 
 		const data = await response.json()

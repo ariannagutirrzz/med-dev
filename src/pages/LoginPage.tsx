@@ -15,7 +15,12 @@ const LoginPage = () => {
 	const { login, isAuthenticated, loading } = useAuth()
 	const [isLogin, setIsLogin] = useState(true)
 	const [signupError, setSignupError] = useState<string | null>(null)
+	const [signupSuccess, setSignupSuccess] = useState<string | null>(null)
 	const [loginError, setLoginError] = useState<string | null>(null)
+	const [loginErrorCode, setLoginErrorCode] = useState<string | null>(null)
+	const [pendingVerificationEmail, setPendingVerificationEmail] = useState<
+		string | null
+	>(null)
 
 	// Redirect if already authenticated
 	useEffect(() => {
@@ -33,13 +38,17 @@ const LoginPage = () => {
 		setIsLogin(isLoginMode)
 		// Clear errors when switching modes
 		setSignupError(null)
+		setSignupSuccess(null)
 		setLoginError(null)
+		setLoginErrorCode(null)
+		setPendingVerificationEmail(null)
 	}
 
 	const handleSignUp = async (
 		formData: Omit<SignupFormData, "confirmPassword">,
 	) => {
 		setSignupError(null)
+		setSignupSuccess(null)
 		try {
 			const response = await fetch(`${getApiBase()}/auth/signup`, {
 				method: "POST",
@@ -47,14 +56,35 @@ const LoginPage = () => {
 				body: JSON.stringify(formData),
 			})
 
-			if (!response.ok) {
-				const error = await response.json()
-				throw new Error(error.error || "Error al registrarse")
+			const payload = (await response.json().catch(() => ({}))) as {
+				error?: string
+				message?: string
 			}
 
-			// Auto-login after successful signup (with "recordar" so session persists)
-			await login(formData.email, formData.password, true)
-			navigate("/dashboard")
+			if (!response.ok) {
+				throw new Error(
+					typeof payload.error === "string"
+						? payload.error
+						: "Error al registrarse",
+				)
+			}
+
+			setSignupSuccess(
+				typeof payload.message === "string"
+					? payload.message
+					: "Te enviamos un correo para verificar tu cuenta. Revisa tu bandeja de entrada.",
+			)
+			setIsLogin(true)
+			if (
+				import.meta.env.DEV &&
+				"verifyLink" in payload &&
+				typeof (payload as { verifyLink?: string }).verifyLink === "string"
+			) {
+				console.info(
+					"[dev] Email verification link:",
+					(payload as { verifyLink: string }).verifyLink,
+				)
+			}
 		} catch (error) {
 			console.error("Error signing up", error)
 			setSignupError(
@@ -73,14 +103,21 @@ const LoginPage = () => {
 		rememberDevice: boolean
 	}) => {
 		setLoginError(null)
+		setLoginErrorCode(null)
+		setPendingVerificationEmail(null)
 		try {
 			await login(email, password, rememberDevice)
 			navigate("/dashboard")
 		} catch (error) {
 			console.error("Error logging in", error)
+			const err = error as Error & { code?: string }
 			setLoginError(
-				error instanceof Error ? error.message : "Error al iniciar sesión",
+				err instanceof Error ? err.message : "Error al iniciar sesión",
 			)
+			if (err.code === "EMAIL_NOT_VERIFIED") {
+				setLoginErrorCode("EMAIL_NOT_VERIFIED")
+				setPendingVerificationEmail(email)
+			}
 		}
 	}
 
@@ -111,6 +148,12 @@ const LoginPage = () => {
 					</div>
 				)}
 
+				{signupSuccess && (
+					<div className="mb-4 flex min-h-16 max-w-3xl items-center rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 mx-auto">
+						<p className="text-left text-sm text-primary-green">{signupSuccess}</p>
+					</div>
+				)}
+
 				{/* Form Container */}
 				<div className="max-w-3xl mx-auto">
 					{/* Conditional Rendering for Login or Signup Form */}
@@ -118,7 +161,13 @@ const LoginPage = () => {
 						<LoginForm
 							onLogin={handleLogin}
 							error={loginError}
-							onClearError={() => setLoginError(null)}
+							errorCode={loginErrorCode}
+							pendingVerificationEmail={pendingVerificationEmail}
+							onClearError={() => {
+								setLoginError(null)
+								setLoginErrorCode(null)
+								setPendingVerificationEmail(null)
+							}}
 						/>
 					) : (
 						<SignupForm onSignUp={handleSignUp} />

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { query } from "../db.js"
 import { supabase } from "../utils/supabase.js"
-import { uploadToSupabase } from "../utils/uploadImage.js"
+import { ExternalServiceError, uploadToSupabase } from "../utils/uploadImage.js"
 
 export const uploadExtraImages = async (req: Request, res: Response) => {
 	const { medical_record_id } = req.params
@@ -56,7 +56,12 @@ export const uploadExtraImages = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error en uploadExtraImages:", error)
-		res.status(500).json({ error: "Error interno al procesar las imágenes." })
+		if (error instanceof ExternalServiceError) {
+			return res.status(error.status).json({ error: error.publicMessage })
+		}
+		return res
+			.status(500)
+			.json({ error: "Error interno al procesar las imágenes." })
 	}
 }
 
@@ -120,7 +125,10 @@ export const updateExtraImage = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error en updateExtraImage:", error)
-		res.status(500).json({ error: "Error interno al actualizar." })
+		if (error instanceof ExternalServiceError) {
+			return res.status(error.status).json({ error: error.publicMessage })
+		}
+		return res.status(500).json({ error: "Error interno al actualizar." })
 	}
 }
 

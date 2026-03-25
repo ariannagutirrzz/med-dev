@@ -1,6 +1,35 @@
 import type { Request, Response } from "express"
 import { query } from "../db.js"
+import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
 import { hashPassword } from "../utils/auth.js"
+
+function isPostgresError(
+	error: unknown,
+): error is {
+	code?: string
+	constraint?: string
+	detail?: string
+	message?: string
+} {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		typeof (error as { code?: unknown }).code === "string"
+	)
+}
+
+function getFriendlyDuplicateEmailMessage(detail?: string, constraint?: string) {
+	// Most common from your log:
+	// Key (email)=(...) already exists.
+	if (constraint === "users_email_key") {
+		return "This email is already in use. Please use another email."
+	}
+	if (detail?.toLowerCase().includes("email")) {
+		return "This email is already in use. Please use another email."
+	}
+	return "Duplicate value. Please verify your submitted information."
+}
 
 export const createPatient = async (req: Request, res: Response) => {
 	// These fields come from your Postman/Frontend request
@@ -67,6 +96,17 @@ export const createPatient = async (req: Request, res: Response) => {
 			],
 		)
 
+		const created = result.rows[0] as { id: number; name: string; email: string }
+		try {
+			await sendVerificationEmailToUser(
+				created.id,
+				String(created.email).toLowerCase(),
+				created.name,
+			)
+		} catch (err) {
+			console.error("Email verification send failed (create patient):", err)
+		}
+
 		// 2. Response
 		res.status(201).json({
 			message:
@@ -76,17 +116,69 @@ export const createPatient = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error in createPatient (User Insert):", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (isPostgresError(error) && error.code === "23505") {
+			return res.status(409).json({
+				error: getFriendlyDuplicateEmailMessage(
+					error.detail,
+					error.constraint,
+				),
+			})
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
-// 2. Get all Patients
-export const getAllPatients = async (_req: Request, res: Response) => {
+// 2. Get all Patients (Admin: optional ?doctor_id= filters by medical_records author)
+export const getAllPatients = async (req: Request, res: Response) => {
 	try {
-		// We join with users to potentially show account status if needed
+		const doctorIdParam =
+			req.user?.role === "Admin"
+				? (req.query.doctor_id as string | undefined)
+				: undefined
+		const doctorFilter =
+			doctorIdParam &&
+			doctorIdParam !== "all" &&
+			String(doctorIdParam).trim() !== ""
+				? String(doctorIdParam).trim()
+				: null
+
+		const params: string[] = []
+		let doctorExistsClause = ""
+		if (doctorFilter) {
+			doctorExistsClause = ` AND EXISTS (
+				SELECT 1 FROM medical_records mr
+				WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+			)`
+			params.push(doctorFilter)
+		}
+
 		const result = await query(
-			`SELECT * FROM patients ORDER BY last_name ASC`,
-			[],
+			`SELECT p.*,
+				(
+					SELECT COALESCE(string_agg(name, ', ' ORDER BY name), '')
+					FROM (
+						SELECT DISTINCT u.name AS name
+						FROM medical_records mr2
+						JOIN users u ON mr2.doctor_id = u.document_id
+						WHERE mr2.patient_id = p.document_id
+					) d
+				) AS attending_doctors,
+				(
+					NOT EXISTS (
+						SELECT 1 FROM medical_records mr_u WHERE mr_u.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM appointments a_u WHERE a_u.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM surgeries s_u WHERE s_u.patient_id = p.document_id
+					)
+				) AS is_unassigned
+			FROM patients p
+			WHERE 1=1
+			${doctorExistsClause}
+			ORDER BY is_unassigned DESC, p.last_name ASC`,
+			params,
 		)
 		res.json({ patients: result.rows })
 	} catch (error) {
@@ -106,22 +198,55 @@ export const getDoctorPatients = async (req: Request, res: Response) => {
 	}
 
 	try {
-		// Buscamos pacientes que cumplan AL MENOS una de las tres condiciones con este médico
+		// Pacientes vinculados a este médico (evolución, cita o cirugía) O pacientes sin
+		// ningún vínculo clínico aún (recién creados — visibles para poder asignar la primera cita/cirugía).
 		const result = await query(
-			`SELECT p.* FROM patients p
-             WHERE EXISTS (
-                 SELECT 1 FROM medical_records mr 
-                 WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
-             )
-             OR EXISTS (
-                 SELECT 1 FROM appointments a 
-                 WHERE a.patient_id = p.document_id AND a.doctor_id = $1
-             )
-             OR EXISTS (
-                 SELECT 1 FROM surgeries s 
-                 WHERE s.patient_id = p.document_id AND s.doctor_id = $1
-             )
-             ORDER BY p.last_name ASC`,
+			`SELECT p.*,
+				(
+					SELECT COALESCE(string_agg(name, ', ' ORDER BY name), '')
+					FROM (
+						SELECT DISTINCT u.name AS name
+						FROM medical_records mr2
+						JOIN users u ON mr2.doctor_id = u.document_id
+						WHERE mr2.patient_id = p.document_id
+					) d
+				) AS attending_doctors,
+				(
+					NOT EXISTS (
+						SELECT 1 FROM medical_records mr0 WHERE mr0.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM appointments a0 WHERE a0.patient_id = p.document_id
+					)
+					AND NOT EXISTS (
+						SELECT 1 FROM surgeries s0 WHERE s0.patient_id = p.document_id
+					)
+				) AS is_unassigned
+			FROM patients p
+			WHERE EXISTS (
+				SELECT 1 FROM medical_records mr
+				WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+			)
+			OR EXISTS (
+				SELECT 1 FROM appointments a
+				WHERE a.patient_id = p.document_id AND a.doctor_id = $1
+			)
+			OR EXISTS (
+				SELECT 1 FROM surgeries s
+				WHERE s.patient_id = p.document_id AND s.doctor_id = $1
+			)
+			OR (
+				NOT EXISTS (
+					SELECT 1 FROM medical_records mr3 WHERE mr3.patient_id = p.document_id
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM appointments a3 WHERE a3.patient_id = p.document_id
+				)
+				AND NOT EXISTS (
+					SELECT 1 FROM surgeries s3 WHERE s3.patient_id = p.document_id
+				)
+			)
+			ORDER BY is_unassigned DESC, p.last_name ASC`,
 			[doctorId],
 		)
 
@@ -203,7 +328,15 @@ export const updatePatient = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error updating patient:", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (isPostgresError(error) && error.code === "23505") {
+			return res.status(409).json({
+				error: getFriendlyDuplicateEmailMessage(
+					error.detail,
+					error.constraint,
+				),
+			})
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
@@ -220,8 +353,8 @@ export const deletePatient = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Patient not found" })
 
 		res.json({ message: "Patient deleted successfully" })
-	} catch (error: any) {
-		if (error.code === "23503") {
+	} catch (error) {
+		if (isPostgresError(error) && error.code === "23503") {
 			return res.status(409).json({
 				error:
 					"No se puede eliminar el paciente porque tiene registros asociados (citas, evoluciones, etc.).",

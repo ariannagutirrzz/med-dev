@@ -1,5 +1,4 @@
-import { jwtDecode } from "jwt-decode"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import {
 	LuActivity,
 	LuCalendarDays,
@@ -7,22 +6,24 @@ import {
 	LuClipboardList,
 	LuFileText,
 	LuStethoscope,
+	LuUser,
 } from "react-icons/lu"
 import { toast } from "react-toastify"
-import { getStoredToken } from "../../../config/axios"
-import type {
-	MedicalHistory,
-	MedicalHistoryFormData,
-	MyTokenPayload,
-} from "../../../shared"
+import type { MedicalHistory, MedicalHistoryFormData } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
+import { useAuth } from "../../auth"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
 	getMedicalRecord,
 	updateMedicalRecordById,
 } from "../services/MedicalRecordsAPI"
+import { truncatePreview } from "../utils/truncatePreview"
 import ClinicalEvolutionDetailModal from "./ClinicalEvolutionDetailModal"
+
+const PREVIEW_MOTIVO_CHARS = 90
+const PREVIEW_DIAGNOSIS_CHARS = 120
+const PREVIEW_TREATMENT_CHARS = 120
 
 export default function ClinicalEvolution({
 	patientId,
@@ -41,8 +42,21 @@ export default function ClinicalEvolution({
 	>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
-	const token = getStoredToken()
-	const doctor_id = token ? jwtDecode<MyTokenPayload>(token).id : ""
+	const { user } = useAuth()
+	/** Cédula / documento del usuario (coincide con `doctor_id` en BD y lista de médicos), no el id numérico del JWT */
+	const sessionDoctorDocumentId = user?.document_id
+		? String(user.document_id)
+		: ""
+
+	const displayEvolutions = useMemo(
+		() =>
+			[...evolutions].sort(
+				(a, b) =>
+					new Date(b.record_date).getTime() -
+					new Date(a.record_date).getTime(),
+			),
+		[evolutions],
+	)
 
 	const fetchEvolutions = useCallback(async () => {
 		try {
@@ -65,7 +79,8 @@ export default function ClinicalEvolution({
 		if (newEvolution) {
 			const newRecord: MedicalHistoryFormData = {
 				patient_id: patientId,
-				doctor_id: doctor_id,
+				doctor_id: sessionDoctorDocumentId,
+				doctor_name: user?.name ? String(user.name) : undefined,
 				record_date: new Date(),
 				diagnosis: "",
 				treatment: "",
@@ -77,7 +92,7 @@ export default function ClinicalEvolution({
 			setSelectedRecord(newRecord)
 			setIsModalOpen(true)
 		}
-	}, [newEvolution, patientId, doctor_id])
+	}, [newEvolution, patientId, sessionDoctorDocumentId, user?.name])
 
 	const handleCloseModal = () => {
 		setIsModalOpen(false)
@@ -131,17 +146,17 @@ export default function ClinicalEvolution({
 	}
 
 	return (
-		<div className="bg-white rounded-[3rem] border border-gray-100 p-6 md:p-10 shadow-xl shadow-gray-200/50 min-h-screen">
+		<div className="bg-white rounded-2xl border border-gray-100 p-4 md:p-6 shadow-lg shadow-gray-200/40 min-h-screen">
 			{/* 1. TIMELINE SUPERIOR (Indicador Visual) */}
 			{!isLoading && evolutions.length > 0 && (
-				<div className="mb-10 px-4">
-					<div className="flex items-center gap-4 mb-4">
-						<LuActivity className="text-primary w-5 h-5" />
-						<span className="text-lg font-black uppercase tracking-[0.2em] text-gray-400">
+				<div className="mb-5 px-1">
+					<div className="flex items-center gap-2 mb-2">
+						<LuActivity className="text-primary w-4 h-4" />
+						<span className="text-sm font-semibold uppercase tracking-wider text-gray-400">
 							Evolución Clínica
 						</span>
 					</div>
-					<div className="relative h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+					<div className="relative h-1 w-full bg-gray-100 rounded-full overflow-hidden">
 						<div className="absolute top-0 left-0 h-full bg-primary w-full transition-all duration-1000" />
 					</div>
 				</div>
@@ -163,103 +178,136 @@ export default function ClinicalEvolution({
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-					{evolutions.map((evo) => (
-						<button
-							type="button"
-							key={evo.id}
-							onClick={() => {
-								setSelectedRecord(evo)
-								setIsModalOpen(true)
-							}}
-							className="group relative h-[420px] bg-gray-50/50 rounded-[2.5rem] border border-gray-100 p-8 hover:bg-white hover:shadow-2xl hover:shadow-primary/10 hover:border-primary transition-all duration-500 cursor-pointer flex flex-col overflow-hidden isolate mask-image-radial-fade"
-							style={{
-								WebkitMaskImage: "-webkit-radial-gradient(white, black)",
-								maskImage: "radial-gradient(white, black)",
-								transform: "translateZ(0)",
-							}}
-						>
-							{/* Decoración superior: Fecha */}
-							<div className="flex justify-between items-start mb-8">
-								<div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 group-hover:border-primary transition-colors">
-									<LuCalendarDays className="w-6 h-6 text-primary" />
-								</div>
-								<div className="text-right">
-									<p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter leading-none">
-										Consulta
-									</p>
-									<p className="text-xl font-black text-gray-900 leading-none mt-1">
-										#{evo.id}
-									</p>
-								</div>
-							</div>
-
-							{/* Cuerpo: Motivo y Diagnóstico */}
-							<div className="flex-1 flex flex-col gap-6">
-								<div>
-									<span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">
-										Motivo
-									</span>
-									<h3 className="text-lg font-bold text-gray-800 leading-tight line-clamp-2">
-										{evo.reason || "Consulta de rutina"}
-									</h3>
-								</div>
-
-								<div className="space-y-4">
-									<div className="flex items-start justify-start gap-2">
-										<div className="bg-primary/20 p-1.5 rounded-lg">
-											<LuStethoscope className="w-4 h-4 text-primary" />
-										</div>
-										<div className="flex flex-col items-start justify-center gap-1">
-											<span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-												Diagnóstico
+				displayEvolutions.length === 0 ? (
+					<div className="flex flex-col items-center justify-center py-24 bg-amber-50/40 rounded-[2.5rem] border border-dashed border-amber-200/80 text-center px-6">
+						<p className="text-gray-600 font-semibold">
+							No hay evoluciones registradas por el médico seleccionado.
+						</p>
+					</div>
+				) : (
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+						{displayEvolutions.map((evo, index) => {
+							const caseNumber = displayEvolutions.length - index
+							return (
+								<button
+									type="button"
+									key={evo.id}
+									onClick={() => {
+										setSelectedRecord(evo)
+										setIsModalOpen(true)
+									}}
+									className="group relative min-h-[270px] bg-gray-50/80 rounded-2xl border border-gray-100 p-4 hover:bg-white hover:shadow-md hover:shadow-primary/5 hover:border-primary transition-all duration-300 cursor-pointer flex flex-col overflow-hidden text-left"
+									style={{ transform: "translateZ(0)" }}
+								>
+									{/* Motivo + caso: misma fila; contenido alineado al borde izquierdo del padding */}
+									<div className="flex justify-between items-start gap-3 min-h-0">
+										<div className="min-w-0 flex-1 text-left">
+											<span className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5 block">
+												Motivo
 											</span>
-											<span className="text-xs text-gray-600 font-bold line-clamp-3 leading-relaxed">
-												{evo.diagnosis}
+											<h3 className="text-sm font-semibold text-gray-800 leading-snug wrap-break-word">
+												{truncatePreview(
+													evo.reason || "Consulta de rutina",
+													PREVIEW_MOTIVO_CHARS,
+												)}
+											</h3>
+										</div>
+										<div className="flex items-baseline gap-1 shrink-0 pt-0.5">
+											<span className="text-[9px] font-normal text-gray-400 uppercase tracking-wide">
+												Caso
+											</span>
+											<span className="text-sm font-normal text-gray-700 tabular-nums leading-none">
+												{caseNumber}
 											</span>
 										</div>
 									</div>
 
-									<div className="flex items-start justify-start gap-2">
-										<div className="bg-primary/20 p-1.5 rounded-lg">
-											<LuFileText className="w-4 h-4 text-primary" />
-										</div>
-										<div className="flex flex-col items-start justify-center gap-1">
-											<span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
-												Tratamiento
-											</span>
-											<span className="text-xs text-gray-600 font-bold line-clamp-3 leading-relaxed">
-												{evo.treatment}
-											</span>
+									{/* Cuerpo */}
+									<div className="flex-1 flex flex-col gap-2.5 min-h-0 mt-2.5">
+										<div className="space-y-2">
+											<div className="flex items-start gap-2">
+												<div
+													className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+													aria-hidden
+												>
+													<LuStethoscope className="h-3.5 w-3.5 text-primary" />
+												</div>
+												<div className="min-w-0 flex-1">
+													<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
+														Diagnóstico
+													</span>
+													<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
+														{truncatePreview(
+															evo.diagnosis,
+															PREVIEW_DIAGNOSIS_CHARS,
+														)}
+													</span>
+												</div>
+											</div>
+
+											<div className="flex items-start gap-2">
+												<div
+													className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+													aria-hidden
+												>
+													<LuFileText className="h-3.5 w-3.5 text-primary" />
+												</div>
+												<div className="min-w-0 flex-1">
+													<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
+														Tratamiento
+													</span>
+													<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
+														{truncatePreview(
+															evo.treatment,
+															PREVIEW_TREATMENT_CHARS,
+														)}
+													</span>
+												</div>
+											</div>
 										</div>
 									</div>
-								</div>
-							</div>
 
-							{/* Footer del Card */}
-							<div className="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
-								<div className="flex flex-col">
-									<span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-										Fecha
-									</span>
-									<span className="text-xs font-black text-gray-700">
-										{new Date(evo.record_date).toLocaleDateString("es-ES", {
-											day: "2-digit",
-											month: "short",
-											year: "numeric",
-										})}
-									</span>
-								</div>
-								<div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-									<LuChevronRight className="w-5 h-5" />
-								</div>
-							</div>
-
-							{/* Overlay decorativo en hover */}
-							<div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700 -z-10" />
-						</button>
-					))}
-				</div>
+									{/* Fecha y médico en una fila */}
+									<div className="mt-auto pt-3 border-t border-gray-100 flex items-end justify-between gap-2">
+										<div className="flex flex-1 flex-wrap items-end justify-between gap-x-3 gap-y-1 min-w-0">
+											<div className="min-w-0">
+												<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center gap-1">
+													<LuCalendarDays
+														className="w-3 h-3 text-primary shrink-0"
+														aria-hidden
+													/>
+													Fecha
+												</p>
+												<p className="text-[11px] font-medium text-gray-700">
+													{new Date(evo.record_date).toLocaleDateString("es-ES", {
+														day: "2-digit",
+														month: "short",
+														year: "numeric",
+													})}
+												</p>
+											</div>
+											<div className="text-right min-w-0 max-w-[58%]">
+												<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center justify-end gap-1">
+													<LuUser
+														className="w-3 h-3 text-primary shrink-0"
+														aria-hidden
+													/>
+													Médico
+												</p>
+												<p className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-snug">
+													{evo.doctor_name?.trim() || "—"}
+												</p>
+											</div>
+										</div>
+										<div className="w-8 h-8 shrink-0 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
+											<LuChevronRight className="w-4 h-4" />
+										</div>
+									</div>
+								</button>
+							)
+						})}
+					</div>
+				)
 			)}
 
 			<ClinicalEvolutionDetailModal

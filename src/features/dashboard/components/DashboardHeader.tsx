@@ -1,20 +1,11 @@
 import { CiCalendar } from "react-icons/ci"
-import { HiOutlineBars3, HiOutlineMagnifyingGlass } from "react-icons/hi2"
-import { useAuth } from "../../auth"
+import { HiOutlineBars3 } from "react-icons/hi2"
 import { Button } from "../../../shared"
 import { useDashboardLayout } from "../contexts/DashboardLayoutContext"
-import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { NotificationBell } from "../../notifications"
 
 export default function DashboardHeader() {
-	const { user } = useAuth()
-	const { searchTerm, setSearchTerm } = useDashboardSearch()
 	const { isMobile, onToggleSidebar } = useDashboardLayout()
-	const isPatient = user?.role === "Paciente"
-
-	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setSearchTerm(e.target.value)
-	}
 
 	const now = new Date()
 	const weekday = now.toLocaleDateString("es-ES", { weekday: "long" })
@@ -50,22 +41,6 @@ export default function DashboardHeader() {
 					<NotificationBell />
 				</div>
 			</div>
-
-			{/* Barra de búsqueda (oculta para Paciente) */}
-			{!isPatient && (
-			<div className="relative flex-1 w-full md:max-w-md min-w-0">
-				<div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
-					<HiOutlineMagnifyingGlass className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-				</div>
-				<input
-					type="text"
-					className="block w-full pl-8 sm:pl-10 pr-3 py-1.5 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-					placeholder="Buscar pacientes, citas..."
-					value={searchTerm}
-					onChange={handleSearchChange}
-				/>
-			</div>
-			)}
 
 			{/* Desktop: campana a la derecha de la pantalla */}
 			<div className="hidden md:flex items-center shrink-0">

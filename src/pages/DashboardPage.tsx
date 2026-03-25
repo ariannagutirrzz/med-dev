@@ -7,11 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { GenerateAI } from "../features/ai"
 import { AppointmentsSection } from "../features/appointments"
 import { useAuth } from "../features/auth"
-import {
-	Dashboard,
-	DashboardHome,
-	DashboardSearchProvider,
-} from "../features/dashboard"
+import { Dashboard, DashboardHome } from "../features/dashboard"
 import { Inventory } from "../features/inventory"
 import { MedicalRecords } from "../features/patients"
 import { ReportsSection } from "../features/reports"
@@ -243,19 +239,17 @@ const DashboardPage: React.FC = () => {
 	}
 
 	return (
-		<DashboardSearchProvider>
-			<Dashboard
-				user={userData}
-				menuItems={menuItems}
-				isSidebarOpen={isSidebarOpen}
-				activeMenuItem={activeMenuItem}
-				onMenuItemClick={handleMenuItemClick}
-				onToggleSidebar={handleToggleSidebar}
-				onLogout={handleLogout}
-			>
-				{renderContent()}
-			</Dashboard>
-		</DashboardSearchProvider>
+		<Dashboard
+			user={userData}
+			menuItems={menuItems}
+			isSidebarOpen={isSidebarOpen}
+			activeMenuItem={activeMenuItem}
+			onMenuItemClick={handleMenuItemClick}
+			onToggleSidebar={handleToggleSidebar}
+			onLogout={handleLogout}
+		>
+			{renderContent()}
+		</Dashboard>
 	)
 }
 

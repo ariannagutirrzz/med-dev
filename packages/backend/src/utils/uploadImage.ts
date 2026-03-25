@@ -1,6 +1,36 @@
 import { v4 as uuidv4 } from "uuid" // Para generar nombres de archivo únicos
 import { supabase } from "./supabase.js"
 
+export class ExternalServiceError extends Error {
+	status: number
+	publicMessage: string
+
+	constructor(params: { message: string; publicMessage: string; status?: number }) {
+		super(params.message)
+		this.name = "ExternalServiceError"
+		this.status = params.status ?? 503
+		this.publicMessage = params.publicMessage
+	}
+}
+
+function inferUploadPublicMessage(error: unknown): string {
+	// Common in your logs: TypeError fetch failed + cause ENOTFOUND <project>.supabase.co
+	const message = error instanceof Error ? error.message : String(error)
+	const anyErr = error as { cause?: unknown }
+	const causeMsg =
+		anyErr?.cause instanceof Error ? anyErr.cause.message : String(anyErr?.cause ?? "")
+
+	const combined = `${message} ${causeMsg}`.toLowerCase()
+
+	if (combined.includes("enotfound") || combined.includes("getaddrinfo")) {
+		return "Image upload is temporarily unavailable (network/DNS). Please try again in a moment."
+	}
+	if (combined.includes("fetch failed")) {
+		return "Image upload failed. Please try again."
+	}
+	return "Image upload failed. Please try again later."
+}
+
 /**
  * Sube un archivo a un bucket de Supabase en una carpeta específica.
  * @param file Objeto del archivo proporcionado por Multer (req.file)
@@ -23,7 +53,7 @@ export const uploadToSupabase = async (
 
 		// 4. Subir el archivo al Bucket 'imagenes_citas'
 		// Usamos file.buffer porque Multer está configurado con memoryStorage
-		const { data, error } = await supabase.storage
+		const { error } = await supabase.storage
 			.from("meddev_images")
 			.upload(filePath, file.buffer, {
 				contentType: file.mimetype,
@@ -33,7 +63,12 @@ export const uploadToSupabase = async (
 
 		if (error) {
 			console.error("Error en el upload de Supabase:", error)
-			throw new Error(`Error al subir archivo: ${error.message}`)
+			throw new ExternalServiceError({
+				message: `Supabase upload failed: ${error.message}`,
+				publicMessage:
+					"Image upload failed. Please try again. If the problem persists, contact support.",
+				status: 502,
+			})
 		}
 
 		// 5. Generar la URL pública que guardaremos en la base de datos
@@ -44,6 +79,12 @@ export const uploadToSupabase = async (
 		return publicUrl
 	} catch (error) {
 		console.error("Error en uploadToSupabase:", error)
-		throw error
+		if (error instanceof ExternalServiceError) throw error
+		throw new ExternalServiceError({
+			message:
+				error instanceof Error ? error.message : `Supabase upload failed: ${String(error)}`,
+			publicMessage: inferUploadPublicMessage(error),
+			status: 503,
+		})
 	}
 }

@@ -19,6 +19,10 @@ export type Patient = {
 	document_id: string
 	blood_type?: string | null
 	allergies: string[]
+	/** Distinct doctor names from medical_records, comma-separated (API). */
+	attending_doctors?: string | null
+	/** True when patient has no medical_records, appointments, or surgeries yet. */
+	is_unassigned?: boolean
 }
 
 // PatientFormData hereda todo de Patient EXCEPTO birthdate, que lo definimos como string
@@ -30,6 +34,8 @@ export type MedicalHistory = {
 	id: number
 	patient_id: string
 	doctor_id: string
+	/** From API join with users */
+	doctor_name?: string | null
 	record_date: Date
 	diagnosis: string
 	treatment: string

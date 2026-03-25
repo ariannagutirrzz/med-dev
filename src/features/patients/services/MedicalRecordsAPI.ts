@@ -1,4 +1,3 @@
-import { isAxiosError } from "axios"
 import { api } from "../../../config/axios"
 import type { MedicalHistory } from "../../../shared"
 
@@ -12,25 +11,13 @@ export const createMedicalRecord = async (data: FormData) => {
 export async function getMedicalRecord(
 	patientId: MedicalHistory["patient_id"],
 ) {
-	try {
-		const { data } = await api.get(`/medicalRecords/patient/${patientId}`)
-		return data
-	} catch (error) {
-		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
-		}
-	}
+	const { data } = await api.get(`/medicalRecords/patient/${patientId}`)
+	return data
 }
 
 export async function getMedicalRecordById(id: MedicalHistory["id"]) {
-	try {
-		const { data } = await api.get(`/medicalRecords/${id}`)
-		return data
-	} catch (error) {
-		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
-		}
-	}
+	const { data } = await api.get(`/medicalRecords/${id}`)
+	return data
 }
 
 export const updateMedicalRecordById = async (id: number, data: FormData) => {
@@ -41,12 +28,6 @@ export const updateMedicalRecordById = async (id: number, data: FormData) => {
 }
 
 export async function deleteMedicalRecordById(id: MedicalHistory["id"]) {
-	try {
-		const { data } = await api.delete(`/medicalRecords/${id}`)
-		return data
-	} catch (error) {
-		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error)
-		}
-	}
+	const { data } = await api.delete(`/medicalRecords/${id}`)
+	return data
 }

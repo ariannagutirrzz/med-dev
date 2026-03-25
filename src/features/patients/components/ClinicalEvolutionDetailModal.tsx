@@ -1,7 +1,7 @@
 import { DatePicker, Select } from "antd"
 import dayjs from "dayjs"
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
 	FaFileImage,
 	FaImage,
@@ -16,12 +16,14 @@ import type {
 	MedicalHistoryFormData,
 } from "../../../shared"
 import { Button, ConfirmModal } from "../../../shared"
+import { useAuth } from "../../auth"
 import {
 	deleteExtraImage,
 	getExtraImages,
 	updateExtraImage,
 	uploadExtraImages,
 } from "../services/MedicalRecordsImagesAPI"
+import { getDoctors } from "../services/UsersAPI"
 
 interface ClinicalEvolutionDetailModalProps {
 	isOpen: boolean
@@ -38,15 +40,50 @@ const ClinicalEvolutionDetailModal = ({
 	onSave,
 	onDelete,
 }: ClinicalEvolutionDetailModalProps) => {
+	const { user } = useAuth()
 	// Usamos MedicalHistoryFormData para el estado local
 	const [formData, setFormData] = useState<MedicalHistoryFormData | null>(null)
 	const [extraImages, setExtraImages] = useState<ExtraImages[]>([])
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
+	const [doctorRows, setDoctorRows] = useState<
+		{ document_id: string; name: string }[]
+	>([])
+
+	useEffect(() => {
+		if (!isOpen) return
+		getDoctors()
+			.then((data: unknown) => {
+				const d = data as { doctors?: { document_id: string; name: string }[] }
+				setDoctorRows(d?.doctors ?? [])
+			})
+			.catch(() => setDoctorRows([]))
+	}, [isOpen])
+
+	const doctorSelectOptions = useMemo(() => {
+		const list = doctorRows.map((d) => ({
+			value: String(d.document_id),
+			label: d.name,
+		}))
+		const id = formData?.doctor_id != null ? String(formData.doctor_id) : ""
+		if (!id) return list
+		if (!list.some((o) => o.value === id)) {
+			const label =
+				String(formData?.doctor_name ?? "").trim() ||
+				(user?.document_id != null && String(user.document_id) === id
+					? String(user.name ?? "").trim()
+					: "")
+			/** No añadir fila fantasma tipo "34" como etiqueta = valor (id JWT ≠ document_id) */
+			if (!label || label === id) return list
+			return [{ value: id, label }, ...list]
+		}
+		return list
+	}, [doctorRows, formData?.doctor_id, formData?.doctor_name, user])
 
 	useEffect(() => {
 		if (record) {
-			setFormData({
+			const isNew = !("id" in record && (record as MedicalHistory).id)
+			const next = {
 				...record,
 				reason: record.reason || "",
 				background: record.background || "",
@@ -56,7 +93,18 @@ const ClinicalEvolutionDetailModal = ({
 				record_date: record.record_date
 					? new Date(record.record_date)
 					: new Date(),
-			} as MedicalHistoryFormData)
+			} as MedicalHistoryFormData
+
+			if (
+				isNew &&
+				user?.document_id != null &&
+				String(next.doctor_id ?? "") === String(user.document_id) &&
+				!String(next.doctor_name ?? "").trim()
+			) {
+				next.doctor_name = user.name
+			}
+
+			setFormData(next)
 
 			// si tenemos un id es edición, traemos imágenes existentes
 			if ((record as MedicalHistory).id) {
@@ -79,7 +127,7 @@ const ClinicalEvolutionDetailModal = ({
 			setFormData(null)
 			setExtraImages([])
 		}
-	}, [record])
+	}, [record, user])
 
 	// --- Lógica para Imágenes Extras ---
 
@@ -409,21 +457,53 @@ const ClinicalEvolutionDetailModal = ({
 									<label htmlFor="doctor_id" className={labelClass}>
 										Médico Tratante
 									</label>
-									<Select
-										id="doctor_id"
-										className="w-full h-10"
-										placeholder="Seleccionar médico"
-										value={formData.doctor_id || undefined}
-										onChange={(value) =>
-											setFormData((prev) =>
-												prev ? { ...prev, doctor_id: value } : null,
-											)
-										}
-										options={[
-											{ value: "cedula1", label: "Dr. Carlos Mendoza" },
-											{ value: "7695182", label: "Dra. Ninive Azuaje" },
-										]}
-									/>
+									{isEditing ? (
+										<div
+											id="doctor_id"
+											className={`${inputBaseClass} bg-gray-100/90 text-gray-800 cursor-default select-none`}
+										>
+											{String(formData.doctor_name ?? "").trim() ||
+												doctorSelectOptions.find(
+													(o) => o.value === formData.doctor_id,
+												)?.label ||
+												formData.doctor_id ||
+												"—"}
+										</div>
+									) : (
+										<Select
+											id="doctor_id"
+											className="w-full h-10"
+											placeholder="Seleccionar médico"
+											value={
+												formData.doctor_id != null &&
+												String(formData.doctor_id) !== ""
+													? String(formData.doctor_id)
+													: undefined
+											}
+											onChange={(value) =>
+												setFormData((prev) => {
+													if (!prev) return null
+													const v = String(value)
+													const fromList = doctorSelectOptions.find(
+														(o) => o.value === v,
+													)?.label
+													const label =
+														String(fromList ?? "").trim() ||
+														(user?.document_id === v
+															? String(user.name ?? "").trim()
+															: "") ||
+														String(prev.doctor_name ?? "").trim() ||
+														v
+													return {
+														...prev,
+														doctor_id: v,
+														doctor_name: label,
+													}
+												})
+											}
+											options={doctorSelectOptions}
+										/>
+									)}
 								</div>
 							</div>
 

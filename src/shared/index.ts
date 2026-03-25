@@ -2,6 +2,11 @@
 export { default as Calendar } from "./components/Calendar"
 export { default as CalendarLegend } from "./components/CalendarLegend"
 export { default as ConfirmModal } from "./components/ConfirmModal"
+export { default as DataFilterPanel } from "./components/DataFilterPanel"
+export type {
+	DataFilterPanelProps,
+	DataFilterPanelSelect,
+} from "./components/DataFilterPanel"
 export { default as ProtectedRoute } from "./components/ProtectedRoute"
 export { default as Sidebar } from "./components/Sidebar"
 export { default as Button } from "./components/common/Button"
