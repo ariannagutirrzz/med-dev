@@ -363,6 +363,16 @@ const ClinicalEvolutionDetailModal = ({
 									? "Detalle de Evolución Clínica"
 									: "Nueva Evolución Clínica"}
 							</h2>
+							{isEditing &&
+							formData.doctor_name &&
+							String(formData.doctor_name).trim() !== "" ? (
+								<p className="text-sm text-gray-500 mt-1">
+									Médico:{" "}
+									<span className="font-semibold text-gray-700">
+										{formData.doctor_name}
+									</span>
+								</p>
+							) : null}
 						</div>
 						<Button
 							type="button"

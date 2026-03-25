@@ -13,9 +13,14 @@ export async function createPatient(formData: PatientFormData) {
 	}
 }
 
-export async function getPatients() {
+export async function getPatients(doctorId?: string) {
 	try {
-		const { data } = await api.get("/patients")
+		const { data } = await api.get("/patients", {
+			params:
+				doctorId && doctorId !== "all"
+					? { doctor_id: doctorId }
+					: undefined,
+		})
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {

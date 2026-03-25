@@ -116,13 +116,46 @@ export const createPatient = async (req: Request, res: Response) => {
 	}
 }
 
-// 2. Get all Patients
-export const getAllPatients = async (_req: Request, res: Response) => {
+// 2. Get all Patients (Admin: optional ?doctor_id= filters by medical_records author)
+export const getAllPatients = async (req: Request, res: Response) => {
 	try {
-		// We join with users to potentially show account status if needed
+		const doctorIdParam =
+			req.user?.role === "Admin"
+				? (req.query.doctor_id as string | undefined)
+				: undefined
+		const doctorFilter =
+			doctorIdParam &&
+			doctorIdParam !== "all" &&
+			String(doctorIdParam).trim() !== ""
+				? String(doctorIdParam).trim()
+				: null
+
+		const params: string[] = []
+		let doctorExistsClause = ""
+		if (doctorFilter) {
+			doctorExistsClause = ` AND EXISTS (
+				SELECT 1 FROM medical_records mr
+				WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+			)`
+			params.push(doctorFilter)
+		}
+
 		const result = await query(
-			`SELECT * FROM patients ORDER BY last_name ASC`,
-			[],
+			`SELECT p.*,
+				(
+					SELECT COALESCE(string_agg(name, ', ' ORDER BY name), '')
+					FROM (
+						SELECT DISTINCT u.name AS name
+						FROM medical_records mr2
+						JOIN users u ON mr2.doctor_id = u.document_id
+						WHERE mr2.patient_id = p.document_id
+					) d
+				) AS attending_doctors
+			FROM patients p
+			WHERE 1=1
+			${doctorExistsClause}
+			ORDER BY p.last_name ASC`,
+			params,
 		)
 		res.json({ patients: result.rows })
 	} catch (error) {
