@@ -5,6 +5,7 @@ import {
 	notifyAppointmentCreated,
 	notifyAppointmentUpdated,
 } from "../utils/notificationHelpers.js"
+import { sendAppointmentConfirmationEmail } from "../services/EmailService.js"
 import { sendWhatsApp } from "../utils/twilio.js"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
@@ -198,13 +199,17 @@ export const createAppointment = async (req: Request, res: Response) => {
 
 		const appointment = result.rows[0]
 
-		// Fetch patient and doctor information for WhatsApp notifications and in-app notifications
-		let patient: { name: string; phone?: string } | null = null
-		let doctor: { name: string; phone?: string } | null = null
+		// Fetch patient and doctor information for WhatsApp, email, and in-app notifications
+		let patient: {
+			name: string
+			phone?: string | null
+			email?: string | null
+		} | null = null
+		let doctor: { name: string; phone?: string | null } | null = null
 
 		try {
 			const [patientResult, doctorResult] = await Promise.all([
-				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+				query(`SELECT name, phone, email FROM users WHERE document_id = $1`, [
 					patient_id,
 				]),
 				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
@@ -228,6 +233,7 @@ export const createAppointment = async (req: Request, res: Response) => {
 				minute: "2-digit",
 			})
 
+			try {
 			// Send WhatsApp to patient
 			if (patient?.phone) {
 				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
@@ -267,9 +273,42 @@ Por favor, confirma tu disponibilidad.`
 					`WhatsApp no enviado al médico ${doctor.name} (document_id: ${doctor_id}): sin teléfono en users.phone`,
 				)
 			}
-		} catch (whatsappError) {
-			// Log WhatsApp error but don't fail the appointment creation
-			console.error("Error sending WhatsApp notifications:", whatsappError)
+			} catch (whatsappError) {
+				console.error("Error sending WhatsApp notifications:", whatsappError)
+			}
+
+			try {
+				if (patient?.email?.trim()) {
+					const emailResult = await sendAppointmentConfirmationEmail({
+						to: patient.email.trim(),
+						patientName: patient.name,
+						doctorName: doctor ? doctor.name : "No especificado",
+						formattedDate,
+						formattedTime,
+						notes: notes || null,
+						wasScheduled: status.toLowerCase() === "scheduled",
+					})
+					if (!emailResult.ok && emailResult.error !== "Email not configured") {
+						console.warn(
+							`Email de confirmación no enviado al paciente (${patient.email}): ${emailResult.error}`,
+						)
+					}
+				} else if (patient) {
+					console.warn(
+						`Email de confirmación no enviado al paciente ${patient.name} (document_id: ${patient_id}): sin email en users.email`,
+					)
+				}
+			} catch (emailError) {
+				console.error(
+					"Error sending appointment confirmation email:",
+					emailError,
+				)
+			}
+		} catch (notifyFetchError) {
+			console.error(
+				"Error loading users for appointment notifications:",
+				notifyFetchError,
+			)
 		}
 
 		// Create in-app notification for doctor
