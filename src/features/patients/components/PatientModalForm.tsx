@@ -2,20 +2,7 @@ import { DatePicker, Input, Select } from "antd"
 import dayjs from "dayjs"
 import type React from "react"
 import { useEffect, useState } from "react"
-import {
-	FaCalendarAlt,
-	FaEnvelope,
-	FaExclamationTriangle,
-	FaIdCard,
-	FaMapMarkerAlt,
-	FaPhone,
-	FaSave,
-	FaTimes,
-	FaTrash, // Añadido para el botón de eliminar
-	FaUser,
-	FaUserPlus,
-	FaVenusMars,
-} from "react-icons/fa"
+import { FaSave, FaTimes, FaTrash } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Patient, PatientFormData } from "../../../shared"
 import { Button, ConfirmModal, PhoneInput } from "../../../shared"
@@ -199,48 +186,42 @@ const PatientModalForm = ({
 
 	if (!isOpen || !formData) return null
 
-	const labelClass =
-		"text-xs font-black text-primary uppercase tracking-wider mb-2 flex items-center gap-2"
+	const labelClass = "text-xs font-bold text-gray-700 mb-1 block ml-1"
 	const inputBaseClass =
 		"w-full bg-gray-50! p-3 rounded-xl! border border-gray-100 text-gray-700 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none disabled:opacity-60"
 
 	return (
 		<>
-			<div className="fixed inset-0 z-70 flex items-center justify-center p-4 w-full bg-black/80 backdrop-blur-sm">
-				<div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+			<div className="fixed inset-0 z-70 flex items-center justify-center p-4 w-full bg-black/90 backdrop-blur-sm">
+				<div className="relative bg-gray-100 w-full my-auto max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
 					{/* Header */}
-					<div className="p-6 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-						<div className="flex items-center gap-4">
-							<div className="bg-primary/10 p-3 rounded-2xl text-primary">
-								<FaUserPlus size={24} />
-							</div>
-							<div>
-								<h2 className="text-xl font-bold text-gray-800">
-									{patient ? "Editar Paciente" : "Nuevo Registro de Paciente"}
-								</h2>
-								<p className="text-xs font-bold text-gray-400 uppercase">
-									{patient
-										? `Expediente: ${patient.document_id}`
-										: "Información Personal"}
-								</p>
-							</div>
+					<div className="p-6 pb-0 flex justify-between items-center">
+						<div>
+							<h2 className="text-xl font-bold text-gray-800">
+								{patient ? "Editar Paciente" : "Nuevo Registro de Paciente"}
+							</h2>
 						</div>
 						<Button
 							type="button"
 							variant="text"
 							onClick={onClose}
-							icon={<FaTimes />}
-							className="p-2! rounded-full text-gray-400 hover:bg-gray-200! hover:text-gray-600!"
-						/>
+							className="hover:bg-white/20 p-2! rounded-full"
+						>
+							<FaTimes size={20} />
+						</Button>
 					</div>
 
-					<form onSubmit={handleSubmit}>
-						<div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+					{/* Formulario */}
+					<form
+						onSubmit={handleSubmit}
+						className="p-4 space-y-4 overflow-y-auto flex-1"
+					>
+						<div className="bg-white p-4 rounded-3xl shadow-lg space-y-4">
 							{/* 1. Nombres y Apellidos */}
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="first_name" className={labelClass}>
-										<FaUser /> Nombre(s)
+										Nombre(s)
 									</label>
 									<Input
 										name="first_name"
@@ -256,7 +237,7 @@ const PatientModalForm = ({
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="last_name" className={labelClass}>
-										<FaUser /> Apellido(s)
+										Apellido(s)
 									</label>
 									<Input
 										name="last_name"
@@ -265,7 +246,6 @@ const PatientModalForm = ({
 										disabled={loading}
 										required
 										placeholder="Ingresa el apellido"
-										// Aplicamos las clases para el comportamiento de color
 										className={inputBaseClass}
 										style={{ height: "42px" }}
 										allowClear
@@ -277,14 +257,13 @@ const PatientModalForm = ({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="document_id" className={labelClass}>
-										<FaIdCard /> Documento de Identidad
+										Documento de Identidad
 									</label>
 									<Input
 										name="document_id"
 										required
 										disabled={loading || !!patient}
 										placeholder="12345678"
-										// Eliminamos el style inline de height y usamos una clase custom
 										className="custom-ant-group"
 										maxLength={8}
 										value={
@@ -295,7 +274,7 @@ const PatientModalForm = ({
 											<Select
 												value={formData.document_id.split("-")[0] || "V"}
 												disabled={loading || !!patient}
-												className="w-15" // Un poco más ancho para que el prefijo respire
+												className="w-15"
 												onChange={(prefix) => {
 													const currentNumbers =
 														formData.document_id.split("-")[1] || ""
@@ -329,22 +308,19 @@ const PatientModalForm = ({
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="gender" className={labelClass}>
-										<FaVenusMars /> Género
+										Género
 									</label>
 									<Select
 										id="gender"
 										disabled={loading}
 										value={formData.gender}
 										placeholder="Seleccionar género"
-										className="w-full rounded-xl!"
-										style={{ height: "42px" }}
-										// Definimos las opciones directamente aquí
+										className="w-full h-10"
 										options={[
 											{ value: "M", label: "Masculino" },
 											{ value: "F", label: "Femenino" },
 											{ value: "Otro", label: "Otro" },
 										]}
-										// Adaptamos el handleInputChange para que funcione con AntD
 										onChange={(value) => {
 											handleInputChange({
 												target: { name: "gender", value },
@@ -358,7 +334,7 @@ const PatientModalForm = ({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="email" className={labelClass}>
-										<FaEnvelope /> Correo Electrónico
+										Correo Electrónico
 									</label>
 									<Input
 										type="email"
@@ -370,13 +346,12 @@ const PatientModalForm = ({
 										value={formData.email}
 										onChange={handleInputChange}
 										allowClear
-										// Aseguramos que el estilo de AntD no choque con tu p-3
 										style={{ height: "42px" }}
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="phone" className={labelClass}>
-										<FaPhone /> Teléfono
+										Teléfono
 									</label>
 									<PhoneInput
 										value={formData.phone}
@@ -392,53 +367,38 @@ const PatientModalForm = ({
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="flex flex-col">
 									<label htmlFor="birthdate" className={labelClass}>
-										<FaCalendarAlt /> Fecha de Nacimiento
+										Fecha de Nacimiento
 									</label>
 									<DatePicker
 										name="birthdate"
 										placeholder="Seleccionar fecha de nacimiento"
-										className={inputBaseClass}
-										style={{ height: "42px" }} // Para mantener la armonía con los otros campos
+										className="w-full h-10"
 										disabled={loading}
 										format="DD/MM/YYYY"
-										// AntD espera un objeto Dayjs. Si el string está vacío, mandamos null.
 										value={
 											formData.birthdate ? dayjs(formData.birthdate) : null
 										}
-										// Bloqueamos fechas futuras (nadie puede nacer mañana)
 										disabledDate={(current) =>
 											current && current > dayjs().endOf("day")
 										}
 										onChange={(date) => {
 											const dateString = date ? date.format("YYYY-MM-DD") : ""
-
-											// Simulamos el evento para tu handleInputChange
 											handleInputChange({
-												target: {
-													name: "birthdate",
-													value: dateString,
-												},
+												target: { name: "birthdate", value: dateString },
 											} as React.ChangeEvent<HTMLInputElement>)
 										}}
 									/>
 								</div>
 								<div className="flex flex-col">
 									<label htmlFor="blood_type" className={labelClass}>
-										<FaVenusMars /> Tipo de Sangre
+										Tipo de Sangre
 									</label>
 									<Select
 										id="blood_type"
 										placeholder="Seleccionar..."
 										disabled={loading}
-										// Usamos undefined para que se muestre el placeholder correctamente
 										value={formData.blood_type || undefined}
-										className={inputBaseClass}
-										style={{
-											height: "42px",
-											display: "flex",
-											alignItems: "center",
-										}}
-										// Definimos las opciones inline
+										className="w-full h-10"
 										options={[
 											{ value: "A+", label: "A+" },
 											{ value: "A-", label: "A-" },
@@ -449,22 +409,20 @@ const PatientModalForm = ({
 											{ value: "O+", label: "O+" },
 											{ value: "O-", label: "O-" },
 										]}
-										// Adaptamos el valor al manejador que ya tienes
 										onChange={(value) => {
 											handleInputChange({
 												target: { name: "blood_type", value },
 											} as React.ChangeEvent<HTMLInputElement>)
 										}}
-										// Permite al usuario borrar la selección
 										allowClear
 									/>
 								</div>
 							</div>
 
-							{/* 5. Alergias (Nueva Sección) */}
+							{/* 5. Alergias */}
 							<div className="flex flex-col">
 								<label htmlFor="allergies" className={labelClass}>
-									<FaExclamationTriangle /> Alergias
+									Alergias
 								</label>
 								<div className="space-y-3">
 									<input
@@ -477,8 +435,6 @@ const PatientModalForm = ({
 										onKeyDown={addAllergy}
 										disabled={loading}
 									/>
-
-									{/* Contenedor de Tags */}
 									<div className="flex flex-wrap gap-2">
 										{formData.allergies?.length === 0 ? (
 											<span className="text-xs text-gray-400 italic">
@@ -508,11 +464,11 @@ const PatientModalForm = ({
 							{/* 6. Dirección */}
 							<div className="flex flex-col">
 								<label htmlFor="address" className={labelClass}>
-									<FaMapMarkerAlt /> Dirección de Habitación
+									Dirección
 								</label>
 								<textarea
 									name="address"
-									rows={2}
+									rows={3}
 									disabled={loading}
 									className={inputBaseClass}
 									value={formData.address}
@@ -522,51 +478,43 @@ const PatientModalForm = ({
 							</div>
 						</div>
 
-						{/* Footer con acciones */}
-						<div className="p-6 bg-gray-50 flex flex-wrap justify-between items-center gap-3">
-							{/* Botón de eliminar (sólo si se está editando) */}
-							<div>
-								{patient && (
-									<Button
-										type="button"
-										variant="default"
-										danger
-										onClick={() => setShowDeleteConfirm(true)}
-										icon={<FaTrash />}
-										className="group"
-									>
-										Eliminar Paciente
-									</Button>
-								)}
-							</div>
-
-							<div className="flex gap-3">
+						{/* Botones de Acción */}
+						<div className="flex gap-3 pt-2">
+							{patient && (
 								<Button
 									type="button"
 									variant="default"
-									onClick={onClose}
-									disabled={loading}
-									className="border-2! border-gray-200! text-gray-500!"
+									danger
+									onClick={() => setShowDeleteConfirm(true)}
+									icon={<FaTrash />}
+									className="py-3! border-2 border-red-200 rounded-2xl"
 								>
-									Cancelar
+									Eliminar
 								</Button>
-								<Button
-									type="submit"
-									variant="primary"
-									loading={loading}
-									disabled={loading}
-									icon={loading ? undefined : <FaSave />}
-									className="shadow-lg!"
-								>
-									{patient ? "Actualizar Paciente" : "Registrar Paciente"}
-								</Button>
-							</div>
+							)}
+							<Button
+								type="button"
+								variant="default"
+								onClick={onClose}
+								disabled={loading}
+								className="flex-1 py-3! border-2 border-gray-300 text-gray-700 font-bold rounded-2xl"
+							>
+								Cancelar
+							</Button>
+							<Button
+								type="submit"
+								loading={loading}
+								disabled={loading}
+								icon={loading ? undefined : <FaSave />}
+								className="flex-1 py-3! font-bold rounded-2xl"
+							>
+								{patient ? "Actualizar" : "Registrar"} Paciente
+							</Button>
 						</div>
 					</form>
 				</div>
 			</div>
 
-			{/* Componente Reutilizable de Confirmación */}
 			<ConfirmModal
 				isOpen={showDeleteConfirm}
 				onClose={() => setShowDeleteConfirm(false)}
