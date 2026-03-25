@@ -2,6 +2,34 @@ import type { Request, Response } from "express"
 import { query } from "../db.js"
 import { hashPassword } from "../utils/auth.js"
 
+function isPostgresError(
+	error: unknown,
+): error is {
+	code?: string
+	constraint?: string
+	detail?: string
+	message?: string
+} {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		typeof (error as { code?: unknown }).code === "string"
+	)
+}
+
+function getFriendlyDuplicateEmailMessage(detail?: string, constraint?: string) {
+	// Most common from your log:
+	// Key (email)=(...) already exists.
+	if (constraint === "users_email_key") {
+		return "This email is already in use. Please use another email."
+	}
+	if (detail?.toLowerCase().includes("email")) {
+		return "This email is already in use. Please use another email."
+	}
+	return "Duplicate value. Please verify your submitted information."
+}
+
 export const createPatient = async (req: Request, res: Response) => {
 	// These fields come from your Postman/Frontend request
 	const {
@@ -76,7 +104,15 @@ export const createPatient = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error in createPatient (User Insert):", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (isPostgresError(error) && error.code === "23505") {
+			return res.status(409).json({
+				error: getFriendlyDuplicateEmailMessage(
+					error.detail,
+					error.constraint,
+				),
+			})
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
@@ -203,7 +239,15 @@ export const updatePatient = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error updating patient:", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (isPostgresError(error) && error.code === "23505") {
+			return res.status(409).json({
+				error: getFriendlyDuplicateEmailMessage(
+					error.detail,
+					error.constraint,
+				),
+			})
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
@@ -220,8 +264,8 @@ export const deletePatient = async (req: Request, res: Response) => {
 			return res.status(404).json({ error: "Patient not found" })
 
 		res.json({ message: "Patient deleted successfully" })
-	} catch (error: any) {
-		if (error.code === "23503") {
+	} catch (error) {
+		if (isPostgresError(error) && error.code === "23503") {
 			return res.status(409).json({
 				error:
 					"No se puede eliminar el paciente porque tiene registros asociados (citas, evoluciones, etc.).",

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db.js"
-import { uploadToSupabase } from "../utils/uploadImage.js"
+import { ExternalServiceError, uploadToSupabase } from "../utils/uploadImage.js"
 
 // 1. Create Medical Record
 export const createMedicalRecord = async (req: Request, res: Response) => {
@@ -62,7 +62,10 @@ export const createMedicalRecord = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Error creating medical record:", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (error instanceof ExternalServiceError) {
+			return res.status(error.status).json({ error: error.publicMessage })
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
@@ -160,7 +163,10 @@ export const updateMedicalRecord = async (req: Request, res: Response) => {
 		res.json({ message: "Updated successfully", record: result.rows[0] })
 	} catch (error) {
 		console.error("Error updating record:", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (error instanceof ExternalServiceError) {
+			return res.status(error.status).json({ error: error.publicMessage })
+		}
+		return res.status(500).json({ error: "Internal server error" })
 	}
 }
 
