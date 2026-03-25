@@ -5,13 +5,12 @@ import {
 	FaClock,
 	FaDollarSign,
 	FaEdit,
-	FaTrash,
 	FaUserMd,
 } from "react-icons/fa"
 import { MdAddCircleOutline, MdSearch } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Appointment } from "../../../shared"
-import { Button, ConfirmModal, formatPrice } from "../../../shared"
+import { Button, formatPrice } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 import {
@@ -23,7 +22,6 @@ import {
 	type UserSettings,
 } from "../../settings/services/SettingsAPI"
 import {
-	deleteAppointmentById,
 	getAllAppointments,
 	getFilteredAppointments,
 } from "../services/AppointmentsAPI"
@@ -36,10 +34,6 @@ const AppointmentsSection = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [editingAppointment, setEditingAppointment] =
 		useState<Appointment | null>(null)
-	const [deleteConfirm, setDeleteConfirm] = useState<{
-		isOpen: boolean
-		appointment: Appointment | null
-	}>({ isOpen: false, appointment: null })
 	const [searchTerm, setSearchTerm] = useState("")
 	const [statusFilter, setStatusFilter] = useState<string>("all")
 	const [dateFilter, setDateFilter] = useState<string>("all")
@@ -102,21 +96,6 @@ const AppointmentsSection = () => {
 	const handleEditAppointment = (appointment: Appointment) => {
 		setEditingAppointment(appointment)
 		setIsModalOpen(true)
-	}
-
-	const handleDeleteAppointment = async () => {
-		if (!deleteConfirm.appointment) return
-
-		try {
-			await deleteAppointmentById(deleteConfirm.appointment.id)
-			toast.success("Cita eliminada con éxito")
-			loadAppointments()
-			setDeleteConfirm({ isOpen: false, appointment: null })
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : "Error al eliminar la cita",
-			)
-		}
 	}
 
 	const getStatusBadge = (status: Appointment["status"]) => {
@@ -405,22 +384,6 @@ const AppointmentsSection = () => {
 													className="p-2! text-primary hover:bg-primary/10! min-w-0!"
 													title="Editar cita"
 												/>
-												{(isDoctor || isAdmin) && (
-													<Button
-														type="button"
-														variant="text"
-														danger
-														onClick={() =>
-															setDeleteConfirm({
-																isOpen: true,
-																appointment,
-															})
-														}
-														icon={<FaTrash className="w-4 h-4" />}
-														className="p-2! min-w-0! hover:bg-red-50!"
-														title="Eliminar cita"
-													/>
-												)}
 											</div>
 										</div>
 									</div>
@@ -455,17 +418,7 @@ const AppointmentsSection = () => {
 				editingAppointment={editingAppointment}
 			/>
 
-			{/* Modal de confirmación de eliminación */}
-			<ConfirmModal
-				isOpen={deleteConfirm.isOpen}
-				onClose={() => setDeleteConfirm({ isOpen: false, appointment: null })}
-				onConfirm={handleDeleteAppointment}
-				title="Eliminar Cita"
-				message="¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer."
-				confirmText="Eliminar"
-				cancelText="Cancelar"
-				variant="danger"
-			/>
+			{/* Delete intentionally disabled in this dashboard section */}
 		</div>
 	)
 }

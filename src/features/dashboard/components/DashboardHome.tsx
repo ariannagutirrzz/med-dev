@@ -1,9 +1,7 @@
 import { useEffect } from "react"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
-import { useDashboardSearch } from "../contexts/DashboardSearchContext"
 import { useDashboardData } from "../hooks/useDashboardData"
-import { useSearchFilter } from "../hooks/useSearchFilter"
 import { CurrencyCard } from "./cards/CurrencyCard"
 import { GeneralStatsCard } from "./cards/GeneralStatsCard"
 import { PatientAppointmentsAndSurgeriesCard } from "./cards/PatientAppointmentsAndSurgeriesCard"
@@ -12,19 +10,11 @@ import { PatientQuickActionsCard } from "./cards/PatientQuickActionsCard"
 import { SurgeryCalendarCard } from "./cards/SurgeryCalendarCard"
 import { UpcomingAppointmentsCard } from "./cards/UpcomingAppointmentsCard"
 import DashboardHeader from "./DashboardHeader"
-import { SearchResults } from "./search/SearchResults"
 import { WelcomeSection } from "./welcome/WelcomeSection"
 
 const DashboardHome = () => {
 	const { user, refreshUser } = useAuth()
-	const { searchTerm } = useDashboardSearch()
 	const { data, loading } = useDashboardData()
-	const filteredData = useSearchFilter({
-		searchTerm,
-		appointments: data?.appointments || [],
-		surgeries: data?.surgeries || [],
-		patients: data?.patients || [],
-	})
 
 	const isPatient = String(user?.role ?? "").trim() === "Paciente"
 
@@ -49,17 +39,6 @@ const DashboardHome = () => {
 	return (
 		<div className="p-3 sm:p-4 md:p-6">
 			<DashboardHeader />
-
-			{!isPatient && (
-				<SearchResults
-					searchTerm={searchTerm}
-					appointments={filteredData.appointments}
-					surgeries={filteredData.surgeries}
-					patients={filteredData.patients}
-					hasResults={filteredData.hasResults}
-					userRole={user?.role}
-				/>
-			)}
 
 			{/* Grid principal: bienvenida (+ sistema cambiario solo Médico/Admin) */}
 			<div
