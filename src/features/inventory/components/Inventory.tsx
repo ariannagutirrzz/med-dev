@@ -3,11 +3,10 @@ import { useCallback, useEffect, useState } from "react"
 import { FaBoxOpen } from "react-icons/fa"
 import { toast } from "react-toastify"
 import type { Supply } from "../../../shared"
-import { Button, ConfirmModal } from "../../../shared"
+import { Button, ConfirmModal, DataFilterPanel } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { deleteSupplyById, getSupplies } from "../services/SuppliesAPI"
 import CreateSupplyModal from "./CreateSupplyModal" // Asegúrate de importarlo
-import InventoryHeader from "./InventoryHeader"
 import InventoryRow from "./InventoryRow"
 
 const Inventory = () => {
@@ -103,20 +102,35 @@ const Inventory = () => {
 					Gestiona y manten un control de los insumos de la unidad
 				</p>
 			</div>
-			<div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-4 items-center">
-				<InventoryHeader
-					setSearchTerm={setSearchTerm}
-					setCategoryFilter={setCategoryFilter}
-					categoryFilter={categoryFilter}
-				/>
-				<Button
-					type="button"
-					onClick={() => setIsModalOpen(true)}
-					className="px-6! py-3! rounded-xl! font-bold whitespace-nowrap"
-				>
-					+ Nuevo Insumo
-				</Button>
-			</div>
+			<DataFilterPanel
+				className="mb-6"
+				searchPlaceholder="Buscar por nombre o código..."
+				searchValue={searchTerm}
+				onSearchChange={setSearchTerm}
+				filters={[
+					{
+						id: "category",
+						value: categoryFilter,
+						onChange: setCategoryFilter,
+						placeholder: "Categoría",
+						selectClassName: "w-full sm:w-[220px]",
+						options: [
+							{ value: "all", label: "Todas las categorías" },
+							{ value: "Descartable", label: "Descartable" },
+							{ value: "No Descartable", label: "No descartable" },
+						],
+					},
+				]}
+				actions={
+					<Button
+						type="button"
+						onClick={() => setIsModalOpen(true)}
+						className="w-full sm:w-auto px-6! py-3! rounded-xl! font-bold whitespace-nowrap"
+					>
+						+ Nuevo Insumo
+					</Button>
+				}
+			/>
 
 			<div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 				<div className="overflow-x-auto">

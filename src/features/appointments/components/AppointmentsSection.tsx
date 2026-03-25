@@ -1,4 +1,4 @@
-import { Input, Pagination, Select } from "antd"
+import { Pagination } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import {
 	FaCalendarCheck,
@@ -7,10 +7,10 @@ import {
 	FaEdit,
 	FaUserMd,
 } from "react-icons/fa"
-import { MdAddCircleOutline, MdSearch } from "react-icons/md"
+import { MdAddCircleOutline } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Appointment } from "../../../shared"
-import { Button, formatPrice } from "../../../shared"
+import { Button, DataFilterPanel, formatPrice } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 import {
@@ -239,61 +239,41 @@ const AppointmentsSection = () => {
 				</Button>
 			</div>
 
-			{/* Filtros y búsqueda */}
-			<div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-					<div className="flex-1 min-w-0">
-						<div className="relative">
-							<MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-							<Input
-								placeholder={
-									isDoctor ? "Buscar paciente..." : "Buscar médico o notas..."
-								}
-								value={searchTerm}
-								onChange={(e) => setSearchTerm(e.target.value)}
-								prefix={<MdSearch className="text-gray-400" />}
-								allowClear // Añade una (X) para limpiar el texto fácilmente
-								size="large" // O "middle" según prefieras el grosor
-								className="rounded-lg" // Puedes mantener tus clases de Tailwind para el radio
-								// AntD ya maneja el focus ring y el border por defecto
-							/>
-						</div>
-					</div>
-					<div className="flex gap-4 flex-wrap">
-						{/* Filtro de Estado */}
-						<Select
-							value={statusFilter}
-							onChange={(value) => setStatusFilter(value)}
-							className="w-full sm:w-[180px]" // AntD usa anchos definidos o crece según el contenido
-							placeholder="Seleccionar estado"
-							// Estilos de Tailwind se pueden aplicar vía style o envolviendo el componente
-							style={{ height: "42px" }}
-							options={[
-								{ value: "all", label: "Todos los estados" },
-								{ value: "pending", label: "Pendiente" },
-								{ value: "scheduled", label: "Programada" },
-								{ value: "cancelled", label: "Cancelada" },
-								{ value: "completed", label: "Completada" },
-							]}
-						></Select>
-
-						{/* Filtro de Fecha */}
-						<Select
-							value={dateFilter}
-							onChange={(value) => setDateFilter(value)}
-							className="w-full sm:w-[180px]"
-							placeholder="Filtrar por fecha"
-							style={{ height: "42px" }}
-							options={[
-								{ value: "all", label: "Todas las fechas" },
-								{ value: "today", label: "Hoy" },
-								{ value: "week", label: "Esta semana" },
-								{ value: "month", label: "Este mes" },
-							]}
-						></Select>
-					</div>
-				</div>
-			</div>
+			<DataFilterPanel
+				className="mb-6"
+				searchPlaceholder={
+					isDoctor ? "Buscar paciente..." : "Buscar médico o notas..."
+				}
+				searchValue={searchTerm}
+				onSearchChange={setSearchTerm}
+				filters={[
+					{
+						id: "status",
+						value: statusFilter,
+						onChange: setStatusFilter,
+						placeholder: "Estado",
+						options: [
+							{ value: "all", label: "Todos los estados" },
+							{ value: "pending", label: "Pendiente" },
+							{ value: "scheduled", label: "Programada" },
+							{ value: "cancelled", label: "Cancelada" },
+							{ value: "completed", label: "Completada" },
+						],
+					},
+					{
+						id: "date",
+						value: dateFilter,
+						onChange: setDateFilter,
+						placeholder: "Fecha",
+						options: [
+							{ value: "all", label: "Todas las fechas" },
+							{ value: "today", label: "Hoy" },
+							{ value: "week", label: "Esta semana" },
+							{ value: "month", label: "Este mes" },
+						],
+					},
+				]}
+			/>
 
 			{/* Lista de citas */}
 			<div className="bg-white rounded-2xl shadow-lg p-6">

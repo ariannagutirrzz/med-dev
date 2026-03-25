@@ -3,15 +3,18 @@ import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
 import { LuArrowLeft, LuPencilLine, LuPlus } from "react-icons/lu"
 import type { Patient } from "../../../shared"
-import { Button, calcularEdad, formatPhoneDisplay } from "../../../shared"
+import {
+	Button,
+	calcularEdad,
+	DataFilterPanel,
+	formatPhoneDisplay,
+} from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { useAuth } from "../../auth"
 // 1. Importamos el service
 import { getDoctorPatients, getPatients } from "../services/PatientsAPI"
 import ClinicalEvolution from "./ClinicalEvolution"
 import PatientModalForm from "./PatientModalForm"
-import PatientSearchBar from "./PatientSearchBar"
-
 export default function MedicalRecords() {
 	// 2. ESTADOS (Iniciamos records vacío)
 	const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
@@ -155,7 +158,12 @@ export default function MedicalRecords() {
 				</p>
 			</div>
 
-			<PatientSearchBar setSearchTerm={setSearchTerm} />
+			<DataFilterPanel
+				className="mb-6"
+				searchPlaceholder="Buscar paciente por nombre, DNI o historial..."
+				searchValue={searchTerm}
+				onSearchChange={setSearchTerm}
+			/>
 
 			<div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
 				<h3 className="text-xl font-bold text-gray-800 mb-6 px-2">

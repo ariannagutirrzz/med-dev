@@ -1,4 +1,4 @@
-import { Input, Pagination, Select } from "antd"
+import { Pagination } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import {
 	FaClock,
@@ -7,10 +7,15 @@ import {
 	FaStethoscope,
 	FaTrash,
 } from "react-icons/fa"
-import { MdAddCircleOutline, MdSearch } from "react-icons/md"
+import { MdAddCircleOutline } from "react-icons/md"
 import { toast } from "react-toastify"
 import type { Surgery } from "../../../shared"
-import { Button, ConfirmModal, formatPrice } from "../../../shared"
+import {
+	Button,
+	ConfirmModal,
+	DataFilterPanel,
+	formatPrice,
+} from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import {
 	type CurrencyRates,
@@ -292,55 +297,42 @@ const SurgeriesSection = () => {
 				</div>
 			</div>
 
-			{/* Filtros y búsqueda */}
-			<div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-					{/* Input de Búsqueda */}
-					<div className="flex-1 min-w-0">
-						<Input
-							placeholder="Buscar por paciente, médico, tipo o notas..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-							prefix={<MdSearch className="text-gray-400 w-5 h-5 mr-2" />}
-							allowClear
-							style={{ height: "45px", display: "flex", alignItems: "center" }}
-						/>
-					</div>
-
-					<div className="flex gap-4 flex-wrap items-center">
-						{/* Select de Estado */}
-						<Select
-							value={statusFilter}
-							onChange={(value) => setStatusFilter(value)}
-							className="w-full sm:w-[220px] px-2"
-							style={{ height: "45px" }}
-							options={[
-								{ value: "all", label: "Todos los estados" },
-								{ value: "scheduled", label: "Programada" },
-								{ value: "in_progress", label: "En Progreso" },
-								{ value: "completed", label: "Completada" },
-								{ value: "cancelled", label: "Cancelada" },
-								{ value: "postponed", label: "Aplazada" },
-							]}
-						/>
-
-						{/* Select de Fecha */}
-						<Select
-							value={dateFilter}
-							onChange={(value) => setDateFilter(value)}
-							className="w-full sm:w-[180px] px-2"
-							style={{ height: "45px" }}
-							options={[
-								{ value: "all", label: "Todas las fechas" },
-								{ value: "today", label: "Hoy" },
-								{ value: "week", label: "Esta semana" },
-								{ value: "month", label: "Este mes" },
-							]}
-						/>
-					</div>
-				</div>
-			</div>
+			<DataFilterPanel
+				className="mb-6"
+				searchPlaceholder="Buscar por paciente, médico, tipo o notas..."
+				searchValue={searchTerm}
+				onSearchChange={setSearchTerm}
+				filters={[
+					{
+						id: "status",
+						value: statusFilter,
+						onChange: setStatusFilter,
+						placeholder: "Estado",
+						selectClassName: "w-full sm:w-[220px]",
+						options: [
+							{ value: "all", label: "Todos los estados" },
+							{ value: "scheduled", label: "Programada" },
+							{ value: "in_progress", label: "En Progreso" },
+							{ value: "completed", label: "Completada" },
+							{ value: "cancelled", label: "Cancelada" },
+							{ value: "postponed", label: "Aplazada" },
+						],
+					},
+					{
+						id: "date",
+						value: dateFilter,
+						onChange: setDateFilter,
+						placeholder: "Fecha",
+						selectClassName: "w-full sm:w-[180px]",
+						options: [
+							{ value: "all", label: "Todas las fechas" },
+							{ value: "today", label: "Hoy" },
+							{ value: "week", label: "Esta semana" },
+							{ value: "month", label: "Este mes" },
+						],
+					},
+				]}
+			/>
 
 			{/* Lista de cirugías */}
 			<div className="bg-white rounded-2xl shadow-lg p-6">
