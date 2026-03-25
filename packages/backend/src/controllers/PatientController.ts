@@ -1,5 +1,6 @@
 import type { Request, Response } from "express"
 import { query } from "../db.js"
+import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
 import { hashPassword } from "../utils/auth.js"
 
 function isPostgresError(
@@ -94,6 +95,17 @@ export const createPatient = async (req: Request, res: Response) => {
 				allergies || [],
 			],
 		)
+
+		const created = result.rows[0] as { id: number; name: string; email: string }
+		try {
+			await sendVerificationEmailToUser(
+				created.id,
+				String(created.email).toLowerCase(),
+				created.name,
+			)
+		} catch (err) {
+			console.error("Email verification send failed (create patient):", err)
+		}
 
 		// 2. Response
 		res.status(201).json({

@@ -2,6 +2,7 @@ import crypto from "node:crypto"
 import type { Request, Response } from "express"
 import { query } from "../db.js"
 import { sendPasswordResetEmail } from "../services/EmailService.js"
+import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
 import { comparePassword, hashPassword } from "../utils/auth.js"
 import { generateJWT } from "../utils/jwt.js"
 
@@ -77,8 +78,26 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		const newUser = result.rows[0]
 
+		let emailVerificationSent = false
+		let verifyLink: string | undefined
+		try {
+			const out = await sendVerificationEmailToUser(
+				newUser.id,
+				newUser.email,
+				newUser.name,
+			)
+			emailVerificationSent = out.ok
+			if (!out.ok && process.env.NODE_ENV !== "production") {
+				verifyLink = out.verifyLink
+			}
+		} catch (err) {
+			console.error("Email verification send failed (signup):", err)
+		}
+
 		res.status(201).json({
 			success: true,
+			message:
+				"Te enviamos un correo para verificar tu dirección. Debes verificarla antes de iniciar sesión.",
 			user: {
 				id: newUser.id,
 				document_id: newUser.document_id,
@@ -86,6 +105,8 @@ export const createAccount = async (req: Request, res: Response) => {
 				email: newUser.email,
 				role: newUser.role,
 			},
+			emailVerificationSent,
+			...(verifyLink ? { verifyLink } : {}),
 		})
 	} catch (error) {
 		console.error("Signup error:", error)
@@ -102,7 +123,9 @@ export const login = async (req: Request, res: Response) => {
 
 		// Find user by email
 		const result = await query(
-			"SELECT id, email, password, name, role, document_id, image, gender FROM users WHERE email = $1",
+			`SELECT id, email, password, name, role, document_id, image, gender,
+              COALESCE(email_verified, true) AS email_verified
+       FROM users WHERE email = $1`,
 			[email.toLowerCase()],
 		)
 
@@ -117,6 +140,14 @@ export const login = async (req: Request, res: Response) => {
 
 		if (!isPasswordValid) {
 			return res.status(401).json({ error: "Invalid credentials" })
+		}
+
+		if (user.email_verified === false) {
+			return res.status(403).json({
+				error:
+					"Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada (y correo no deseado).",
+				code: "EMAIL_NOT_VERIFIED",
+			})
 		}
 
 		const token = generateJWT({ id: user.id.toString() })
@@ -142,9 +173,100 @@ export const login = async (req: Request, res: Response) => {
 }
 
 /**
+ * Confirm email with token from verification link.
+ * POST /api/auth/verify-email { token }
+ */
+export const verifyEmail = async (req: Request, res: Response) => {
+	try {
+		const raw = req.body?.token
+		const token = typeof raw === "string" ? raw.trim() : ""
+		if (!token) {
+			return res.status(400).json({ error: "El enlace de verificación no es válido." })
+		}
+
+		const tokenResult = await query(
+			`SELECT user_id FROM email_verification_tokens
+       WHERE token = $1 AND expires_at > NOW()`,
+			[token],
+		)
+
+		if (tokenResult.rows.length === 0) {
+			return res.status(400).json({
+				error: "El enlace no es válido o ha caducado. Solicita uno nuevo desde el inicio de sesión.",
+			})
+		}
+
+		const { user_id: userId } = tokenResult.rows[0] as { user_id: number }
+		await query("UPDATE users SET email_verified = true WHERE id = $1", [userId])
+		await query("DELETE FROM email_verification_tokens WHERE token = $1", [token])
+
+		res.json({
+			success: true,
+			message: "Correo verificado. Ya puedes iniciar sesión.",
+		})
+	} catch (error) {
+		console.error("Verify email error:", error)
+		res.status(500).json({ error: "Error al verificar el correo" })
+	}
+}
+
+/**
+ * Resend verification email (same response whether user exists or not).
+ * POST /api/auth/resend-verification { email }
+ */
+export const resendEmailVerification = async (req: Request, res: Response) => {
+	try {
+		const { email } = req.body
+		if (!email || typeof email !== "string") {
+			return res.status(400).json({ error: "El correo es requerido" })
+		}
+
+		const emailLower = email.toLowerCase().trim()
+		const generic = {
+			success: true,
+			message:
+				"Si el correo está registrado y aún no está verificado, te enviamos un nuevo enlace.",
+		}
+
+		const userResult = await query(
+			`SELECT id, name, email_verified FROM users WHERE email = $1`,
+			[emailLower],
+		)
+
+		if (userResult.rows.length === 0) {
+			return res.json(generic)
+		}
+
+		const u = userResult.rows[0] as {
+			id: number
+			name: string
+			email_verified: boolean | null
+		}
+
+		if (u.email_verified === true) {
+			return res.json(generic)
+		}
+
+		const { ok, verifyLink } = await sendVerificationEmailToUser(
+			u.id,
+			emailLower,
+			u.name,
+		)
+
+		if (!ok && process.env.NODE_ENV !== "production") {
+			return res.json({ ...generic, verifyLink })
+		}
+
+		return res.json(generic)
+	} catch (error) {
+		console.error("Resend verification error:", error)
+		res.status(500).json({ error: "Error al reenviar el correo" })
+	}
+}
+
+/**
  * Request password reset (forgot password).
  * POST /api/auth/forgot-password { email }
- * Creates a token and returns success. In development, can return resetLink for testing without email.
  */
 export const forgotPassword = async (req: Request, res: Response) => {
 	try {

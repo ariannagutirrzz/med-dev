@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage"
 import LoginPage from "./pages/LoginPage"
 import MedicosPage from "./pages/MedicosPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
+import VerifyEmailPage from "./pages/VerifyEmailPage"
 
 function App() {
 	return (
@@ -16,6 +17,7 @@ function App() {
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
 				<Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
+				<Route path="/verificar-correo" element={<VerifyEmailPage />} />
 				<Route path="/medicos" element={<MedicosPage />} />
 				<Route
 					path="/dashboard/*"

@@ -16,7 +16,8 @@
 		"add-service-columns": "node scripts/add-service-columns-to-appointments-surgeries.js",
 		"add-doctor-availability-and-blood-type": "node scripts/add-doctor-availability-and-blood-type.js",
 		"add-doctor-unavailability": "node scripts/add-doctor-unavailability.js",
-		"seed-charts-mock": "node scripts/seed-charts-mock.js"
+		"seed-charts-mock": "node scripts/seed-charts-mock.js",
+		"migrate-email-verification": "node scripts/run-email-verification-migration.js"
 	},
 	"dependencies": {
 		"@openrouter/ai-sdk-provider": "^2.1.1",

@@ -4,7 +4,9 @@ import {
 	createAccount,
 	forgotPassword,
 	login,
+	resendEmailVerification,
 	resetPassword,
+	verifyEmail,
 } from "../controllers/AuthController.js"
 import { authenticate } from "../middleware/auth.js"
 
@@ -75,6 +77,8 @@ authRoutes.post("/login", login)
 // Password recovery (no auth required)
 authRoutes.post("/forgot-password", forgotPassword)
 authRoutes.post("/reset-password", resetPassword)
+authRoutes.post("/verify-email", verifyEmail)
+authRoutes.post("/resend-verification", resendEmailVerification)
 
 // Protected routes
 authRoutes.use(authenticate)

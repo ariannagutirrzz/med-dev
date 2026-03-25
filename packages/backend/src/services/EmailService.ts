@@ -24,6 +24,14 @@ const FROM =
 	normalizeEmailFrom(process.env.EMAIL_FROM) ||
 	"Unidad de Pleura <onboarding@resend.dev>"
 
+function escapeHtml(text: string): string {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+}
+
 /**
  * Send password reset email with link. No-op if RESEND_API_KEY is not set.
  */
@@ -58,12 +66,42 @@ export async function sendPasswordResetEmail(
 	return { ok: true }
 }
 
-function escapeHtml(text: string): string {
-	return text
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
+/**
+ * Send email address verification link. No-op if RESEND_API_KEY is not set.
+ */
+export async function sendEmailVerificationEmail(
+	to: string,
+	displayName: string,
+	verifyLink: string,
+	expiryHours: number,
+): Promise<{ ok: boolean; error?: string }> {
+	if (!process.env.RESEND_API_KEY) {
+		console.warn("RESEND_API_KEY not set; skipping email verification send")
+		return { ok: false, error: "Email not configured" }
+	}
+
+	const safeName = escapeHtml(displayName.trim() || "usuario")
+
+	const html = `
+    <p>Hola ${safeName},</p>
+    <p>Para confirmar que este correo es correcto y activar tu cuenta, abre el siguiente enlace:</p>
+    <p><a href="${verifyLink}" style="color: #16a34a; font-weight: 600;">Verificar correo</a></p>
+    <p>El enlace caduca en ${expiryHours} hora(s). Si no creaste esta cuenta, puedes ignorar este mensaje.</p>
+    <p>— Unidad de Pleura</p>
+  `.trim()
+
+	const { error } = await resend.emails.send({
+		from: FROM,
+		to: [to],
+		subject: "Verifica tu correo — Unidad de Pleura",
+		html,
+	})
+
+	if (error) {
+		console.error("Resend email verification error:", error)
+		return { ok: false, error: error.message }
+	}
+	return { ok: true }
 }
 
 export interface AppointmentConfirmationEmailParams {
