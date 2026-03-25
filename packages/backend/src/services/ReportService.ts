@@ -71,51 +71,66 @@ export interface InventoryReportData {
  * Get appointments report data
  */
 export async function getAppointmentsReport(
-	doctorId: string,
+	// Hacemos el doctorId opcional o que acepte null/undefined
+	doctorId: string | null | undefined,
 	filters: ReportFilters = {},
 ): Promise<AppointmentReportData[]> {
 	try {
-		let whereClause = "WHERE a.doctor_id = $1"
-		const params: any[] = [doctorId]
-		let paramIndex = 2
+		const params: any[] = []
+		let paramIndex = 1
+		const conditions: string[] = []
 
+		// 1. Lógica de Doctor vs Admin
+		// Si hay doctorId, filtramos por él. Si es null (Admin), no añadimos esta condición.
+		if (doctorId && doctorId !== "all") {
+			conditions.push(`a.doctor_id = $${paramIndex}`)
+			params.push(doctorId)
+			paramIndex++
+		}
+
+		// 2. Filtros de Fecha
 		if (filters.startDate) {
-			whereClause += ` AND a.appointment_date >= $${paramIndex}`
+			conditions.push(`a.appointment_date >= $${paramIndex}`)
 			params.push(filters.startDate)
 			paramIndex++
 		}
 
 		if (filters.endDate) {
-			whereClause += ` AND a.appointment_date <= $${paramIndex}`
+			conditions.push(`a.appointment_date <= $${paramIndex}`)
 			params.push(filters.endDate)
 			paramIndex++
 		}
 
+		// 3. Filtro de Estado
 		if (filters.status) {
-			whereClause += ` AND a.status = $${paramIndex}`
+			conditions.push(`a.status = $${paramIndex}`)
 			params.push(filters.status)
 			paramIndex++
 		}
 
+		// Construir la cláusula WHERE final
+		const whereClause =
+			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
 		const result = await query(
 			`SELECT 
-				a.id,
-				COALESCE(u.name, CONCAT(p.first_name, ' ', p.last_name)) as patient_name,
-				doc.name as doctor_name,
-				a.appointment_date,
-				a.status,
-				a.notes,
-				st.name as service_name,
-				a.price_usd,
-				TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
-			FROM appointments a
-			LEFT JOIN users u ON a.patient_id = u.document_id
-			LEFT JOIN patients p ON a.patient_id = p.document_id
-			LEFT JOIN users doc ON a.doctor_id = doc.document_id
-			LEFT JOIN doctor_services ds ON a.service_id = ds.id
-			LEFT JOIN service_types st ON ds.service_type_id = st.id
-			${whereClause}
-			ORDER BY a.appointment_date DESC`,
+                a.id,
+                COALESCE(u.name, CONCAT(p.first_name, ' ', p.last_name)) as patient_name,
+                doc.name as doctor_name,
+                a.appointment_date,
+                a.status,
+                a.notes,
+                st.name as service_name,
+                a.price_usd,
+                TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+            FROM appointments a
+            LEFT JOIN users u ON a.patient_id = u.document_id
+            LEFT JOIN patients p ON a.patient_id = p.document_id
+            LEFT JOIN users doc ON a.doctor_id = doc.document_id
+            LEFT JOIN doctor_services ds ON a.service_id = ds.id
+            LEFT JOIN service_types st ON ds.service_type_id = st.id
+            ${whereClause}
+            ORDER BY a.appointment_date DESC`,
 			params,
 		)
 
@@ -130,51 +145,64 @@ export async function getAppointmentsReport(
  * Get surgeries report data
  */
 export async function getSurgeriesReport(
-	doctorId: string,
+	doctorId: string | null | undefined,
 	filters: ReportFilters = {},
 ): Promise<SurgeryReportData[]> {
 	try {
-		let whereClause = "WHERE s.doctor_id = $1"
-		const params: any[] = [doctorId]
-		let paramIndex = 2
+		const params: any[] = []
+		let paramIndex = 1
+		const conditions: string[] = []
 
+		// 1. Filtro dinámico de Doctor (Solo si se proporciona y no es "all")
+		if (doctorId && doctorId !== "all") {
+			conditions.push(`s.doctor_id = $${paramIndex}`)
+			params.push(doctorId)
+			paramIndex++
+		}
+
+		// 2. Filtro de Rango de Fechas
 		if (filters.startDate) {
-			whereClause += ` AND s.surgery_date >= $${paramIndex}`
+			conditions.push(`s.surgery_date >= $${paramIndex}`)
 			params.push(filters.startDate)
 			paramIndex++
 		}
 
 		if (filters.endDate) {
-			whereClause += ` AND s.surgery_date <= $${paramIndex}`
+			conditions.push(`s.surgery_date <= $${paramIndex}`)
 			params.push(filters.endDate)
 			paramIndex++
 		}
 
+		// 3. Filtro de Estado de la Cirugía
 		if (filters.status) {
-			whereClause += ` AND s.status = $${paramIndex}`
+			conditions.push(`s.status = $${paramIndex}`)
 			params.push(filters.status)
 			paramIndex++
 		}
 
+		// Construcción de la cláusula WHERE
+		const whereClause =
+			conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
 		const result = await query(
 			`SELECT 
-				s.id,
-				CONCAT(p.first_name, ' ', p.last_name) as patient_name,
-				u.name as doctor_name,
-				s.surgery_date,
-				s.surgery_type,
-				s.status,
-				s.notes,
-				st.name as service_name,
-				s.price_usd,
-				TO_CHAR(s.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
-			FROM surgeries s
-			LEFT JOIN patients p ON s.patient_id = p.document_id
-			LEFT JOIN users u ON s.doctor_id = u.document_id
-			LEFT JOIN doctor_services ds ON s.service_id = ds.id
-			LEFT JOIN service_types st ON ds.service_type_id = st.id
-			${whereClause}
-			ORDER BY s.surgery_date DESC`,
+                s.id,
+                CONCAT(p.first_name, ' ', p.last_name) as patient_name,
+                u.name as doctor_name,
+                s.surgery_date,
+                s.surgery_type,
+                s.status,
+                s.notes,
+                st.name as service_name,
+                s.price_usd,
+                TO_CHAR(s.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
+            FROM surgeries s
+            LEFT JOIN patients p ON s.patient_id = p.document_id
+            LEFT JOIN users u ON s.doctor_id = u.document_id
+            LEFT JOIN doctor_services ds ON s.service_id = ds.id
+            LEFT JOIN service_types st ON ds.service_type_id = st.id
+            ${whereClause}
+            ORDER BY s.surgery_date DESC`,
 			params,
 		)
 
@@ -189,40 +217,60 @@ export async function getSurgeriesReport(
  * Get patients report data
  */
 export async function getPatientsReport(
-	doctorId: string,
+	doctorId: string | null | undefined,
 ): Promise<PatientReportData[]> {
 	try {
+		const params: any[] = []
+		const isAll = !doctorId || doctorId === "all"
+
+		if (!isAll) {
+			params.push(doctorId)
+		}
+
+		// Si es Admin (isAll), no filtramos los JOINs por doctor_id para que cuente todo
+		// Si no, filtramos por el doctor_id ($1)
+		const doctorFilter = isAll ? "" : "AND a.doctor_id = $1"
+		const surgeryFilter = isAll ? "" : "AND s.doctor_id = $1"
+
+		// Construimos la cláusula WHERE:
+		// Si es Admin, WHERE 1=1 (trae todo). Si es Médico, verifica vínculos.
+		let whereClause = "WHERE 1=1"
+		if (!isAll) {
+			whereClause = `
+                WHERE EXISTS (
+                    SELECT 1 FROM medical_records mr 
+                    WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
+                )
+                OR EXISTS (
+                    SELECT 1 FROM appointments a2 
+                    WHERE a2.patient_id = p.document_id AND a2.doctor_id = $1
+                )
+                OR EXISTS (
+                    SELECT 1 FROM surgeries s2 
+                    WHERE s2.patient_id = p.document_id AND s2.doctor_id = $1
+                )`
+		}
+
 		const result = await query(
 			`SELECT 
-				p.document_id,
-				p.first_name,
-				p.last_name,
-				p.email,
-				p.phone,
-				p.birthdate,
-				p.gender,
-				p.address,
-				COUNT(DISTINCT a.id) as total_appointments,
-				COUNT(DISTINCT s.id) as total_surgeries,
-				TO_CHAR(p.created_at, 'YYYY-MM-DD') as created_at
-			FROM patients p
-			LEFT JOIN appointments a ON a.patient_id = p.document_id AND a.doctor_id = $1
-			LEFT JOIN surgeries s ON s.patient_id = p.document_id AND s.doctor_id = $1
-			WHERE EXISTS (
-				SELECT 1 FROM medical_records mr 
-				WHERE mr.patient_id = p.document_id AND mr.doctor_id = $1
-			)
-			OR EXISTS (
-				SELECT 1 FROM appointments a2 
-				WHERE a2.patient_id = p.document_id AND a2.doctor_id = $1
-			)
-			OR EXISTS (
-				SELECT 1 FROM surgeries s2 
-				WHERE s2.patient_id = p.document_id AND s2.doctor_id = $1
-			)
-			GROUP BY p.document_id, p.first_name, p.last_name, p.email, p.phone, p.birthdate, p.gender, p.address, p.created_at
-			ORDER BY p.last_name ASC, p.first_name ASC`,
-			[doctorId],
+                p.document_id,
+                p.first_name,
+                p.last_name,
+                p.email,
+                p.phone,
+                p.birthdate,
+                p.gender,
+                p.address,
+                COUNT(DISTINCT a.id) as total_appointments,
+                COUNT(DISTINCT s.id) as total_surgeries,
+                TO_CHAR(p.created_at, 'YYYY-MM-DD') as created_at
+            FROM patients p
+            LEFT JOIN appointments a ON a.patient_id = p.document_id ${doctorFilter}
+            LEFT JOIN surgeries s ON s.patient_id = p.document_id ${surgeryFilter}
+            ${whereClause}
+            GROUP BY p.document_id, p.first_name, p.last_name, p.email, p.phone, p.birthdate, p.gender, p.address, p.created_at
+            ORDER BY p.last_name ASC, p.first_name ASC`,
+			params,
 		)
 
 		return result.rows.map((row: Record<string, unknown>) => ({
@@ -240,90 +288,114 @@ export async function getPatientsReport(
  * Get financial report data (appointments + surgeries with prices)
  */
 export async function getFinancialReport(
-	doctorId: string,
+	doctorId: string | null | undefined,
 	filters: ReportFilters = {},
 ): Promise<FinancialReportData[]> {
 	try {
-		// Better approach: separate queries and combine
-		const appointmentParams: any[] = [doctorId]
-		let appointmentWhere = "WHERE a.doctor_id = $1 AND a.price_usd IS NOT NULL"
-		let appointmentParamIndex = 2
+		const isAll = !doctorId || doctorId === "all"
+
+		// --- BLOQUE DE CITAS ---
+		const appointmentParams: any[] = []
+		let appointmentParamIndex = 1
+		const appointmentConditions: string[] = ["a.price_usd IS NOT NULL"]
+
+		if (!isAll) {
+			appointmentConditions.push(`a.doctor_id = $${appointmentParamIndex}`)
+			appointmentParams.push(doctorId)
+			appointmentParamIndex++
+		}
 
 		if (filters.startDate) {
-			appointmentWhere += ` AND a.appointment_date >= $${appointmentParamIndex}`
+			appointmentConditions.push(
+				`a.appointment_date >= $${appointmentParamIndex}`,
+			)
 			appointmentParams.push(filters.startDate)
 			appointmentParamIndex++
 		}
 
 		if (filters.endDate) {
-			appointmentWhere += ` AND a.appointment_date <= $${appointmentParamIndex}`
+			appointmentConditions.push(
+				`a.appointment_date <= $${appointmentParamIndex}`,
+			)
 			appointmentParams.push(filters.endDate)
 			appointmentParamIndex++
 		}
 
 		if (filters.status) {
-			appointmentWhere += ` AND a.status = $${appointmentParamIndex}`
+			appointmentConditions.push(`a.status = $${appointmentParamIndex}`)
 			appointmentParams.push(filters.status)
 			appointmentParamIndex++
 		}
 
+		const appointmentWhere = `WHERE ${appointmentConditions.join(" AND ")}`
+
 		const appointmentsResult = await query(
 			`SELECT 
-				a.appointment_date::text as date,
-				'appointment' as type,
-				COALESCE(u.name, CONCAT(p.first_name, ' ', p.last_name)) as patient_name,
-				st.name as service_name,
-				a.price_usd,
-				a.status
-			FROM appointments a
-			LEFT JOIN users u ON a.patient_id = u.document_id
-			LEFT JOIN patients p ON a.patient_id = p.document_id
-			LEFT JOIN doctor_services ds ON a.service_id = ds.id
-			LEFT JOIN service_types st ON ds.service_type_id = st.id
-			${appointmentWhere}
-			ORDER BY a.appointment_date DESC`,
+                a.appointment_date::text as date,
+                'appointment' as type,
+                COALESCE(u.name, CONCAT(p.first_name, ' ', p.last_name)) as patient_name,
+                st.name as service_name,
+                a.price_usd,
+                a.status
+            FROM appointments a
+            LEFT JOIN users u ON a.patient_id = u.document_id
+            LEFT JOIN patients p ON a.patient_id = p.document_id
+            LEFT JOIN doctor_services ds ON a.service_id = ds.id
+            LEFT JOIN service_types st ON ds.service_type_id = st.id
+            ${appointmentWhere}
+            ORDER BY a.appointment_date DESC`,
 			appointmentParams,
 		)
 
-		const surgeryParams: any[] = [doctorId]
-		let surgeryWhere = "WHERE s.doctor_id = $1 AND s.price_usd IS NOT NULL"
-		let surgeryParamIndex = 2
+		// --- BLOQUE DE CIRUGÍAS ---
+		const surgeryParams: any[] = []
+		let surgeryParamIndex = 1
+		const surgeryConditions: string[] = ["s.price_usd IS NOT NULL"]
+
+		if (!isAll) {
+			surgeryConditions.push(`s.doctor_id = $${surgeryParamIndex}`)
+			surgeryParams.push(doctorId)
+			surgeryParamIndex++
+		}
 
 		if (filters.startDate) {
-			surgeryWhere += ` AND s.surgery_date >= $${surgeryParamIndex}`
+			surgeryConditions.push(`s.surgery_date >= $${surgeryParamIndex}`)
 			surgeryParams.push(filters.startDate)
 			surgeryParamIndex++
 		}
 
 		if (filters.endDate) {
-			surgeryWhere += ` AND s.surgery_date <= $${surgeryParamIndex}`
+			surgeryConditions.push(`s.surgery_date <= $${surgeryParamIndex}`)
 			surgeryParams.push(filters.endDate)
 			surgeryParamIndex++
 		}
 
 		if (filters.status) {
-			surgeryWhere += ` AND s.status = $${surgeryParamIndex}`
+			surgeryConditions.push(`s.status = $${surgeryParamIndex}`)
 			surgeryParams.push(filters.status)
 			surgeryParamIndex++
 		}
 
+		const surgeryWhere = `WHERE ${surgeryConditions.join(" AND ")}`
+
 		const surgeriesResult = await query(
 			`SELECT 
-				s.surgery_date::text as date,
-				'surgery' as type,
-				CONCAT(p.first_name, ' ', p.last_name) as patient_name,
-				st.name as service_name,
-				s.price_usd,
-				s.status
-			FROM surgeries s
-			LEFT JOIN patients p ON s.patient_id = p.document_id
-			LEFT JOIN doctor_services ds ON s.service_id = ds.id
-			LEFT JOIN service_types st ON ds.service_type_id = st.id
-			${surgeryWhere}
-			ORDER BY s.surgery_date DESC`,
+                s.surgery_date::text as date,
+                'surgery' as type,
+                CONCAT(p.first_name, ' ', p.last_name) as patient_name,
+                st.name as service_name,
+                s.price_usd,
+                s.status
+            FROM surgeries s
+            LEFT JOIN patients p ON s.patient_id = p.document_id
+            LEFT JOIN doctor_services ds ON s.service_id = ds.id
+            LEFT JOIN service_types st ON ds.service_type_id = st.id
+            ${surgeryWhere}
+            ORDER BY s.surgery_date DESC`,
 			surgeryParams,
 		)
 
+		// --- COMBINACIÓN Y PROCESAMIENTO ---
 		const combined = [
 			...appointmentsResult.rows.map((row: Record<string, unknown>) => ({
 				date: row.date,
@@ -341,7 +413,11 @@ export async function getFinancialReport(
 				price_usd: parseFloat(row.price_usd as string),
 				status: row.status,
 			})),
-		].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime())
+		].sort(
+			(a, b) =>
+				new Date(b.date as string).getTime() -
+				new Date(a.date as string).getTime(),
+		)
 
 		return combined as FinancialReportData[]
 	} catch (error) {
