@@ -19,9 +19,11 @@ import settingsRoutes from "./routes/settingsRoutes.js"
 import suppliesRoutes from "./routes/suppliesRoutes.js"
 import surgeryRoutes from "./routes/surgeryRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
+import { logEmailLinkBaseAtStartup } from "./config/publicFrontendUrl.js"
 import swaggerSpec from "./utils/swagger.js"
 
 dotenv.config()
+logEmailLinkBaseAtStartup()
 
 const app: Express = express()
 const PORT = process.env.PORT || 3001
