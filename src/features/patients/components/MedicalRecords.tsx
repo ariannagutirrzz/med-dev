@@ -242,26 +242,21 @@ export default function MedicalRecords() {
 											setView("details")
 										}
 									}}
-									className="w-full min-h-[280px] h-full bg-gray-50 rounded-2xl shadow-sm border border-gray-200 p-4 pb-11 hover:shadow-lg hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden relative"
+									className="w-full min-h-[280px] h-full bg-gray-50 rounded-2xl shadow-sm border border-gray-200 p-4 hover:shadow-lg hover:border-primary hover:bg-white transition-all duration-300 flex flex-col text-left cursor-pointer overflow-hidden"
 								>
 									<div className="flex justify-between items-start gap-2 mb-3 w-full">
 										<h4 className="text-base font-bold text-gray-800 leading-snug group-hover:text-primary transition-colors pr-1">
 											{record.first_name} <br /> {record.last_name}
 										</h4>
-										<div className="flex items-center gap-2 shrink-0">
-											<span
-												className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-													record.gender === "M"
-														? "bg-blue-100 text-blue-600"
-														: "bg-pink-100 text-pink-600"
-												}`}
-											>
-												{record.gender}
-											</span>
-											<span className="text-base font-normal text-gray-600 tabular-nums leading-none">
-												{indexOfFirstRecord + cardIndex + 1}
-											</span>
-										</div>
+										<span
+											className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+												record.gender === "M"
+													? "bg-blue-100 text-blue-600"
+													: "bg-pink-100 text-pink-600"
+											}`}
+										>
+											{record.gender}
+										</span>
 									</div>
 
 									<div className="flex-1 space-y-2.5 w-full">
@@ -296,13 +291,13 @@ export default function MedicalRecords() {
 										</div>
 									</div>
 
-									<div className="mt-auto pt-2 border-t border-gray-100 w-full">
-										<div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+									<div className="mt-auto pt-1.5 border-t border-gray-100 w-full">
+										<div className="flex flex-wrap items-end justify-between gap-x-2 gap-y-0.5">
 											<div className="min-w-0">
-												<p className="text-[8px] text-gray-400 uppercase font-semibold mb-0.5">
+												<p className="text-[8px] text-gray-400 uppercase font-semibold mb-px leading-none">
 													Nacimiento
 												</p>
-												<p className="text-[11px] text-gray-700 flex items-center gap-1.5 font-semibold">
+												<p className="text-[11px] text-gray-700 flex items-center gap-1 font-semibold leading-tight">
 													<CiCalendar className="text-primary w-3.5 h-3.5 shrink-0" />
 													{record.birthdate.toLocaleDateString("es-ES", {
 														day: "2-digit",
@@ -314,7 +309,7 @@ export default function MedicalRecords() {
 											{record.attending_doctors &&
 											record.attending_doctors.trim() !== "" ? (
 												<div className="text-right min-w-0 max-w-[58%]">
-													<p className="text-[8px] text-gray-400 uppercase font-semibold mb-0.5 flex items-center justify-end gap-1">
+													<p className="text-[8px] text-gray-400 uppercase font-semibold mb-px flex items-center justify-end gap-1 leading-none">
 														<LuStethoscope className="w-3 h-3 text-primary" />
 														Médicos
 													</p>
@@ -324,25 +319,30 @@ export default function MedicalRecords() {
 												</div>
 											) : null}
 										</div>
-									</div>
 
-									<Button
-										type="button"
-										variant="text"
-										onClick={(e) => {
-											e.stopPropagation()
-											handleEditPatient(e, record)
-										}}
-										icon={<LuPencilLine className="h-4 w-4 text-gray-600" />}
-										className="p-1.5! min-w-0! min-h-0! h-8! w-8! bg-white! border! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! rounded-lg! z-10 shadow-sm"
-										style={{
-											position: "absolute",
-											right: "0.75rem",
-											bottom: "0.75rem",
-											left: "auto",
-										}}
-										title="Editar información del paciente"
-									/>
+										<div className="mt-1.5 flex items-center justify-between gap-2 border-t border-gray-100 pt-1.5">
+											<div className="flex h-8 shrink-0 items-center gap-1.5 text-sm font-normal tabular-nums leading-none text-gray-700">
+												<span className="text-sm font-normal uppercase text-gray-500">
+													N.º
+												</span>
+												<span className="text-sm font-normal">
+													{indexOfFirstRecord + cardIndex + 1}
+												</span>
+											</div>
+											<Button
+												type="button"
+												variant="text"
+												size="small"
+												onClick={(e) => {
+													e.stopPropagation()
+													handleEditPatient(e, record)
+												}}
+												icon={<LuPencilLine className="h-4 w-4 text-gray-600" />}
+												className="flex! size-8! min-h-8! min-w-8! max-h-8! max-w-8! shrink-0 items-center! justify-center! p-0! leading-none! bg-white! border! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! rounded-lg! shadow-sm"
+												title="Editar información del paciente"
+											/>
+										</div>
+									</div>
 								</div>
 							</div>
 						))}
@@ -356,7 +356,7 @@ export default function MedicalRecords() {
 					</div>
 				)}
 
-				<div className="flex justify-center mt-8 pb-4">
+				<div className="flex justify-start mt-8 pb-4 px-2">
 					<Pagination
 						current={currentPage}
 						total={filteredRecords.length}

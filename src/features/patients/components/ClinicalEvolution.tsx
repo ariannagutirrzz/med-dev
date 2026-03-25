@@ -16,24 +16,19 @@ import type {
 	MedicalHistoryFormData,
 	MyTokenPayload,
 } from "../../../shared"
-import { DataFilterPanel } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
-import { useAuth } from "../../auth"
 import {
 	createMedicalRecord,
 	deleteMedicalRecordById,
 	getMedicalRecord,
 	updateMedicalRecordById,
 } from "../services/MedicalRecordsAPI"
-import { getDoctors } from "../services/UsersAPI"
 import { truncatePreview } from "../utils/truncatePreview"
 import ClinicalEvolutionDetailModal from "./ClinicalEvolutionDetailModal"
 
 const PREVIEW_MOTIVO_CHARS = 90
 const PREVIEW_DIAGNOSIS_CHARS = 120
 const PREVIEW_TREATMENT_CHARS = 120
-
-type DoctorOption = { document_id: string; name: string }
 
 export default function ClinicalEvolution({
 	patientId,
@@ -51,45 +46,18 @@ export default function ClinicalEvolution({
 		MedicalHistory | MedicalHistoryFormData | null
 	>(null)
 	const [isLoading, setIsLoading] = useState(true)
-	const [evolutionDoctorFilter, setEvolutionDoctorFilter] = useState("all")
-	const [doctorOptions, setDoctorOptions] = useState<DoctorOption[]>([])
-
-	const { user } = useAuth()
-	const isAdmin = user?.role === "Admin"
 
 	const token = getStoredToken()
 	const doctor_id = token ? jwtDecode<MyTokenPayload>(token).id : ""
 
-	useEffect(() => {
-		setEvolutionDoctorFilter("all")
-	}, [patientId])
-
-	useEffect(() => {
-		if (!isAdmin) {
-			setDoctorOptions([])
-			return
-		}
-		getDoctors()
-			.then((data: unknown) => {
-				const d = data as { doctors?: DoctorOption[] }
-				setDoctorOptions(d?.doctors ?? [])
-			})
-			.catch(() => setDoctorOptions([]))
-	}, [isAdmin])
-
-	const filteredEvolutions = useMemo(() => {
-		if (!isAdmin || evolutionDoctorFilter === "all") return evolutions
-		return evolutions.filter((e) => e.doctor_id === evolutionDoctorFilter)
-	}, [evolutions, isAdmin, evolutionDoctorFilter])
-
 	const displayEvolutions = useMemo(
 		() =>
-			[...filteredEvolutions].sort(
+			[...evolutions].sort(
 				(a, b) =>
 					new Date(b.record_date).getTime() -
 					new Date(a.record_date).getTime(),
 			),
-		[filteredEvolutions],
+		[evolutions],
 	)
 
 	const fetchEvolutions = useCallback(async () => {
@@ -212,36 +180,10 @@ export default function ClinicalEvolution({
 				</div>
 			) : (
 				<>
-					{isAdmin && doctorOptions.length > 0 ? (
-						<DataFilterPanel
-							showSearch={false}
-							className="mb-4"
-							filters={[
-								{
-									id: "evo-doctor",
-									value: evolutionDoctorFilter,
-									onChange: setEvolutionDoctorFilter,
-									placeholder: "Médico",
-									selectClassName: "w-full sm:w-[240px]",
-									options: [
-										{ value: "all", label: "Todos los médicos" },
-										...doctorOptions.map((d) => ({
-											value: d.document_id,
-											label: d.name,
-										})),
-									],
-								},
-							]}
-						/>
-					) : null}
-
 					{displayEvolutions.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-24 bg-amber-50/40 rounded-[2.5rem] border border-dashed border-amber-200/80 text-center px-6">
 							<p className="text-gray-600 font-semibold">
 								No hay evoluciones registradas por el médico seleccionado.
-							</p>
-							<p className="text-sm text-gray-500 mt-2">
-								Elegí otro médico o &quot;Todos los médicos&quot;.
 							</p>
 						</div>
 					) : (
