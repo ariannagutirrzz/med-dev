@@ -1,5 +1,6 @@
 import crypto from "node:crypto"
 import type { Request, Response } from "express"
+import { getPublicFrontendUrlForRequest } from "../config/publicFrontendUrl.js"
 import { query } from "../db.js"
 import { sendPasswordResetEmail } from "../services/EmailService.js"
 import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
@@ -7,6 +8,34 @@ import { comparePassword, hashPassword } from "../utils/auth.js"
 import { generateJWT } from "../utils/jwt.js"
 
 const RESET_TOKEN_EXPIRY_HOURS = 1
+
+function isPostgresError(
+	error: unknown,
+): error is {
+	code?: string
+	constraint?: string
+	detail?: string
+	message?: string
+} {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		typeof (error as { code?: unknown }).code === "string"
+	)
+}
+
+function getSignupDuplicateMessage(detail?: string, constraint?: string): string {
+	const c = (constraint ?? "").toLowerCase()
+	const d = (detail ?? "").toLowerCase()
+	if (c.includes("email") || d.includes("(email)")) {
+		return "Ya existe una cuenta registrada con este correo electrónico."
+	}
+	if (c.includes("document") || d.includes("document_id")) {
+		return "Ya existe una cuenta registrada con este documento de identidad."
+	}
+	return "Este correo o documento ya está registrado. Verifica los datos o inicia sesión."
+}
 
 export const createAccount = async (req: Request, res: Response) => {
 	try {
@@ -35,14 +64,14 @@ export const createAccount = async (req: Request, res: Response) => {
 		) {
 			return res.status(400).json({
 				error:
-					"Email, password, name, document_id, phone, birthdate, gender and address are required",
+					"Completa todos los campos obligatorios: correo, contraseña, nombre, documento, teléfono, fecha de nacimiento, género y dirección.",
 			})
 		}
 
 		if (password.length < 8) {
-			return res
-				.status(400)
-				.json({ error: "Password must be atleast 8 characters long." })
+			return res.status(400).json({
+				error: "La contraseña debe tener al menos 8 caracteres.",
+			})
 		}
 
 		// Check if user already exists
@@ -51,9 +80,9 @@ export const createAccount = async (req: Request, res: Response) => {
 		])
 
 		if (existingUser.rows.length > 0) {
-			return res
-				.status(409)
-				.json({ error: "User with this email already exists" })
+			return res.status(409).json({
+				error: "Ya existe una cuenta registrada con este correo electrónico.",
+			})
 		}
 
 		// Hash password
@@ -78,6 +107,11 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		const newUser = result.rows[0]
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 		let emailVerificationSent = false
 		let verifyLink: string | undefined
 		try {
@@ -85,6 +119,10 @@ export const createAccount = async (req: Request, res: Response) => {
 				newUser.id,
 				newUser.email,
 				newUser.name,
+<<<<<<< Updated upstream
+=======
+				{ linkBase: getPublicFrontendUrlForRequest(req) },
+>>>>>>> Stashed changes
 			)
 			emailVerificationSent = out.ok
 			if (!out.ok && process.env.NODE_ENV !== "production") {
@@ -94,6 +132,10 @@ export const createAccount = async (req: Request, res: Response) => {
 			console.error("Email verification send failed (signup):", err)
 		}
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 		res.status(201).json({
 			success: true,
 			message:
@@ -110,7 +152,15 @@ export const createAccount = async (req: Request, res: Response) => {
 		})
 	} catch (error) {
 		console.error("Signup error:", error)
-		res.status(500).json({ error: "Internal server error" })
+		if (isPostgresError(error) && error.code === "23505") {
+			return res.status(409).json({
+				error: getSignupDuplicateMessage(error.detail, error.constraint),
+			})
+		}
+		res.status(500).json({
+			error:
+				"No pudimos crear tu cuenta en este momento. Revisa los datos e intenta de nuevo en unos minutos. Si el problema continúa, contacta al consultorio.",
+		})
 	}
 }
 export const login = async (req: Request, res: Response) => {
@@ -173,6 +223,11 @@ export const login = async (req: Request, res: Response) => {
 }
 
 /**
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
  * Confirm email with token from verification link.
  * POST /api/auth/verify-email { token }
  */
@@ -251,6 +306,10 @@ export const resendEmailVerification = async (req: Request, res: Response) => {
 			u.id,
 			emailLower,
 			u.name,
+<<<<<<< Updated upstream
+=======
+			{ linkBase: getPublicFrontendUrlForRequest(req) },
+>>>>>>> Stashed changes
 		)
 
 		if (!ok && process.env.NODE_ENV !== "production") {
@@ -265,6 +324,10 @@ export const resendEmailVerification = async (req: Request, res: Response) => {
 }
 
 /**
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
  * Request password reset (forgot password).
  * POST /api/auth/forgot-password { email }
  */
@@ -305,9 +368,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 			[token, emailLower, expiresAt.toISOString()],
 		)
 
-		const baseUrl =
-			process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173"
-		const resetLink = `${baseUrl}/restablecer-contrasena?token=${token}`
+		const resetLink = `${getPublicFrontendUrlForRequest(req)}/restablecer-contrasena?token=${token}`
 
 		const sent = await sendPasswordResetEmail(
 			emailLower,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 import logoUnidadPleura from "../assets/logo-unidad-de-pleura.png"
 import { getApiBase } from "../config/axios"
 import {
@@ -56,9 +57,23 @@ const LoginPage = () => {
 				body: JSON.stringify(formData),
 			})
 
+<<<<<<< Updated upstream
 			const payload = (await response.json().catch(() => ({}))) as {
 				error?: string
 				message?: string
+=======
+			if (!response.ok) {
+<<<<<<< Updated upstream
+				const error = await response.json()
+				throw new Error(error.error || "Error al registrarse")
+=======
+				const msg =
+					typeof payload.error === "string" && payload.error.trim() !== ""
+						? payload.error
+						: "No pudimos completar el registro. Intenta de nuevo."
+				throw new Error(msg)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 			}
 
 			if (!response.ok) {
@@ -87,9 +102,17 @@ const LoginPage = () => {
 			}
 		} catch (error) {
 			console.error("Error signing up", error)
-			setSignupError(
-				error instanceof Error ? error.message : "Error al registrarse",
-			)
+			let message =
+				error instanceof Error ? error.message : "Error al registrarse"
+			if (
+				error instanceof TypeError &&
+				(message === "Failed to fetch" || message.includes("fetch"))
+			) {
+				message =
+					"No pudimos contactar al servidor. Comprueba tu conexión o que el servicio esté disponible."
+			}
+			setSignupError(message)
+			toast.error(message)
 		}
 	}
 

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express"
+import { getPublicFrontendUrlForRequest } from "../config/publicFrontendUrl.js"
 import { query } from "../db.js"
 import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
 import { hashPassword } from "../utils/auth.js"
@@ -96,17 +97,30 @@ export const createPatient = async (req: Request, res: Response) => {
 			],
 		)
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 		const created = result.rows[0] as { id: number; name: string; email: string }
 		try {
 			await sendVerificationEmailToUser(
 				created.id,
 				String(created.email).toLowerCase(),
 				created.name,
+<<<<<<< Updated upstream
+=======
+				{ linkBase: getPublicFrontendUrlForRequest(req) },
+>>>>>>> Stashed changes
 			)
 		} catch (err) {
 			console.error("Email verification send failed (create patient):", err)
 		}
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 		// 2. Response
 		res.status(201).json({
 			message:
