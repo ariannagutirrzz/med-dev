@@ -57,31 +57,18 @@ const LoginPage = () => {
 				body: JSON.stringify(formData),
 			})
 
-<<<<<<< Updated upstream
 			const payload = (await response.json().catch(() => ({}))) as {
 				error?: string
 				message?: string
-=======
+				verifyLink?: string
+			}
+
 			if (!response.ok) {
-<<<<<<< Updated upstream
-				const error = await response.json()
-				throw new Error(error.error || "Error al registrarse")
-=======
 				const msg =
 					typeof payload.error === "string" && payload.error.trim() !== ""
 						? payload.error
 						: "No pudimos completar el registro. Intenta de nuevo."
 				throw new Error(msg)
->>>>>>> Stashed changes
->>>>>>> Stashed changes
-			}
-
-			if (!response.ok) {
-				throw new Error(
-					typeof payload.error === "string"
-						? payload.error
-						: "Error al registrarse",
-				)
 			}
 
 			setSignupSuccess(

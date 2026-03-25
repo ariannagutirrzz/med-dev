@@ -107,11 +107,6 @@ export const createAccount = async (req: Request, res: Response) => {
 
 		const newUser = result.rows[0]
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
 		let emailVerificationSent = false
 		let verifyLink: string | undefined
 		try {
@@ -119,10 +114,7 @@ export const createAccount = async (req: Request, res: Response) => {
 				newUser.id,
 				newUser.email,
 				newUser.name,
-<<<<<<< Updated upstream
-=======
 				{ linkBase: getPublicFrontendUrlForRequest(req) },
->>>>>>> Stashed changes
 			)
 			emailVerificationSent = out.ok
 			if (!out.ok && process.env.NODE_ENV !== "production") {
@@ -132,10 +124,6 @@ export const createAccount = async (req: Request, res: Response) => {
 			console.error("Email verification send failed (signup):", err)
 		}
 
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 		res.status(201).json({
 			success: true,
 			message:
@@ -223,11 +211,6 @@ export const login = async (req: Request, res: Response) => {
 }
 
 /**
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
  * Confirm email with token from verification link.
  * POST /api/auth/verify-email { token }
  */
@@ -306,10 +289,7 @@ export const resendEmailVerification = async (req: Request, res: Response) => {
 			u.id,
 			emailLower,
 			u.name,
-<<<<<<< Updated upstream
-=======
 			{ linkBase: getPublicFrontendUrlForRequest(req) },
->>>>>>> Stashed changes
 		)
 
 		if (!ok && process.env.NODE_ENV !== "production") {
@@ -324,10 +304,6 @@ export const resendEmailVerification = async (req: Request, res: Response) => {
 }
 
 /**
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
  * Request password reset (forgot password).
  * POST /api/auth/forgot-password { email }
  */
