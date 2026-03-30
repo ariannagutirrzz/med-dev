@@ -13,6 +13,7 @@ export interface ServiceType {
 export interface DoctorService {
 	id: number
 	doctor_id: string
+	doctor_name: string
 	service_type_id: number
 	price_usd: number
 	is_active: boolean
