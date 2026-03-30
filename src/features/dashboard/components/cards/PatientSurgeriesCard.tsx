@@ -11,10 +11,14 @@ interface PatientSurgeriesCardProps {
 
 const getSurgeryStatusBadge = (status?: string) => {
 	const s = status?.toLowerCase() || ""
-	if (s === "scheduled") return { className: "bg-green-100 text-green-700", label: "Programada" }
-	if (s === "pending") return { className: "bg-yellow-100 text-yellow-700", label: "Pendiente" }
-	if (s === "completed") return { className: "bg-blue-100 text-blue-700", label: "Completada" }
-	if (s === "cancelled") return { className: "bg-red-100 text-red-700", label: "Cancelada" }
+	if (s === "scheduled")
+		return { className: "bg-green-100 text-green-700", label: "Programada" }
+	if (s === "pending")
+		return { className: "bg-yellow-100 text-yellow-700", label: "Pendiente" }
+	if (s === "completed")
+		return { className: "bg-blue-100 text-blue-700", label: "Completada" }
+	if (s === "cancelled")
+		return { className: "bg-red-100 text-red-700", label: "Cancelada" }
 	return { className: "bg-gray-100 text-gray-600", label: status || "—" }
 }
 
@@ -26,7 +30,10 @@ const getUpcomingSurgeries = (surgeries: Surgery[], limit: number) => {
 			const status = s.status?.toLowerCase()
 			return date >= now && status !== "cancelled" && status !== "completed"
 		})
-		.sort((a, b) => new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime())
+		.sort(
+			(a, b) =>
+				new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime(),
+		)
 		.slice(0, limit)
 }
 
@@ -45,7 +52,9 @@ export const PatientSurgeriesCard = ({
 			</h3>
 			{loading ? (
 				<div className="flex-1 flex items-center justify-center">
-					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">Cargando...</div>
+					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">
+						Cargando...
+					</div>
 				</div>
 			) : (
 				<div className="flex-1 min-h-0 space-y-1 sm:space-y-1.5">
@@ -68,7 +77,9 @@ export const PatientSurgeriesCard = ({
 											</p>
 											<p className="text-[11px] sm:text-xs text-gray-600 mt-0.5">
 												{formatAppointmentDate(surgery.surgery_date)}
-												{surgery.surgery_type ? ` · ${surgery.surgery_type}` : ""}
+												{surgery.surgery_type
+													? ` · ${surgery.surgery_type}`
+													: ""}
 											</p>
 										</div>
 										<span

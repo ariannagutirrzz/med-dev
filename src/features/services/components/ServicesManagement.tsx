@@ -253,7 +253,7 @@ const ServicesManagement: React.FC = () => {
 									size="middle"
 									onClick={() => handleOpenModal(service)}
 									icon={<FaEdit className="w-3.5 h-3.5" />}
-									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm bg-blue-500 border-0 text-white hover:!bg-blue-600"
+									className="flex-1 min-h-0! px-2! py-1.5! rounded-lg! text-sm!  border-0 text-white"
 								>
 									Editar
 								</Button>

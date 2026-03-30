@@ -42,7 +42,9 @@ async function addCustomExchangeRateColumn() {
 			ADD COLUMN custom_exchange_rate NUMERIC(12,4) NULL
 		`)
 
-		console.log("✅ Successfully added 'custom_exchange_rate' column to user_settings table!")
+		console.log(
+			"✅ Successfully added 'custom_exchange_rate' column to user_settings table!",
+		)
 		console.log("   Column type: NUMERIC(12,4)")
 		console.log("   Nullable: YES")
 

@@ -1,4 +1,9 @@
-import { FaCalendarCheck, FaCalendarDay, FaStethoscope, FaUserInjured } from "react-icons/fa"
+import {
+	FaCalendarCheck,
+	FaCalendarDay,
+	FaStethoscope,
+	FaUserInjured,
+} from "react-icons/fa"
 import { MdProductionQuantityLimits } from "react-icons/md"
 import type { DashboardStats } from "../../types/dashboard.types"
 

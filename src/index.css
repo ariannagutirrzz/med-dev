@@ -1,58 +1,69 @@
 @import "tailwindcss";
 
 @theme {
-	/* Primary theme colors (from your Coolors palette) */
-	--color-primary: #789a61; /* sage green */
-	--color-primary-green: #35524a; /* dark slate grey */
-	--color-secondary: #522a27; /* lavender purple */
-	--color-accent: #9b5de5; /* espresso */
-	--color-accent-soft: #d8dbe2; /* alabaster grey */
-	
-	/* Neutrals / text */
-	--color-muted: #7b8b87;
-	--color-muted-light: #b8c5c2;
-	--color-text: #556b62;
+  /* Primary theme colors (from your Coolors palette) */
+  --color-primary: #789a61; /* sage green */
+  --color-primary-green: #35524a; /* dark slate grey */
+  --color-secondary: #522a27; /* lavender purple */
+  --color-accent: #9b5de5; /* espresso */
+  --color-accent-soft: #d8dbe2; /* alabaster grey */
 
-	/* Backgrounds */
-	--color-bg: #f6fbfb;
-	--color-bg-light: #e6f2f2;
-	--color-bg-card: #d8dbe2;
+  /* Neutrals / text */
+  --color-muted: #7b8b87;
+  --color-muted-light: #b8c5c2;
+  --color-text: #556b62;
 
-	/* Simple brand gradient using primary + secondary */
-	--gradient-primary: linear-gradient(
-		135deg,
-		var(--color-primary),
-		var(--color-secondary)
-	);
+  /* Backgrounds */
+  --color-bg: #f6fbfb;
+  --color-bg-light: #e6f2f2;
+  --color-bg-card: #d8dbe2;
 
-	/* Fonts */
-	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Simple brand gradient using primary + secondary */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+
+  /* Fonts */
+  --font-sans:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
 /* Override Ant Design reset for sidebar */
 aside nav button {
-	color: inherit !important;
-	background-color: transparent !important;
-	border: none !important;
-	padding: 0.75rem !important;
-	font-family: inherit !important;
+  color: inherit !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0.75rem !important;
+  font-family: inherit !important;
 }
 
 aside nav button:focus {
-	outline: none !important;
-	box-shadow: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* El campo de texto del document_id en el patient form */
 .custom-ant-group .ant-input {
-    height: 42px !important;
-    border-radius: 0 0.75rem 0.75rem 0 !important;
+  height: 42px !important;
+  border-radius: 0 0.75rem 0.75rem 0 !important;
+}
+
+/* Esto separa los botones "Ahora" y "Aceptar" */
+.timepicker-custom-popup .ant-picker-footer-extra,
+.timepicker-custom-popup .ant-picker-ranges {
+  padding: 8px 12px !important;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 /* Sidebar: oculto en móvil cuando está cerrado (evita que se vea antes de hidratar o por conflictos con Tailwind) */
 @media (max-width: 767px) {
-	[data-dashboard-sidebar][data-sidebar-closed] {
-		transform: translateX(-100%) !important;
-		visibility: visible; /* mantiene accesible cuando se abre */
-	}
+  [data-dashboard-sidebar][data-sidebar-closed] {
+    transform: translateX(-100%) !important;
+    visibility: visible; /* mantiene accesible cuando se abre */
+  }
 }

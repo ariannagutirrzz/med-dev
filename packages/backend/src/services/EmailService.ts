@@ -121,7 +121,9 @@ export async function sendAppointmentConfirmationEmail(
 	params: AppointmentConfirmationEmailParams,
 ): Promise<{ ok: boolean; error?: string }> {
 	if (!process.env.RESEND_API_KEY) {
-		console.warn("RESEND_API_KEY not set; skipping appointment confirmation email")
+		console.warn(
+			"RESEND_API_KEY not set; skipping appointment confirmation email",
+		)
 		return { ok: false, error: "Email not configured" }
 	}
 

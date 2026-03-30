@@ -17,11 +17,7 @@ export const getUpcomingAppointments = (
 			const aptDate = new Date(apt.appointment_date)
 			aptDate.setHours(0, 0, 0, 0)
 			const status = apt.status?.toLowerCase()
-			return (
-				aptDate >= now &&
-				status !== "cancelled" &&
-				status !== "completed"
-			)
+			return aptDate >= now && status !== "cancelled" && status !== "completed"
 		})
 		.sort(
 			(a, b) =>
@@ -33,7 +29,7 @@ export const getUpcomingAppointments = (
 
 export const getAppointmentStatusBadge = (status?: string) => {
 	const statusLower = status?.toLowerCase() || "pending"
-	
+
 	if (statusLower === "scheduled") {
 		return {
 			className: "bg-green-100 text-green-700",

@@ -1,8 +1,8 @@
 import { CiCalendar } from "react-icons/ci"
 import { HiOutlineBars3 } from "react-icons/hi2"
 import { Button } from "../../../shared"
-import { useDashboardLayout } from "../contexts/DashboardLayoutContext"
 import { NotificationBell } from "../../notifications"
+import { useDashboardLayout } from "../contexts/DashboardLayoutContext"
 
 export default function DashboardHeader() {
 	const { isMobile, onToggleSidebar } = useDashboardLayout()

@@ -302,10 +302,7 @@ const ReportsSection = () => {
 										style={controlHeight}
 										placeholder="Todos"
 										allowClear
-										options={[
-											{ value: "", label: "Todos" },
-											...statusOptions,
-										]}
+										options={[{ value: "", label: "Todos" }, ...statusOptions]}
 									/>
 								</div>
 							)}

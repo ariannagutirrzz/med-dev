@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { getStoredToken } from "../../../config/axios"
 import logoUnidadPleura from "../../../assets/logo-unidad-de-pleura.png"
+import { getStoredToken } from "../../../config/axios"
 
 const NavBar = () => {
 	const [isUserLogged, setIsUserLogged] = useState(false)

@@ -10,7 +10,7 @@ import {
 } from "recharts"
 
 const PRIMARY_COLOR = "var(--color-primary)"
-const PREDICTED_COLOR = "var(--color-primary)"
+const PREDICTED_COLOR = "var(--color-muted-light)"
 const PREDICTED_OPACITY = 0.5
 const GRID_COLOR = "var(--color-muted-light)"
 
@@ -42,7 +42,9 @@ export function BarChartCard({
 	embedded = false,
 	yAxisWidth = 36,
 }: BarChartCardProps) {
-	const showPrediction = Boolean(dataKeyPrediccion && data.some((d) => Number(d[dataKeyPrediccion]) > 0))
+	const showPrediction = Boolean(
+		dataKeyPrediccion && data.some((d) => Number(d[dataKeyPrediccion]) > 0),
+	)
 	const content = (
 		<>
 			<div className="mb-3">
@@ -55,7 +57,12 @@ export function BarChartCard({
 				<ResponsiveContainer width="100%" height="100%">
 					<BarChart
 						data={data}
-						margin={{ top: 8, right: 8, left: yAxisWidth > 40 ? 12 : 0, bottom: 0 }}
+						margin={{
+							top: 8,
+							right: 8,
+							left: yAxisWidth > 40 ? 12 : 0,
+							bottom: 0,
+						}}
 					>
 						<CartesianGrid
 							strokeDasharray="3 3"
@@ -88,7 +95,7 @@ export function BarChartCard({
 							labelStyle={{ color: "var(--color-text)" }}
 							formatter={(value: number, name: string) => [
 								formatValue(value),
-								name === "prediccion" ? "Predicción" : valueLabel ?? dataKey,
+								name === "prediccion" ? "Predicción" : (valueLabel ?? dataKey),
 							]}
 							labelFormatter={(label) => label}
 						/>
@@ -96,7 +103,9 @@ export function BarChartCard({
 							<Legend
 								verticalAlign="top"
 								height={24}
-								formatter={(value) => (value === "prediccion" ? "Predicción" : "Histórico")}
+								formatter={(value) =>
+									value === "prediccion" ? "Predicción" : "Histórico"
+								}
 							/>
 						)}
 						<Bar
@@ -123,9 +132,7 @@ export function BarChartCard({
 	)
 
 	if (embedded) {
-		return (
-			<div className="flex flex-col flex-1 min-h-[200px]">{content}</div>
-		)
+		return <div className="flex flex-col flex-1 min-h-[200px]">{content}</div>
 	}
 
 	return (

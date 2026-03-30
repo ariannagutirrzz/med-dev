@@ -523,7 +523,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									if (date) {
 										const dateStr = date.format("YYYY-MM-DD")
 										const currentTime =
-											formData.appointment_date.split("T")[1] || "09:00"
+											formData.appointment_date.split("T")[1] ||
+											"Seleccionar hora"
 										setFormData({
 											...formData,
 											appointment_date: `${dateStr}T${currentTime}`,
@@ -584,7 +585,9 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 									}
 									onChange={(time: Dayjs | null) => {
 										const date = formData.appointment_date.split("T")[0] || ""
-										const timeStr = time ? time.format("HH:mm") : "09:00"
+										const timeStr = time
+											? time.format("HH:mm")
+											: "Seleccionar hora"
 										setFormData({
 											...formData,
 											appointment_date: `${date}T${timeStr}`,

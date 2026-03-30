@@ -1,6 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ToastContainer } from "react-toastify"
-import { ProtectedRoute } from "./shared"
 import DashboardPage from "./pages/DashboardPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import HomePage from "./pages/HomePage"
@@ -8,6 +7,7 @@ import LoginPage from "./pages/LoginPage"
 import MedicosPage from "./pages/MedicosPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
 import VerifyEmailPage from "./pages/VerifyEmailPage"
+import { ProtectedRoute } from "./shared"
 
 function App() {
 	return (

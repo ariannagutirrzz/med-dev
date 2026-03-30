@@ -181,10 +181,12 @@ export const getAvailableTimeSlots = async (req: Request, res: Response) => {
 			[doctor_id, date],
 		)
 
-		const bookedTimes = appointmentsResult.rows.map((row: Record<string, unknown>) => {
-			const appointmentDate = new Date(row.appointment_date as string)
-			return appointmentDate.toTimeString().slice(0, 5) // HH:MM format
-		})
+		const bookedTimes = appointmentsResult.rows.map(
+			(row: Record<string, unknown>) => {
+				const appointmentDate = new Date(row.appointment_date as string)
+				return appointmentDate.toTimeString().slice(0, 5) // HH:MM format
+			},
+		)
 
 		// Generate available time slots (30-minute intervals)
 		const availableSlots: string[] = []

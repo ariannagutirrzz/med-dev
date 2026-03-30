@@ -1,5 +1,5 @@
-import { Button as AntButton } from "antd"
 import type { ButtonProps as AntButtonProps } from "antd"
+import { Button as AntButton } from "antd"
 import type { ReactNode } from "react"
 
 export type ButtonVariant = "primary" | "default" | "dashed" | "link" | "text"
@@ -70,7 +70,9 @@ const Button = ({
 			block={block}
 			htmlType={type}
 			icon={icon}
-			className={baseHeightClass ? `${baseHeightClass} ${className}` : className}
+			className={
+				baseHeightClass ? `${baseHeightClass} ${className}` : className
+			}
 			{...rest}
 		>
 			{content}

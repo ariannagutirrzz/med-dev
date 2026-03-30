@@ -65,7 +65,9 @@ async function addDoctorUnavailability() {
 		`)
 
 		console.log("✅ Successfully created 'doctor_unavailability' table!")
-		console.log("   - Columns: id, doctor_id, start_date, end_date, reason, is_active, created_at, updated_at")
+		console.log(
+			"   - Columns: id, doctor_id, start_date, end_date, reason, is_active, created_at, updated_at",
+		)
 		console.log("   - Indexes: doctor_id, dates, is_active")
 
 		await pool.end()

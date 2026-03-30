@@ -58,7 +58,9 @@ async function createServiceTypesTable() {
 		`)
 
 		console.log("✅ Successfully created 'service_types' table!")
-		console.log("   - Columns: id, name, description, category, created_at, updated_at")
+		console.log(
+			"   - Columns: id, name, description, category, created_at, updated_at",
+		)
 		console.log("   - Default service types inserted")
 
 		await pool.end()

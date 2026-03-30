@@ -9,7 +9,7 @@ export const mapSurgeryType = (
 	surgeryType?: string,
 ): "Cirugía Mayor" | "Cirugía Menor" | "Cirugía Programada" => {
 	if (!surgeryType) return "Cirugía Programada"
-	
+
 	if (surgeryType.includes("Mayor") || surgeryType.includes("mayor")) {
 		return "Cirugía Mayor"
 	}
@@ -24,10 +24,11 @@ export const convertSurgeriesToCalendarFormat = (
 ): CalendarSurgery[] => {
 	return surgeries.map((surgery) => {
 		const surgeryDate = new Date(surgery.surgery_date)
-		const patientName = [surgery.patient_first_name, surgery.patient_last_name]
-			.filter(Boolean)
-			.join(" ")
-			.trim() || undefined
+		const patientName =
+			[surgery.patient_first_name, surgery.patient_last_name]
+				.filter(Boolean)
+				.join(" ")
+				.trim() || undefined
 		return {
 			id: surgery.id,
 			day: surgeryDate.getDate(),

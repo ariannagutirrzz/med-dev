@@ -91,7 +91,10 @@ export const getMyServices = async (req: Request, res: Response) => {
 /**
  * Get services for a specific doctor (for patients to view)
  */
-export const getDoctorServicesByDoctorId = async (req: Request, res: Response) => {
+export const getDoctorServicesByDoctorId = async (
+	req: Request,
+	res: Response,
+) => {
 	try {
 		const { doctorId } = req.params
 
@@ -183,7 +186,9 @@ export const createService = async (req: Request, res: Response) => {
 
 		const service = await createDoctorService({
 			doctor_id: userId,
-			service_type_id: service_type_id ? parseInt(service_type_id, 10) : undefined,
+			service_type_id: service_type_id
+				? parseInt(service_type_id, 10)
+				: undefined,
 			service_name: service_name || undefined,
 			price_usd: parseFloat(price_usd),
 			is_active: is_active !== undefined ? is_active : true,
@@ -241,11 +246,7 @@ export const updateService = async (req: Request, res: Response) => {
 			})
 		}
 
-		const service = await updateDoctorService(
-			parseInt(id, 10),
-			userId,
-			updates,
-		)
+		const service = await updateDoctorService(parseInt(id, 10), userId, updates)
 
 		res.json({
 			service,

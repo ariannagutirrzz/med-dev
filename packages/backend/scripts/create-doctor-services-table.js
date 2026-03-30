@@ -65,7 +65,9 @@ async function createDoctorServicesTable() {
 		`)
 
 		console.log("✅ Successfully created 'doctor_services' table!")
-		console.log("   - Columns: id, doctor_id, service_type_id, price_usd, is_active, created_at, updated_at")
+		console.log(
+			"   - Columns: id, doctor_id, service_type_id, price_usd, is_active, created_at, updated_at",
+		)
 		console.log("   - Indexes: doctor_id, service_type_id, is_active")
 
 		await pool.end()

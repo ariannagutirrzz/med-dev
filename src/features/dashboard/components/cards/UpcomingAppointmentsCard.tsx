@@ -1,7 +1,10 @@
 import { FaClock } from "react-icons/fa"
 import type { Appointment } from "../../../../shared"
+import {
+	getAppointmentStatusBadge,
+	getUpcomingAppointments,
+} from "../../utils/appointmentUtils"
 import { formatAppointmentDate } from "../../utils/dateUtils"
-import { getUpcomingAppointments, getAppointmentStatusBadge } from "../../utils/appointmentUtils"
 
 interface UpcomingAppointmentsCardProps {
 	appointments: Appointment[]
@@ -21,7 +24,10 @@ export const UpcomingAppointmentsCard = ({
 	showPatientName = true,
 	maxAppointments = 4,
 }: UpcomingAppointmentsCardProps) => {
-	const upcomingAppointments = getUpcomingAppointments(appointments, maxAppointments)
+	const upcomingAppointments = getUpcomingAppointments(
+		appointments,
+		maxAppointments,
+	)
 
 	return (
 		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 flex flex-col min-h-0 h-full">
@@ -31,7 +37,9 @@ export const UpcomingAppointmentsCard = ({
 			</h3>
 			{loading ? (
 				<div className="flex-1 flex items-center justify-center">
-					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">Cargando...</div>
+					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">
+						Cargando...
+					</div>
 				</div>
 			) : (
 				<div className="flex-1 min-h-0 space-y-1 sm:space-y-1.5">

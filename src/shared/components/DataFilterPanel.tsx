@@ -48,14 +48,14 @@ const DataFilterPanel = ({
 	children,
 }: DataFilterPanelProps) => {
 	const hasSearch =
-		showSearch && typeof onSearchChange === "function" && searchPlaceholder !== ""
+		showSearch &&
+		typeof onSearchChange === "function" &&
+		searchPlaceholder !== ""
 	const hasFilters = Boolean(filters && filters.length > 0)
 	const hasToolbar = hasSearch || hasFilters || Boolean(actions)
 
 	return (
-		<div
-			className={`bg-white rounded-2xl shadow-lg p-4 ${className}`.trim()}
-		>
+		<div className={`bg-white rounded-2xl shadow-lg p-4 ${className}`.trim()}>
 			<div className="flex flex-col gap-4">
 				{hasToolbar ? (
 					<div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -65,7 +65,9 @@ const DataFilterPanel = ({
 									placeholder={searchPlaceholder}
 									value={searchValue}
 									onChange={(e) => onSearchChange(e.target.value)}
-									prefix={searchPrefix ?? <MdSearch className="text-gray-400" />}
+									prefix={
+										searchPrefix ?? <MdSearch className="text-gray-400" />
+									}
 									allowClear
 									size="large"
 									className="rounded-lg w-full"

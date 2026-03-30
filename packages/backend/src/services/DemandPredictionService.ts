@@ -72,7 +72,10 @@ async function getAppointmentCountsByDay(
 				[fromDate, toDate],
 			)
 
-	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({
+		date: r.date,
+		count: Number(r.count),
+	}))
 }
 
 /**
@@ -104,7 +107,10 @@ async function getSurgeryCountsByDay(
 				[fromDate, toDate],
 			)
 
-	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({
+		date: r.date,
+		count: Number(r.count),
+	}))
 }
 
 /**
@@ -122,7 +128,10 @@ async function getNewPatientCountsByDay(
      ORDER BY date`,
 		[fromDate, toDate],
 	)
-	return result.rows.map((r: { date: string; count: string }) => ({ date: r.date, count: Number(r.count) }))
+	return result.rows.map((r: { date: string; count: string }) => ({
+		date: r.date,
+		count: Number(r.count),
+	}))
 }
 
 /**
@@ -135,7 +144,13 @@ function predictNextDays(
 	period: number,
 ): { byDate: DemandByDate[]; summary: DemandSummary } {
 	const byWeekday: Record<number, number[]> = {
-		0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [],
+		0: [],
+		1: [],
+		2: [],
+		3: [],
+		4: [],
+		5: [],
+		6: [],
 	}
 	let totalCount = 0
 	for (const row of historical) {
@@ -190,7 +205,10 @@ function predictNextDays(
 	}
 }
 
-function dataQuality(totalHistorical: number, daysWithData: number): DataQuality {
+function dataQuality(
+	totalHistorical: number,
+	daysWithData: number,
+): DataQuality {
 	if (totalHistorical >= 50 && daysWithData >= 14) return "high"
 	if (totalHistorical >= 15 || daysWithData >= 7) return "medium"
 	return "low"
@@ -271,10 +289,7 @@ export async function getDemandPrediction(
 			meta: {
 				totalHistorical: newPatientsTotal,
 				daysWithData: newPatientsHistory.length,
-				dataQuality: dataQuality(
-					newPatientsTotal,
-					newPatientsHistory.length,
-				),
+				dataQuality: dataQuality(newPatientsTotal, newPatientsHistory.length),
 			},
 		},
 	}

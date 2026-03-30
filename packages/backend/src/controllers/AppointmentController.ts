@@ -1,11 +1,11 @@
 import type { Request, Response } from "express"
 import { Query, type QueryResult } from "pg"
 import { query } from "../db.js"
+import { sendAppointmentConfirmationEmail } from "../services/EmailService.js"
 import {
 	notifyAppointmentCreated,
 	notifyAppointmentUpdated,
 } from "../utils/notificationHelpers.js"
-import { sendAppointmentConfirmationEmail } from "../services/EmailService.js"
 import { sendWhatsApp } from "../utils/twilio.js"
 
 const allowedStatuses = ["pending", "scheduled", "cancelled", "completed"]
@@ -234,9 +234,9 @@ export const createAppointment = async (req: Request, res: Response) => {
 			})
 
 			try {
-			// Send WhatsApp to patient
-			if (patient?.phone) {
-				const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
+				// Send WhatsApp to patient
+				if (patient?.phone) {
+					const patientMessage = `Hola ${patient.name}, tu cita médica ha sido ${status === "scheduled" ? "programada" : "creada"} exitosamente.
 
 				📅 Fecha: ${formattedDate}
 				🕐 Hora: ${formattedTime}
@@ -244,19 +244,19 @@ export const createAppointment = async (req: Request, res: Response) => {
 				${notes ? `📝 Caso/Motivo: ${notes}` : ""}
 
 				Por favor, asegúrate de llegar a tiempo. Si necesitas cancelar o reprogramar, contacta con el consultorio.`
-				await sendWhatsApp({
-					to: patient.phone,
-					message: patientMessage,
-				})
-			} else if (patient) {
-				console.warn(
-					`WhatsApp no enviado al paciente ${patient.name} (document_id: ${patient_id}): sin teléfono en users.phone`,
-				)
-			}
+					await sendWhatsApp({
+						to: patient.phone,
+						message: patientMessage,
+					})
+				} else if (patient) {
+					console.warn(
+						`WhatsApp no enviado al paciente ${patient.name} (document_id: ${patient_id}): sin teléfono en users.phone`,
+					)
+				}
 
-			// Send WhatsApp to doctor
-			if (doctor?.phone) {
-				const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"}
+				// Send WhatsApp to doctor
+				if (doctor?.phone) {
+					const doctorMessage = `Nueva cita ${status === "scheduled" ? "programada" : "creada"}
 
 📅 Fecha: ${formattedDate}
 🕐 Hora: ${formattedTime}
@@ -264,15 +264,15 @@ export const createAppointment = async (req: Request, res: Response) => {
 ${notes ? `📝 Caso/Motivo: ${notes}` : ""}
 
 Por favor, confirma tu disponibilidad.`
-				await sendWhatsApp({
-					to: doctor.phone,
-					message: doctorMessage,
-				})
-			} else if (doctor) {
-				console.warn(
-					`WhatsApp no enviado al médico ${doctor.name} (document_id: ${doctor_id}): sin teléfono en users.phone`,
-				)
-			}
+					await sendWhatsApp({
+						to: doctor.phone,
+						message: doctorMessage,
+					})
+				} else if (doctor) {
+					console.warn(
+						`WhatsApp no enviado al médico ${doctor.name} (document_id: ${doctor_id}): sin teléfono en users.phone`,
+					)
+				}
 			} catch (whatsappError) {
 				console.error("Error sending WhatsApp notifications:", whatsappError)
 			}
@@ -545,8 +545,7 @@ export const updateAppointment = async (req: Request, res: Response) => {
 			)
 			if (serviceResult.rows.length === 0) {
 				return res.status(400).json({
-					error:
-						"El servicio no pertenece a este médico o no está activo.",
+					error: "El servicio no pertenece a este médico o no está activo.",
 				})
 			}
 			updates.service_id = serviceResult.rows[0].id

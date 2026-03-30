@@ -1,6 +1,6 @@
 import { useMemo } from "react"
-import { useAuth } from "../../auth"
 import type { Appointment, Patient, Surgery } from "../../../shared"
+import { useAuth } from "../../auth"
 
 interface UseSearchFilterProps {
 	searchTerm: string
@@ -38,10 +38,12 @@ export const useSearchFilter = ({
 			)
 		})
 
-		const canSeeSurgeriesAndPatients = user?.role === "Médico" || user?.role === "Admin"
+		const canSeeSurgeriesAndPatients =
+			user?.role === "Médico" || user?.role === "Admin"
 		const filteredSurgeries = canSeeSurgeriesAndPatients
 			? surgeries.filter((surgery) => {
-					const patientName = `${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
+					const patientName =
+						`${surgery.patient_first_name || ""} ${surgery.patient_last_name || ""}`.toLowerCase()
 					return (
 						patientName.includes(searchLower) ||
 						surgery.doctor_name?.toLowerCase().includes(searchLower) ||
@@ -54,7 +56,8 @@ export const useSearchFilter = ({
 
 		const filteredPatients = canSeeSurgeriesAndPatients
 			? patients.filter((patient) => {
-					const fullName = `${patient.first_name || ""} ${patient.last_name || ""}`.toLowerCase()
+					const fullName =
+						`${patient.first_name || ""} ${patient.last_name || ""}`.toLowerCase()
 					return (
 						fullName.includes(searchLower) ||
 						patient.email?.toLowerCase().includes(searchLower) ||

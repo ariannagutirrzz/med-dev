@@ -25,8 +25,7 @@ export const getCurrencyRatesController = async (
 	} catch (error) {
 		console.error("Error in getCurrencyRatesController:", error)
 		res.status(500).json({
-			error:
-				error instanceof Error ? error.message : "Internal server error",
+			error: error instanceof Error ? error.message : "Internal server error",
 		})
 	}
 }

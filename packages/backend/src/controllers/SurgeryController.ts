@@ -66,17 +66,19 @@ export const createSurgery = async (req: Request, res: Response) => {
 			null
 
 		try {
-			const [patientUserResult, doctorResult, patientResult] = await Promise.all([
-				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
-					patient_id,
-				]),
-				query(`SELECT name, phone FROM users WHERE document_id = $1`, [
-					doctor_id,
-				]),
-				query(`SELECT first_name, last_name FROM patients WHERE document_id = $1`, [
-					patient_id,
-				]),
-			])
+			const [patientUserResult, doctorResult, patientResult] =
+				await Promise.all([
+					query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+						patient_id,
+					]),
+					query(`SELECT name, phone FROM users WHERE document_id = $1`, [
+						doctor_id,
+					]),
+					query(
+						`SELECT first_name, last_name FROM patients WHERE document_id = $1`,
+						[patient_id],
+					),
+				])
 
 			patientUser = patientUserResult.rows[0] || null
 			doctorUser = doctorResult.rows[0] || null
@@ -93,10 +95,9 @@ export const createSurgery = async (req: Request, res: Response) => {
 				hour: "2-digit",
 				minute: "2-digit",
 			})
-			const patientName =
-				patientFromPatients ?
-					`${patientFromPatients.first_name} ${patientFromPatients.last_name}`
-				:	patientUser?.name ?? "Paciente"
+			const patientName = patientFromPatients
+				? `${patientFromPatients.first_name} ${patientFromPatients.last_name}`
+				: (patientUser?.name ?? "Paciente")
 			const doctorName = doctorUser?.name ?? "Médico"
 
 			// WhatsApp to patient
@@ -141,7 +142,10 @@ Por favor, confirma tu disponibilidad.`
 				)
 			}
 		} catch (whatsappError) {
-			console.error("Error sending surgery WhatsApp notifications:", whatsappError)
+			console.error(
+				"Error sending surgery WhatsApp notifications:",
+				whatsappError,
+			)
 		}
 
 		// In-app notifications (existing logic, keep using patients table for name if needed)
@@ -255,7 +259,9 @@ export const getSurgeryById = async (req: Request, res: Response) => {
 
 		const surgery = result.rows[0]
 		if (role === "Paciente" && surgery.patient_id !== documentId) {
-			return res.status(403).json({ error: "Forbidden: You can only view your own surgeries." })
+			return res
+				.status(403)
+				.json({ error: "Forbidden: You can only view your own surgeries." })
 		}
 
 		res.json(surgery)

@@ -1,5 +1,5 @@
-import twilio from "twilio"
 import dotenv from "dotenv"
+import twilio from "twilio"
 
 dotenv.config()
 
@@ -63,7 +63,9 @@ export async function sendWhatsApp(
 }
 
 // Keep sendSMS as an alias for backward compatibility, but it will send WhatsApp
-export async function sendSMS(options: WhatsAppOptions): Promise<string | null> {
+export async function sendSMS(
+	options: WhatsAppOptions,
+): Promise<string | null> {
 	return sendWhatsApp(options)
 }
 

@@ -2,7 +2,10 @@ import type { Request, Response } from "express"
 import { query } from "../db.js"
 
 // 1. Create doctor unavailability period
-export const createDoctorUnavailability = async (req: Request, res: Response) => {
+export const createDoctorUnavailability = async (
+	req: Request,
+	res: Response,
+) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}
@@ -126,7 +129,10 @@ export const checkDateUnavailable = async (req: Request, res: Response) => {
 }
 
 // 4. Update doctor unavailability period
-export const updateDoctorUnavailability = async (req: Request, res: Response) => {
+export const updateDoctorUnavailability = async (
+	req: Request,
+	res: Response,
+) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}
@@ -192,7 +198,10 @@ export const updateDoctorUnavailability = async (req: Request, res: Response) =>
 }
 
 // 5. Delete doctor unavailability period
-export const deleteDoctorUnavailability = async (req: Request, res: Response) => {
+export const deleteDoctorUnavailability = async (
+	req: Request,
+	res: Response,
+) => {
 	if (!req.user) {
 		return res.status(401).json({ error: "Unauthorized: User not found" })
 	}

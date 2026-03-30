@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
-import { Button } from "../shared"
 import { verifyEmailWithToken } from "../features/auth/services/authAPI"
+import { Button } from "../shared"
 
 type Status = "idle" | "loading" | "success" | "error"
 
@@ -47,8 +47,8 @@ const VerifyEmailPage = () => {
 				<div className="w-full max-w-md text-center">
 					<div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-6">
 						<p className="text-red-800">
-							Falta el enlace de verificación. Revisa el correo que te enviamos o
-							solicita uno nuevo al iniciar sesión.
+							Falta el enlace de verificación. Revisa el correo que te enviamos
+							o solicita uno nuevo al iniciar sesión.
 						</p>
 					</div>
 					<Link to="/login">
@@ -73,7 +73,8 @@ const VerifyEmailPage = () => {
 				<div className="w-full max-w-md text-center">
 					<div className="bg-primary/10 border border-primary/30 rounded-2xl p-6 mb-6">
 						<p className="text-primary-green font-medium">
-							Tu correo quedó verificado. Ya puedes iniciar sesión con tu cuenta.
+							Tu correo quedó verificado. Ya puedes iniciar sesión con tu
+							cuenta.
 						</p>
 					</div>
 					<Link to="/login">

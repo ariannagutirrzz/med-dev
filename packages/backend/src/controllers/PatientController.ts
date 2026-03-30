@@ -4,9 +4,7 @@ import { query } from "../db.js"
 import { sendVerificationEmailToUser } from "../services/EmailVerificationService.js"
 import { hashPassword } from "../utils/auth.js"
 
-function isPostgresError(
-	error: unknown,
-): error is {
+function isPostgresError(error: unknown): error is {
 	code?: string
 	constraint?: string
 	detail?: string
@@ -20,7 +18,10 @@ function isPostgresError(
 	)
 }
 
-function getFriendlyDuplicateEmailMessage(detail?: string, constraint?: string) {
+function getFriendlyDuplicateEmailMessage(
+	detail?: string,
+	constraint?: string,
+) {
 	// Most common from your log:
 	// Key (email)=(...) already exists.
 	if (constraint === "users_email_key") {
@@ -97,7 +98,11 @@ export const createPatient = async (req: Request, res: Response) => {
 			],
 		)
 
-		const created = result.rows[0] as { id: number; name: string; email: string }
+		const created = result.rows[0] as {
+			id: number
+			name: string
+			email: string
+		}
 		try {
 			await sendVerificationEmailToUser(
 				created.id,
@@ -120,10 +125,7 @@ export const createPatient = async (req: Request, res: Response) => {
 		console.error("Error in createPatient (User Insert):", error)
 		if (isPostgresError(error) && error.code === "23505") {
 			return res.status(409).json({
-				error: getFriendlyDuplicateEmailMessage(
-					error.detail,
-					error.constraint,
-				),
+				error: getFriendlyDuplicateEmailMessage(error.detail, error.constraint),
 			})
 		}
 		return res.status(500).json({ error: "Internal server error" })
@@ -332,10 +334,7 @@ export const updatePatient = async (req: Request, res: Response) => {
 		console.error("Error updating patient:", error)
 		if (isPostgresError(error) && error.code === "23505") {
 			return res.status(409).json({
-				error: getFriendlyDuplicateEmailMessage(
-					error.detail,
-					error.constraint,
-				),
+				error: getFriendlyDuplicateEmailMessage(error.detail, error.constraint),
 			})
 		}
 		return res.status(500).json({ error: "Internal server error" })

@@ -1,8 +1,8 @@
 import { Checkbox, Input } from "antd"
 import { useState } from "react"
+import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { toast } from "react-toastify"
-import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Button } from "../../../shared"
 import { resendVerificationEmail } from "../services/authAPI"
 
@@ -109,14 +109,8 @@ const LoginForm = ({
 									try {
 										const data = await resendVerificationEmail(target)
 										toast.success(data.message ?? "Revisa tu correo.")
-										if (
-											import.meta.env.DEV &&
-											data.verifyLink
-										) {
-											console.info(
-												"[dev] Verification link:",
-												data.verifyLink,
-											)
+										if (import.meta.env.DEV && data.verifyLink) {
+											console.info("[dev] Verification link:", data.verifyLink)
 										}
 									} catch (e) {
 										toast.error(

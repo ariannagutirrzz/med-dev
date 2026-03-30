@@ -18,7 +18,11 @@ export const authenticate = async (
 ) => {
 	const bearer = req.headers.authorization
 	if (!bearer) {
-		console.log("Auth failed: No authorization header for", req.method, req.path)
+		console.log(
+			"Auth failed: No authorization header for",
+			req.method,
+			req.path,
+		)
 		return res.status(401).json({ error: "No Autorizado" })
 	}
 
@@ -47,25 +51,26 @@ export const authenticate = async (
 
 		const idString = String(idValue)
 		const parsedId = parseInt(idString, 10)
-		const isNumeric = !Number.isNaN(parsedId) && parsedId > 0 && String(parsedId) === idString
-		
+		const isNumeric =
+			!Number.isNaN(parsedId) && parsedId > 0 && String(parsedId) === idString
+
 		let result: { rows: User[] }
 		if (isNumeric) {
 			result = await query(
 				`SELECT id, email, name, role, document_id 
                 FROM users
                 WHERE id = $1`,
-				[parsedId]
+				[parsedId],
 			)
 		} else {
 			result = await query(
 				`SELECT id, email, name, role, document_id 
                 FROM users
                 WHERE document_id = $1`,
-				[idString]
+				[idString],
 			)
 		}
-		
+
 		const user: User = result.rows[0]
 		if (user) {
 			req.user = user

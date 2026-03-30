@@ -52,8 +52,7 @@ export default function ClinicalEvolution({
 		() =>
 			[...evolutions].sort(
 				(a, b) =>
-					new Date(b.record_date).getTime() -
-					new Date(a.record_date).getTime(),
+					new Date(b.record_date).getTime() - new Date(a.record_date).getTime(),
 			),
 		[evolutions],
 	)
@@ -177,137 +176,135 @@ export default function ClinicalEvolution({
 						Sin registros previos
 					</p>
 				</div>
+			) : displayEvolutions.length === 0 ? (
+				<div className="flex flex-col items-center justify-center py-24 bg-amber-50/40 rounded-[2.5rem] border border-dashed border-amber-200/80 text-center px-6">
+					<p className="text-gray-600 font-semibold">
+						No hay evoluciones registradas por el médico seleccionado.
+					</p>
+				</div>
 			) : (
-				displayEvolutions.length === 0 ? (
-					<div className="flex flex-col items-center justify-center py-24 bg-amber-50/40 rounded-[2.5rem] border border-dashed border-amber-200/80 text-center px-6">
-						<p className="text-gray-600 font-semibold">
-							No hay evoluciones registradas por el médico seleccionado.
-						</p>
-					</div>
-				) : (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-						{displayEvolutions.map((evo, index) => {
-							const caseNumber = displayEvolutions.length - index
-							return (
-								<button
-									type="button"
-									key={evo.id}
-									onClick={() => {
-										setSelectedRecord(evo)
-										setIsModalOpen(true)
-									}}
-									className="group relative min-h-[270px] bg-gray-50/80 rounded-2xl border border-gray-100 p-4 hover:bg-white hover:shadow-md hover:shadow-primary/5 hover:border-primary transition-all duration-300 cursor-pointer flex flex-col overflow-hidden text-left"
-									style={{ transform: "translateZ(0)" }}
-								>
-									{/* Motivo + caso: misma fila; contenido alineado al borde izquierdo del padding */}
-									<div className="flex justify-between items-start gap-3 min-h-0">
-										<div className="min-w-0 flex-1 text-left">
-											<span className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5 block">
-												Motivo
-											</span>
-											<h3 className="text-sm font-semibold text-gray-800 leading-snug wrap-break-word">
-												{truncatePreview(
-													evo.reason || "Consulta de rutina",
-													PREVIEW_MOTIVO_CHARS,
-												)}
-											</h3>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+					{displayEvolutions.map((evo, index) => {
+						const caseNumber = displayEvolutions.length - index
+						return (
+							<button
+								type="button"
+								key={evo.id}
+								onClick={() => {
+									setSelectedRecord(evo)
+									setIsModalOpen(true)
+								}}
+								className="group relative min-h-[270px] bg-gray-50/80 rounded-2xl border border-gray-100 p-4 hover:bg-white hover:shadow-md hover:shadow-primary/5 hover:border-primary transition-all duration-300 cursor-pointer flex flex-col overflow-hidden text-left"
+								style={{ transform: "translateZ(0)" }}
+							>
+								{/* Motivo + caso: misma fila; contenido alineado al borde izquierdo del padding */}
+								<div className="flex justify-between items-start gap-3 min-h-0">
+									<div className="min-w-0 flex-1 text-left">
+										<span className="text-[9px] font-semibold text-primary uppercase tracking-wide mb-0.5 block">
+											Motivo
+										</span>
+										<h3 className="text-sm font-semibold text-gray-800 leading-snug wrap-break-word">
+											{truncatePreview(
+												evo.reason || "Consulta de rutina",
+												PREVIEW_MOTIVO_CHARS,
+											)}
+										</h3>
+									</div>
+									<div className="flex items-baseline gap-1 shrink-0 pt-0.5">
+										<span className="text-[9px] font-normal text-gray-400 uppercase tracking-wide">
+											Caso
+										</span>
+										<span className="text-sm font-normal text-gray-700 tabular-nums leading-none">
+											{caseNumber}
+										</span>
+									</div>
+								</div>
+
+								{/* Cuerpo */}
+								<div className="flex-1 flex flex-col gap-2.5 min-h-0 mt-2.5">
+									<div className="space-y-2">
+										<div className="flex items-start gap-2">
+											<div
+												className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+												aria-hidden
+											>
+												<LuStethoscope className="h-3.5 w-3.5 text-primary" />
+											</div>
+											<div className="min-w-0 flex-1">
+												<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
+													Diagnóstico
+												</span>
+												<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
+													{truncatePreview(
+														evo.diagnosis,
+														PREVIEW_DIAGNOSIS_CHARS,
+													)}
+												</span>
+											</div>
 										</div>
-										<div className="flex items-baseline gap-1 shrink-0 pt-0.5">
-											<span className="text-[9px] font-normal text-gray-400 uppercase tracking-wide">
-												Caso
-											</span>
-											<span className="text-sm font-normal text-gray-700 tabular-nums leading-none">
-												{caseNumber}
-											</span>
+
+										<div className="flex items-start gap-2">
+											<div
+												className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+												aria-hidden
+											>
+												<LuFileText className="h-3.5 w-3.5 text-primary" />
+											</div>
+											<div className="min-w-0 flex-1">
+												<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
+													Tratamiento
+												</span>
+												<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
+													{truncatePreview(
+														evo.treatment,
+														PREVIEW_TREATMENT_CHARS,
+													)}
+												</span>
+											</div>
 										</div>
 									</div>
+								</div>
 
-									{/* Cuerpo */}
-									<div className="flex-1 flex flex-col gap-2.5 min-h-0 mt-2.5">
-										<div className="space-y-2">
-											<div className="flex items-start gap-2">
-												<div
-													className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+								{/* Fecha y médico en una fila */}
+								<div className="mt-auto pt-3 border-t border-gray-100 flex items-end justify-between gap-2">
+									<div className="flex flex-1 flex-wrap items-end justify-between gap-x-3 gap-y-1 min-w-0">
+										<div className="min-w-0">
+											<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center gap-1">
+												<LuCalendarDays
+													className="w-3 h-3 text-primary shrink-0"
 													aria-hidden
-												>
-													<LuStethoscope className="h-3.5 w-3.5 text-primary" />
-												</div>
-												<div className="min-w-0 flex-1">
-													<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
-														Diagnóstico
-													</span>
-													<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
-														{truncatePreview(
-															evo.diagnosis,
-															PREVIEW_DIAGNOSIS_CHARS,
-														)}
-													</span>
-												</div>
-											</div>
-
-											<div className="flex items-start gap-2">
-												<div
-													className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/15"
+												/>
+												Fecha
+											</p>
+											<p className="text-[11px] font-medium text-gray-700">
+												{new Date(evo.record_date).toLocaleDateString("es-ES", {
+													day: "2-digit",
+													month: "short",
+													year: "numeric",
+												})}
+											</p>
+										</div>
+										<div className="text-right min-w-0 max-w-[58%]">
+											<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center justify-end gap-1">
+												<LuUser
+													className="w-3 h-3 text-primary shrink-0"
 													aria-hidden
-												>
-													<LuFileText className="h-3.5 w-3.5 text-primary" />
-												</div>
-												<div className="min-w-0 flex-1">
-													<span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">
-														Tratamiento
-													</span>
-													<span className="text-[11px] text-gray-600 font-medium leading-snug block mt-0.5 wrap-break-word">
-														{truncatePreview(
-															evo.treatment,
-															PREVIEW_TREATMENT_CHARS,
-														)}
-													</span>
-												</div>
-											</div>
+												/>
+												Médico
+											</p>
+											<p className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-snug">
+												{evo.doctor_name?.trim() || "—"}
+											</p>
 										</div>
 									</div>
-
-									{/* Fecha y médico en una fila */}
-									<div className="mt-auto pt-3 border-t border-gray-100 flex items-end justify-between gap-2">
-										<div className="flex flex-1 flex-wrap items-end justify-between gap-x-3 gap-y-1 min-w-0">
-											<div className="min-w-0">
-												<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center gap-1">
-													<LuCalendarDays
-														className="w-3 h-3 text-primary shrink-0"
-														aria-hidden
-													/>
-													Fecha
-												</p>
-												<p className="text-[11px] font-medium text-gray-700">
-													{new Date(evo.record_date).toLocaleDateString("es-ES", {
-														day: "2-digit",
-														month: "short",
-														year: "numeric",
-													})}
-												</p>
-											</div>
-											<div className="text-right min-w-0 max-w-[58%]">
-												<p className="text-[8px] font-semibold text-gray-400 uppercase mb-0.5 flex items-center justify-end gap-1">
-													<LuUser
-														className="w-3 h-3 text-primary shrink-0"
-														aria-hidden
-													/>
-													Médico
-												</p>
-												<p className="text-[11px] font-medium text-gray-800 line-clamp-2 leading-snug">
-													{evo.doctor_name?.trim() || "—"}
-												</p>
-											</div>
-										</div>
-										<div className="w-8 h-8 shrink-0 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
-											<LuChevronRight className="w-4 h-4" />
-										</div>
+									<div className="w-8 h-8 shrink-0 rounded-full bg-white border border-gray-100 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
+										<LuChevronRight className="w-4 h-4" />
 									</div>
-								</button>
-							)
-						})}
-					</div>
-				)
+								</div>
+							</button>
+						)
+					})}
+				</div>
 			)}
 
 			<ClinicalEvolutionDetailModal

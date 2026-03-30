@@ -44,11 +44,13 @@ const options: Options = {
 			},
 			{
 				name: "Services",
-				description: "Operaciones de la API relacionadas a los servicios y precios médicos",
+				description:
+					"Operaciones de la API relacionadas a los servicios y precios médicos",
 			},
 			{
 				name: "Reports",
-				description: "Operaciones de la API relacionadas a la generación de reportes",
+				description:
+					"Operaciones de la API relacionadas a la generación de reportes",
 			},
 		],
 		info: {

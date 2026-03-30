@@ -1,9 +1,9 @@
 import { getPublicFrontendUrl } from "../config/publicFrontendUrl.js"
-import { sendEmailVerificationEmail } from "./EmailService.js"
 import {
 	EMAIL_VERIFICATION_EXPIRY_HOURS,
 	storeEmailVerificationToken,
 } from "../utils/emailVerificationToken.js"
+import { sendEmailVerificationEmail } from "./EmailService.js"
 
 export async function sendVerificationEmailToUser(
 	userId: number,

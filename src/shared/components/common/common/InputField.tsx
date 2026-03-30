@@ -43,14 +43,17 @@ const InputField = ({
 		: "border-muted hover:border-primary focus:border-primary"
 
 	// Generate a unique ID for the input based on label or placeholder
-	const inputId = label 
-		? `input-${label.toLowerCase().replace(/\s+/g, '-')}`
-		: `input-${placeholder?.toLowerCase().replace(/\s+/g, '-') || 'field'}`
+	const inputId = label
+		? `input-${label.toLowerCase().replace(/\s+/g, "-")}`
+		: `input-${placeholder?.toLowerCase().replace(/\s+/g, "-") || "field"}`
 
 	return (
 		<div>
 			{label && (
-				<label htmlFor={inputId} className="text-sm text-text ml-1 mb-1 flex justify-start">
+				<label
+					htmlFor={inputId}
+					className="text-sm text-text ml-1 mb-1 flex justify-start"
+				>
 					{label}
 					{required && <span className="text-red-500 ml-1">*</span>}
 				</label>

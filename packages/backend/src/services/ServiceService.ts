@@ -42,9 +42,7 @@ export interface UpdateDoctorServiceInput {
  */
 export async function getServiceTypes(): Promise<ServiceType[]> {
 	try {
-		const result = await query(
-			`SELECT * FROM service_types ORDER BY name ASC`,
-		)
+		const result = await query(`SELECT * FROM service_types ORDER BY name ASC`)
 		return result.rows as ServiceType[]
 	} catch (error) {
 		console.error("Error fetching service types:", error)
@@ -55,13 +53,14 @@ export async function getServiceTypes(): Promise<ServiceType[]> {
 /**
  * Get service type by ID
  */
-export async function getServiceTypeById(id: number): Promise<ServiceType | null> {
+export async function getServiceTypeById(
+	id: number,
+): Promise<ServiceType | null> {
 	try {
-		const result = await query(
-			`SELECT * FROM service_types WHERE id = $1`,
-			[id],
-		)
-		return result.rows[0] as ServiceType || null
+		const result = await query(`SELECT * FROM service_types WHERE id = $1`, [
+			id,
+		])
+		return (result.rows[0] as ServiceType) || null
 	} catch (error) {
 		console.error("Error fetching service type:", error)
 		throw new Error("Failed to fetch service type")
@@ -91,14 +90,18 @@ export async function getDoctorServices(
 			[doctorId],
 		)
 
-		return result.rows.map((row: Record<string, unknown>) => mapRowToDoctorServiceWithType(row))
+		return result.rows.map((row: Record<string, unknown>) =>
+			mapRowToDoctorServiceWithType(row),
+		)
 	} catch (error) {
 		console.error("Error fetching doctor services:", error)
 		throw new Error("Failed to fetch doctor services")
 	}
 }
 
-function mapRowToDoctorServiceWithType(row: Record<string, unknown>): DoctorServiceWithType {
+function mapRowToDoctorServiceWithType(
+	row: Record<string, unknown>,
+): DoctorServiceWithType {
 	return {
 		id: row.id as number,
 		doctor_id: row.doctor_id as string,
@@ -136,7 +139,9 @@ export async function getAllDoctorServices(): Promise<DoctorServiceWithType[]> {
 			INNER JOIN service_types st ON ds.service_type_id = st.id
 			ORDER BY ds.doctor_id ASC, st.name ASC`,
 		)
-		return result.rows.map((row: Record<string, unknown>) => mapRowToDoctorServiceWithType(row))
+		return result.rows.map((row: Record<string, unknown>) =>
+			mapRowToDoctorServiceWithType(row),
+		)
 	} catch (error) {
 		console.error("Error fetching all doctor services:", error)
 		throw new Error("Failed to fetch doctor services")
@@ -262,7 +267,9 @@ export async function createDoctorService(
 		if (error instanceof Error && error.message.includes("UNIQUE")) {
 			throw new Error("Service already exists for this doctor")
 		}
-		throw error instanceof Error ? error : new Error("Failed to create doctor service")
+		throw error instanceof Error
+			? error
+			: new Error("Failed to create doctor service")
 	}
 }
 
@@ -311,7 +318,9 @@ export async function updateDoctorService(
 		return result.rows[0] as DoctorService
 	} catch (error) {
 		console.error("Error updating doctor service:", error)
-		throw error instanceof Error ? error : new Error("Failed to update doctor service")
+		throw error instanceof Error
+			? error
+			: new Error("Failed to update doctor service")
 	}
 }
 
@@ -334,6 +343,8 @@ export async function deleteDoctorService(
 		}
 	} catch (error) {
 		console.error("Error deleting doctor service:", error)
-		throw error instanceof Error ? error : new Error("Failed to delete doctor service")
+		throw error instanceof Error
+			? error
+			: new Error("Failed to delete doctor service")
 	}
 }

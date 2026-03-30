@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import { useAuth } from "../../auth"
-import { fetchDashboardData } from "../services/dashboardDataService"
 import type { DashboardDataResult } from "../services/dashboardDataService"
+import { fetchDashboardData } from "../services/dashboardDataService"
 
 export const useDashboardData = () => {
 	const { user } = useAuth()
@@ -12,10 +12,7 @@ export const useDashboardData = () => {
 	const loadData = useCallback(async () => {
 		setLoading(true)
 		try {
-			const result = await fetchDashboardData(
-				user?.role,
-				user?.document_id,
-			)
+			const result = await fetchDashboardData(user?.role, user?.document_id)
 			setData(result)
 		} catch (error) {
 			console.error("Error cargando datos del dashboard:", error)
