@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
+import imgDrCarlosOlivares from "../../../assets/dr-carlos.jpeg"
 import imgDraNinive from "../../../assets/dra-ninive.jpg"
-import imgDrCarlosOlivares from "../../../assets/dra-ninive.jpg"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import TeamCard from "./TeamCard"
 

@@ -38,7 +38,7 @@ const NavBar = () => {
 						<a
 							key={item.href}
 							href={item.href}
-							className="hidden md:inline-block ml-4 text-text font-semibold"
+							className="hidden md:inline-block ml-4 text-text font-semibold hover:text-primary transition-colors duration-300 ease-in-out"
 						>
 							{item.label}
 						</a>
