@@ -1,11 +1,8 @@
-import { Input, Select, Tooltip } from "antd"
 import type { InputProps } from "antd"
-import { FaExclamationCircle } from "react-icons/fa"
+import { Input, Select, Tooltip } from "antd"
 import { useMemo } from "react"
-import {
-	COUNTRY_PHONE_OPTIONS,
-	splitE164,
-} from "../../utils/phoneFormat"
+import { FaExclamationCircle } from "react-icons/fa"
+import { COUNTRY_PHONE_OPTIONS, splitE164 } from "../../utils/phoneFormat"
 
 const TOOLTIP_PHONE_MSG =
 	"Si el número de teléfono no es ingresado correctamente no se le podrá enviar el mensaje para sus citas."
@@ -57,7 +54,10 @@ const PhoneInput = ({
 	)
 
 	// Una vez seleccionado: solo el código numérico (ej. +58)
-	const selectLabelRender = (props: { value?: string; label?: React.ReactNode }) => {
+	const selectLabelRender = (props: {
+		value?: string
+		label?: React.ReactNode
+	}) => {
 		const opt = COUNTRY_PHONE_OPTIONS.find((c) => c.code === props.value)
 		return opt?.dial ?? props.label ?? ""
 	}
@@ -81,7 +81,8 @@ const PhoneInput = ({
 
 	// Placeholder sin código de país (el código va en el selector)
 	const normalizedPlaceholder =
-		(placeholder ?? "4XX XXX XXXX").replace(/^\s*\+?\d+\s+/, "") || "4XX XXX XXXX"
+		(placeholder ?? "4XX XXX XXXX").replace(/^\s*\+?\d+\s+/, "") ||
+		"4XX XXX XXXX"
 
 	return (
 		<Input.Group compact className={className} style={{ display: "flex" }}>

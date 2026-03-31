@@ -20,7 +20,9 @@ export async function getSurgeries() {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error || "Error al obtener las cirugías")
+			throw new Error(
+				error.response.data.error || "Error al obtener las cirugías",
+			)
 		}
 		throw new Error("Error al conectar con el servidor")
 	}
@@ -32,7 +34,9 @@ export async function getSurgeryById(id: number) {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error || "Error al obtener la cirugía")
+			throw new Error(
+				error.response.data.error || "Error al obtener la cirugía",
+			)
 		}
 		throw new Error("Error al conectar con el servidor")
 	}
@@ -47,7 +51,9 @@ export async function updateSurgeryById(
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error || "Error al actualizar la cirugía")
+			throw new Error(
+				error.response.data.error || "Error al actualizar la cirugía",
+			)
 		}
 		throw new Error("Error al conectar con el servidor")
 	}
@@ -59,7 +65,9 @@ export async function deleteSurgeryById(id: number) {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(error.response.data.error || "Error al eliminar la cirugía")
+			throw new Error(
+				error.response.data.error || "Error al eliminar la cirugía",
+			)
 		}
 		throw new Error("Error al conectar con el servidor")
 	}

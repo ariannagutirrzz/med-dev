@@ -72,9 +72,9 @@ function readConfiguredFrontendUrl(): string | null {
  * Prefer env vars. If unset, use request `Origin` when it matches TRUSTED_EMAIL_LINK_ORIGINS
  * (needed when multiple frontends are listed and no single FRONTEND_URL).
  */
-export function getPublicFrontendUrlForRequest(
-	req?: { get(name: string): string | undefined },
-): string {
+export function getPublicFrontendUrlForRequest(req?: {
+	get(name: string): string | undefined
+}): string {
 	const configured = readConfiguredFrontendUrl()
 	if (configured) return configured
 
@@ -111,7 +111,9 @@ export function getPublicFrontendUrl(): string {
 /** Call once after loadEnv (e.g. from index.ts) so production logs show what will be used. */
 export function logEmailLinkBaseAtStartup(): void {
 	if (process.env.NODE_ENV !== "production") return
-	const base = readConfiguredFrontendUrl() ?? "http://localhost:5173 (fallback — not configured)"
+	const base =
+		readConfiguredFrontendUrl() ??
+		"http://localhost:5173 (fallback — not configured)"
 	if (base.includes("localhost") || base.includes("127.0.0.1")) {
 		console.error(
 			`[med-dev] EMAIL LINK BASE: ${base} — users will get broken verification links until you set FRONTEND_URL (or SITE_URL) on this server.`,

@@ -3,7 +3,9 @@ import { getApiErrorMessage } from "../shared/utils/getApiErrorMessage"
 
 /** Token from either "recordar dispositivo" (localStorage) or session-only (sessionStorage). */
 export function getStoredToken(): string | null {
-	return localStorage.getItem("AUTH_TOKEN") || sessionStorage.getItem("AUTH_TOKEN")
+	return (
+		localStorage.getItem("AUTH_TOKEN") || sessionStorage.getItem("AUTH_TOKEN")
+	)
 }
 
 /** User JSON from the same storage as the token. */
@@ -67,5 +69,5 @@ api.interceptors.response.use(
 
 		// Un solo `Error` con mensaje listo para toast.error(err.message) / getApiErrorMessage redundante
 		return Promise.reject(new Error(getApiErrorMessage(error)))
-	}
+	},
 )

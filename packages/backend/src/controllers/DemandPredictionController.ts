@@ -27,7 +27,8 @@ export async function getDemandPredictionHandler(
 		const { document_id: userId, role } = req.user
 		if (role !== "Médico" && role !== "Admin") {
 			res.status(403).json({
-				error: "Solo médicos y administradores pueden acceder a la predicción de demandas.",
+				error:
+					"Solo médicos y administradores pueden acceder a la predicción de demandas.",
 			})
 			return
 		}
@@ -49,8 +50,7 @@ export async function getDemandPredictionHandler(
 	} catch (error) {
 		console.error("Error in demand prediction:", error)
 		res.status(500).json({
-			error:
-				error instanceof Error ? error.message : "Internal server error",
+			error: error instanceof Error ? error.message : "Internal server error",
 		})
 	}
 }
@@ -95,8 +95,7 @@ export async function getChartsStatsHandler(
 	} catch (error) {
 		console.error("Error in charts stats:", error)
 		res.status(500).json({
-			error:
-				error instanceof Error ? error.message : "Internal server error",
+			error: error instanceof Error ? error.message : "Internal server error",
 		})
 	}
 }

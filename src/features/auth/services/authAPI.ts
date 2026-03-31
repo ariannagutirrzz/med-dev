@@ -13,7 +13,9 @@ export async function verifyEmailWithToken(token: string) {
 	}
 	if (!res.ok) {
 		throw new Error(
-			typeof data.error === "string" ? data.error : "No se pudo verificar el correo",
+			typeof data.error === "string"
+				? data.error
+				: "No se pudo verificar el correo",
 		)
 	}
 	return data
@@ -33,7 +35,9 @@ export async function resendVerificationEmail(email: string) {
 	}
 	if (!res.ok) {
 		throw new Error(
-			typeof data.error === "string" ? data.error : "No se pudo reenviar el correo",
+			typeof data.error === "string"
+				? data.error
+				: "No se pudo reenviar el correo",
 		)
 	}
 	return data
@@ -48,7 +52,10 @@ export async function requestPasswordReset(email: string) {
 	return data
 }
 
-export async function resetPasswordWithToken(token: string, newPassword: string) {
+export async function resetPasswordWithToken(
+	token: string,
+	newPassword: string,
+) {
 	const { data } = await api.post<{ success: boolean; message: string }>(
 		"/auth/reset-password",
 		{ token, newPassword },

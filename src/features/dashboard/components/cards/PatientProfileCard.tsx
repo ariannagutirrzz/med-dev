@@ -43,13 +43,20 @@ const Row = ({
 	<div className="flex items-start gap-2 sm:gap-3 py-1.5 sm:py-2 border-b border-gray-100 last:border-0">
 		<Icon className="text-primary text-sm sm:text-base mt-0.5 shrink-0" />
 		<div className="min-w-0 flex-1">
-			<p className="text-[11px] sm:text-xs text-gray-400 font-medium">{label}</p>
-			<p className="text-xs sm:text-sm text-gray-800 break-words">{value || "—"}</p>
+			<p className="text-[11px] sm:text-xs text-gray-400 font-medium">
+				{label}
+			</p>
+			<p className="text-xs sm:text-sm text-gray-800 break-words">
+				{value || "—"}
+			</p>
 		</div>
 	</div>
 )
 
-export const PatientProfileCard = ({ user, loading }: PatientProfileCardProps) => {
+export const PatientProfileCard = ({
+	user,
+	loading,
+}: PatientProfileCardProps) => {
 	if (loading) {
 		return (
 			<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 flex flex-col min-h-[200px]">
@@ -89,11 +96,27 @@ export const PatientProfileCard = ({ user, loading }: PatientProfileCardProps) =
 			<div className="space-y-0">
 				<Row icon={CiUser} label="Nombre" value={user.name} />
 				<Row icon={CiMail} label="Correo" value={user.email} />
-				<Row icon={FaAddressCard} label="Cédula / Documento" value={user.document_id || ""} />
+				<Row
+					icon={FaAddressCard}
+					label="Cédula / Documento"
+					value={user.document_id || ""}
+				/>
 				<Row icon={FaPhone} label="Teléfono" value={user.phone || ""} />
-				<Row icon={MdCake} label="Fecha de nacimiento" value={formatDate(user.birthdate)} />
-				<Row icon={FaVenusMars} label="Género" value={genderLabel(user.gender)} />
-				<Row icon={FaMapMarkerAlt} label="Dirección" value={user.address || ""} />
+				<Row
+					icon={MdCake}
+					label="Fecha de nacimiento"
+					value={formatDate(user.birthdate)}
+				/>
+				<Row
+					icon={FaVenusMars}
+					label="Género"
+					value={genderLabel(user.gender)}
+				/>
+				<Row
+					icon={FaMapMarkerAlt}
+					label="Dirección"
+					value={user.address || ""}
+				/>
 				{user.blood_type && (
 					<Row icon={FaTint} label="Tipo de sangre" value={user.blood_type} />
 				)}

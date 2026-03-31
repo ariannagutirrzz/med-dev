@@ -168,7 +168,10 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 			})
 
 			if (response.data.user?.image) {
-				setProfileData((prev) => ({ ...prev, image: response.data.user.image }))
+				setProfileData((prev) => ({
+					...prev,
+					image: response.data.user.image,
+				}))
 				setPreviewUrl(null)
 				setSelectedFile(null)
 			}
@@ -392,7 +395,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 												})
 											}
 											placeholder="4XX XXX XXXX"
-											className="w-full"
+											className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 										/>
 									</div>
 									<div>
@@ -412,14 +415,14 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 									</div>
 								</div>
 								<div className="mt-6 flex justify-end">
-									<button
+									<Button
 										type="button"
 										onClick={handleUpdateProfile}
 										disabled={saving}
-										className="px-6 py-2 bg-primary text-white! font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
+										className="px-6 py-2 bg-primary text-white! font-semibold! rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
 									>
 										{saving ? "Guardando..." : "Guardar Cambios"}
-									</button>
+									</Button>
 								</div>
 							</div>
 						</div>

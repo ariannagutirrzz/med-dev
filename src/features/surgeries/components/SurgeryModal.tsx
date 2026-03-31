@@ -213,7 +213,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 	if (!isOpen) return null
 
 	const inputClass =
-		"w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+		"w-full pl-3 pr-4 py-2 border border-gray-300 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
 
 	const surgeryTypes = [
 		"Cirugía Mayor",
@@ -466,6 +466,7 @@ const SurgeryModal: React.FC<SurgeryModalProps> = ({
 								id="surgery_time"
 								placeholder="Seleccionar hora"
 								className="w-full h-10"
+								classNames={{ popup: "timepicker-custom-popup" }}
 								format="HH:mm" // Formato de 24 horas
 								// Convertimos la parte de la hora del string ISO a objeto dayjs
 								value={

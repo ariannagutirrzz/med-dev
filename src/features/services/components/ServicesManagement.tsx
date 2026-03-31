@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import {
-	FaDollarSign,
-	FaEdit,
-	FaPlus,
-	FaSave,
-	FaTimes,
-	FaTrash,
-} from "react-icons/fa"
+import { FaDollarSign, FaPlus, FaSave, FaTimes } from "react-icons/fa"
 import { toast } from "react-toastify"
-import { Button, DataFilterPanel, formatPrice } from "../../../shared"
+import { Button, DataFilterPanel } from "../../../shared"
 import LoadingSpinner from "../../../shared/components/common/LoadingSpinner"
 import { getCurrencyRates } from "../../currency/services/CurrencyAPI"
 import {
@@ -22,6 +15,7 @@ import {
 	getMyServices,
 	updateService,
 } from "../services/ServicesAPI"
+import ServicesList from "./ServicesList"
 
 const ServicesManagement: React.FC = () => {
 	const [services, setServices] = useState<DoctorServiceWithType[]>([])
@@ -43,7 +37,7 @@ const ServicesManagement: React.FC = () => {
 			setLoading(true)
 			const [servicesData, settingsData, ratesData] = await Promise.all([
 				getMyServices(),
-				getSettings(),
+				getSettings().catch(() => null),
 				getCurrencyRates().catch(() => null),
 			])
 			setServices(servicesData)
@@ -83,11 +77,7 @@ const ServicesManagement: React.FC = () => {
 	const handleCloseModal = () => {
 		setShowModal(false)
 		setEditingService(null)
-		setFormData({
-			service_name: "",
-			price_usd: "",
-			is_active: true,
-		})
+		setFormData({ service_name: "", price_usd: "", is_active: true })
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -122,11 +112,8 @@ const ServicesManagement: React.FC = () => {
 	}
 
 	const handleDelete = async (id: number) => {
-		if (
-			!window.confirm("¿Estás seguro de que deseas eliminar este servicio?")
-		) {
+		if (!window.confirm("¿Estás seguro de que deseas eliminar este servicio?"))
 			return
-		}
 		try {
 			await deleteService(id)
 			toast.success("Servicio eliminado exitosamente")
@@ -135,12 +122,6 @@ const ServicesManagement: React.FC = () => {
 			console.error("Error deleting service:", error)
 			toast.error("Error al eliminar el servicio")
 		}
-	}
-
-	const getPriceInBS = (priceUsd: number): number => {
-		const exchangeRate =
-			settings?.custom_exchange_rate || currencyRates?.oficial?.promedio || 0
-		return priceUsd * exchangeRate
 	}
 
 	const filteredServices = useMemo(() => {
@@ -152,6 +133,9 @@ const ServicesManagement: React.FC = () => {
 				(s.service_type.description?.toLowerCase().includes(q) ?? false),
 		)
 	}, [services, searchTerm])
+
+	const exchangeRate =
+		settings?.custom_exchange_rate || currencyRates?.oficial?.promedio || 0
 
 	if (loading) {
 		return (
@@ -184,95 +168,24 @@ const ServicesManagement: React.FC = () => {
 						size="middle"
 						onClick={() => handleOpenModal()}
 						icon={<FaPlus className="w-4 h-4" />}
-						className="w-full sm:w-auto !min-h-0 !px-3 !py-2 !rounded-lg !text-sm"
+						className="w-full sm:w-auto px-6! py-3! rounded-xl! font-bold whitespace-nowrap"
 					>
 						Agregar Servicio
 					</Button>
 				}
 			/>
 
-			{/* Services List */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-				{filteredServices.map((service) => {
-					const priceBS = getPriceInBS(service.price_usd)
-					const exchangeRate =
-						settings?.custom_exchange_rate ||
-						currencyRates?.oficial?.promedio ||
-						0
+			{/* Aquí inyectamos el componente limpio */}
+			{services.length > 0 && filteredServices.length > 0 && (
+				<ServicesList
+					services={filteredServices}
+					exchangeRate={exchangeRate}
+					onEdit={handleOpenModal}
+					onDelete={handleDelete}
+				/>
+			)}
 
-					return (
-						<div
-							key={service.id}
-							className={`bg-white rounded-lg border border-gray-200 shadow p-4 ${
-								!service.is_active ? "opacity-60" : ""
-							}`}
-						>
-							<div className="flex justify-between items-start mb-3">
-								<div>
-									<h3 className="text-base font-semibold text-gray-800">
-										{service.service_type.name}
-									</h3>
-									{service.service_type.description && (
-										<p className="text-xs text-gray-600 mt-0.5">
-											{service.service_type.description}
-										</p>
-									)}
-								</div>
-								{!service.is_active && (
-									<span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">
-										Inactivo
-									</span>
-								)}
-							</div>
-
-							<div className="space-y-1.5 mb-3">
-								<div className="flex items-center justify-between text-sm">
-									<span className="text-gray-600">Precio USD:</span>
-									<span className="font-semibold text-primary">
-										${formatPrice(service.price_usd)}
-									</span>
-								</div>
-								{exchangeRate > 0 && (
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-gray-600">Precio BS:</span>
-										<span className="font-semibold text-green-600">
-											Bs. {formatPrice(priceBS)}
-										</span>
-									</div>
-								)}
-								{exchangeRate > 0 && (
-									<div className="text-xs text-gray-500 pt-1.5 border-t border-gray-100">
-										Tasa: {formatPrice(exchangeRate)} Bs/$
-									</div>
-								)}
-							</div>
-
-							<div className="flex gap-2">
-								<Button
-									type="button"
-									size="middle"
-									onClick={() => handleOpenModal(service)}
-									icon={<FaEdit className="w-3.5 h-3.5" />}
-									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm bg-blue-500 border-0 text-white hover:!bg-blue-600"
-								>
-									Editar
-								</Button>
-								<Button
-									type="button"
-									size="middle"
-									variant="default"
-									onClick={() => handleDelete(service.id)}
-									icon={<FaTrash className="w-3.5 h-3.5" />}
-									className="flex-1 !min-h-0 !px-2 !py-1.5 !rounded-lg !text-sm !text-red-700 !border-red-300 bg-white hover:!bg-red-50"
-								>
-									Eliminar
-								</Button>
-							</div>
-						</div>
-					)
-				})}
-			</div>
-
+			{/* Empty States */}
 			{services.length === 0 && (
 				<div className="text-center py-8 bg-white rounded-lg border border-gray-200">
 					<FaDollarSign className="text-4xl text-gray-300 mx-auto mb-3" />

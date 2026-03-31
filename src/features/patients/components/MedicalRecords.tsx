@@ -1,7 +1,12 @@
 import { Pagination } from "antd"
 import { useCallback, useEffect, useState } from "react"
 import { CiCalendar, CiMail, CiPhone, CiSquarePlus } from "react-icons/ci"
-import { LuArrowLeft, LuPencilLine, LuPlus, LuStethoscope } from "react-icons/lu"
+import {
+	LuArrowLeft,
+	LuPencilLine,
+	LuPlus,
+	LuStethoscope,
+} from "react-icons/lu"
 import type { Patient } from "../../../shared"
 import {
 	Button,
@@ -32,7 +37,7 @@ export default function MedicalRecords() {
 	const { user } = useAuth()
 	const [currentPage, setCurrentPage] = useState(1)
 	const [isLoading, setIsLoading] = useState(false)
-	const pageSize = 8 // Número de pacientes por página
+	const pageSize = 7 // Número de pacientes por página
 	const isAdmin = user?.role === "Admin"
 
 	useEffect(() => {
@@ -53,7 +58,9 @@ export default function MedicalRecords() {
 			setIsLoading(true)
 			let data: { patients: Patient[] }
 			if (isAdmin) {
-				data = await getPatients(doctorFilter === "all" ? undefined : doctorFilter)
+				data = await getPatients(
+					doctorFilter === "all" ? undefined : doctorFilter,
+				)
 			} else {
 				data = await getDoctorPatients()
 			}
@@ -336,7 +343,8 @@ export default function MedicalRecords() {
 														Sin médico asignado
 													</p>
 													<p className="text-[9px] text-gray-500 leading-tight mt-0.5 line-clamp-2">
-														La primera cita, cirugía o evolución con usted los vincula.
+														La primera cita, cirugía o evolución con usted los
+														vincula.
 													</p>
 												</div>
 											) : record.attending_doctors &&
@@ -370,7 +378,9 @@ export default function MedicalRecords() {
 													e.stopPropagation()
 													handleEditPatient(e, record)
 												}}
-												icon={<LuPencilLine className="h-4 w-4 text-gray-600" />}
+												icon={
+													<LuPencilLine className="h-4 w-4 text-gray-600" />
+												}
 												className="flex! size-8! min-h-8! min-w-8! max-h-8! max-w-8! shrink-0 items-center! justify-center! p-0! leading-none! bg-white! border! border-gray-200! text-gray-600 hover:text-primary! hover:border-primary! rounded-lg! shadow-sm"
 												title="Editar información del paciente"
 											/>

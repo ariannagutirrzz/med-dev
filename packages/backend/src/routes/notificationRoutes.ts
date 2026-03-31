@@ -1,10 +1,10 @@
 import { Router } from "express"
 import {
+	deleteNotificationById,
 	getNotifications,
 	getUnreadCount,
-	markAsRead,
 	markAllAsRead,
-	deleteNotificationById,
+	markAsRead,
 } from "../controllers/NotificationController.js"
 import { authenticate } from "../middleware/auth.js"
 

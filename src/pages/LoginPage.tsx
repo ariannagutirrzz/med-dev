@@ -138,13 +138,14 @@ const LoginPage = () => {
 					<h1 className="text-4xl md:text-5xl font-semibold text-primary-dark mb-2">
 						Elige una opción
 					</h1>
-					<p className="text-lg md:text-xl  text-secondary mb-6">
-						
-					</p>
+					<p className="text-lg md:text-xl  text-secondary mb-6"></p>
 
 					{/* Selection Buttons */}
 					<div className="flex justify-center mb-6">
-						<SelectionButtons isLogin={isLogin} onAuthToggle={handleAuthToggle} />
+						<SelectionButtons
+							isLogin={isLogin}
+							onAuthToggle={handleAuthToggle}
+						/>
 					</div>
 				</div>
 
@@ -160,7 +161,9 @@ const LoginPage = () => {
 
 				{signupSuccess && (
 					<div className="mb-4 flex min-h-16 max-w-3xl items-center rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 mx-auto">
-						<p className="text-left text-sm text-primary-green">{signupSuccess}</p>
+						<p className="text-left text-sm text-primary-green">
+							{signupSuccess}
+						</p>
 					</div>
 				)}
 

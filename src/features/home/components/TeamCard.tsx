@@ -21,7 +21,7 @@ const TeamCard = ({
 				<img
 					src={image}
 					alt={name}
-					className="w-full h-full object-cover transition-transform duration-300 ease-in-out hover:scale-110"
+					className="w-full h-full object-cover  duration-300 ease-in-out "
 				/>
 			</div>
 			<div className="p-6">

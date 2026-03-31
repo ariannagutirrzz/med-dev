@@ -17,7 +17,9 @@ const pool = new Pool({
 
 async function addServiceColumns() {
 	try {
-		console.log("Adding service_id and price columns to appointments and surgeries...")
+		console.log(
+			"Adding service_id and price columns to appointments and surgeries...",
+		)
 
 		// Check and add to appointments
 		const checkAppointmentsServiceId = await pool.query(`

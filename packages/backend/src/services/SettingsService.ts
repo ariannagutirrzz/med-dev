@@ -1,5 +1,8 @@
 import { query } from "../db.js"
-import type { CreateSettingsInput, UpdateSettingsInput } from "../schemas/settingsSchema.js"
+import type {
+	CreateSettingsInput,
+	UpdateSettingsInput,
+} from "../schemas/settingsSchema.js"
 
 /**
  * SettingsService

@@ -1,9 +1,9 @@
 import { useState } from "react"
+import { FaEnvelope } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { toast } from "react-toastify"
-import { FaEnvelope } from "react-icons/fa"
-import { Button } from "../shared"
 import { requestPasswordReset } from "../features/auth/services/authAPI"
+import { Button } from "../shared"
 
 const ForgotPasswordPage = () => {
 	const [email, setEmail] = useState("")

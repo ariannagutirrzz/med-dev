@@ -13,6 +13,7 @@ export interface ServiceType {
 export interface DoctorService {
 	id: number
 	doctor_id: string
+	doctor_name: string
 	service_type_id: number
 	price_usd: number
 	is_active: boolean
@@ -133,9 +134,7 @@ export async function getServiceById(
 		return data.service
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to fetch service",
-			)
+			throw new Error(error.response.data.error || "Failed to fetch service")
 		}
 		throw new Error("Failed to fetch service")
 	}
@@ -155,9 +154,7 @@ export async function createService(
 		return data.service
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to create service",
-			)
+			throw new Error(error.response.data.error || "Failed to create service")
 		}
 		throw new Error("Failed to create service")
 	}
@@ -178,9 +175,7 @@ export async function updateService(
 		return data.service
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to update service",
-			)
+			throw new Error(error.response.data.error || "Failed to update service")
 		}
 		throw new Error("Failed to update service")
 	}
@@ -194,9 +189,7 @@ export async function deleteService(id: number): Promise<void> {
 		await api.delete(`/services/${id}`)
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to delete service",
-			)
+			throw new Error(error.response.data.error || "Failed to delete service")
 		}
 		throw new Error("Failed to delete service")
 	}

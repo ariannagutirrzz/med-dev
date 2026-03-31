@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import { getStoredToken } from "../../../config/axios"
-import { getCurrencyRates, type CurrencyRates } from "../../currency"
-import { getSettings, updateSettings, type UserSettings } from "../../settings"
+import { type CurrencyRates, getCurrencyRates } from "../../currency"
+import { getSettings, type UserSettings, updateSettings } from "../../settings"
 
 export const useCurrencyRates = () => {
 	const [loading, setLoading] = useState(true)
-	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(
-		null,
-	)
+	const [currencyRates, setCurrencyRates] = useState<CurrencyRates | null>(null)
 	const [settings, setSettings] = useState<UserSettings | null>(null)
 	const [customRateInput, setCustomRateInput] = useState("")
 	const [savingCustomRate, setSavingCustomRate] = useState(false)
@@ -89,7 +87,9 @@ export const useCurrencyRates = () => {
 				errorMessage.includes("401") ||
 				errorMessage.includes("No Autorizado")
 			) {
-				toast.error("Tu sesión ha expirado. Por favor inicia sesión nuevamente.")
+				toast.error(
+					"Tu sesión ha expirado. Por favor inicia sesión nuevamente.",
+				)
 			}
 		} finally {
 			setSavingCustomRate(false)

@@ -47,9 +47,7 @@ export async function getSettings(): Promise<UserSettings> {
 		return data.settings
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to fetch settings",
-			)
+			throw new Error(error.response.data.error || "Failed to fetch settings")
 		}
 		throw new Error("Failed to fetch settings")
 	}
@@ -76,9 +74,7 @@ export async function updateSettings(
 		return data.settings
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to update settings",
-			)
+			throw new Error(error.response.data.error || "Failed to update settings")
 		}
 		throw new Error("Failed to update settings")
 	}

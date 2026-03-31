@@ -18,7 +18,11 @@ export interface User {
 interface AuthContextType {
 	user: User | null
 	isAuthenticated: boolean
-	login: (email: string, password: string, rememberMe?: boolean) => Promise<void>
+	login: (
+		email: string,
+		password: string,
+		rememberMe?: boolean,
+	) => Promise<void>
 	logout: () => void
 	loading: boolean
 	refreshUser: () => Promise<void>
@@ -81,9 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				code?: string
 			}
 			const message =
-				typeof errorBody.error === "string"
-					? errorBody.error
-					: "Login failed"
+				typeof errorBody.error === "string" ? errorBody.error : "Login failed"
 			const err = new Error(message) as Error & { code?: string }
 			if (typeof errorBody.code === "string") {
 				err.code = errorBody.code

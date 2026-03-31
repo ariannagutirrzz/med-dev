@@ -58,13 +58,13 @@ const InventoryRow = ({
 				)}
 			</td>
 			<td className="px-6 py-4 text-right">
-				<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+				<div className="flex justify-end gap-1 transition-opacity">
 					<Button
 						type="button"
 						variant="text"
 						onClick={onEdit}
 						icon={<FaEdit size={16} />}
-						className="!p-2 !min-w-0 text-blue-600 hover:!bg-blue-100"
+						className="p-2! min-w-0! text-blue-600 hover:bg-blue-100!"
 						title="Editar"
 					/>
 					<Button
@@ -73,7 +73,7 @@ const InventoryRow = ({
 						danger
 						onClick={() => onDelete(item.id)}
 						icon={<FaTrashAlt size={14} />}
-						className="!p-2 !min-w-0 hover:!bg-red-100"
+						className="p-2! min-w-0! hover:bg-red-100!"
 						title="Eliminar"
 					/>
 				</div>

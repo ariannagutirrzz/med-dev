@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react"
 import { FaChartBar } from "react-icons/fa"
 import { toast } from "react-toastify"
 import {
+	getChartsStats,
 	type MonthCount,
 	type MonthRevenue,
-	getChartsStats,
 } from "../services/DemandPredictionAPI"
 import { BarChartCard } from "./BarChartCard"
 
@@ -30,7 +30,9 @@ function formatCurrency(n: number): string {
 const defaultRange = { start: "", end: "" }
 
 const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
-	const [ranges, setRanges] = useState<Record<ChartKey, { start: string; end: string }>>({
+	const [ranges, setRanges] = useState<
+		Record<ChartKey, { start: string; end: string }>
+	>({
 		appointments: { ...defaultRange },
 		surgeries: { ...defaultRange },
 		newPatients: { ...defaultRange },
@@ -77,24 +79,42 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 					end || undefined,
 				)
 				if (key === "appointments") {
-					setData((prev) => ({ ...prev, appointments: result.appointmentsByMonth }))
+					setData((prev) => ({
+						...prev,
+						appointments: result.appointmentsByMonth,
+					}))
 					if (result.appointmentsByMonthPredicted) {
-						setPredicted((p) => ({ ...p, appointments: result.appointmentsByMonthPredicted ?? null }))
+						setPredicted((p) => ({
+							...p,
+							appointments: result.appointmentsByMonthPredicted ?? null,
+						}))
 					}
 				} else if (key === "surgeries") {
 					setData((prev) => ({ ...prev, surgeries: result.surgeriesByMonth }))
 					if (result.surgeriesByMonthPredicted) {
-						setPredicted((p) => ({ ...p, surgeries: result.surgeriesByMonthPredicted ?? null }))
+						setPredicted((p) => ({
+							...p,
+							surgeries: result.surgeriesByMonthPredicted ?? null,
+						}))
 					}
 				} else if (key === "newPatients") {
-					setData((prev) => ({ ...prev, newPatients: result.newPatientsByMonth }))
+					setData((prev) => ({
+						...prev,
+						newPatients: result.newPatientsByMonth,
+					}))
 					if (result.newPatientsByMonthPredicted) {
-						setPredicted((p) => ({ ...p, newPatients: result.newPatientsByMonthPredicted ?? null }))
+						setPredicted((p) => ({
+							...p,
+							newPatients: result.newPatientsByMonthPredicted ?? null,
+						}))
 					}
 				} else {
 					setData((prev) => ({ ...prev, revenue: result.revenueByMonth }))
 					if (result.revenueByMonthPredicted) {
-						setPredicted((p) => ({ ...p, revenue: result.revenueByMonthPredicted ?? null }))
+						setPredicted((p) => ({
+							...p,
+							revenue: result.revenueByMonthPredicted ?? null,
+						}))
 					}
 				}
 			} catch (e) {
@@ -170,7 +190,13 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 		[fetchOneChart],
 	)
 
-	if (initialLoading && !data.appointments && !data.surgeries && !data.newPatients && !data.revenue) {
+	if (
+		initialLoading &&
+		!data.appointments &&
+		!data.surgeries &&
+		!data.newPatients &&
+		!data.revenue
+	) {
 		return (
 			<div className="flex justify-center py-12">
 				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
@@ -178,7 +204,13 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 		)
 	}
 
-	if (initialError && !data.appointments && !data.surgeries && !data.newPatients && !data.revenue) {
+	if (
+		initialError &&
+		!data.appointments &&
+		!data.surgeries &&
+		!data.newPatients &&
+		!data.revenue
+	) {
 		return (
 			<div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
 				{initialError}
@@ -263,13 +295,20 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 				})),
 			]
 		}
-		return hist.map((m) => ({ monthLabel: m.monthLabel, ingresos: m.revenue_usd }))
+		return hist.map((m) => ({
+			monthLabel: m.monthLabel,
+			ingresos: m.revenue_usd,
+		}))
 	})()
 
-	const appointmentsWithPrediction = isDefaultRange("appointments") && (predicted.appointments?.length ?? 0) > 0
-	const surgeriesWithPrediction = isDefaultRange("surgeries") && (predicted.surgeries?.length ?? 0) > 0
-	const newPatientsWithPrediction = isDefaultRange("newPatients") && (predicted.newPatients?.length ?? 0) > 0
-	const revenueWithPrediction = isDefaultRange("revenue") && (predicted.revenue?.length ?? 0) > 0
+	const appointmentsWithPrediction =
+		isDefaultRange("appointments") && (predicted.appointments?.length ?? 0) > 0
+	const surgeriesWithPrediction =
+		isDefaultRange("surgeries") && (predicted.surgeries?.length ?? 0) > 0
+	const newPatientsWithPrediction =
+		isDefaultRange("newPatients") && (predicted.newPatients?.length ?? 0) > 0
+	const revenueWithPrediction =
+		isDefaultRange("revenue") && (predicted.revenue?.length ?? 0) > 0
 
 	return (
 		<div className="space-y-6">
@@ -292,7 +331,10 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 							size="middle"
 							value={
 								ranges.appointments.start && ranges.appointments.end
-									? [dayjs(ranges.appointments.start), dayjs(ranges.appointments.end)]
+									? [
+											dayjs(ranges.appointments.start),
+											dayjs(ranges.appointments.end),
+										]
 									: null
 							}
 							onChange={(dates) => handleRangeChange("appointments", dates)}
@@ -309,10 +351,16 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 						<BarChartCard
 							embedded
 							title="Citas médicas por mes"
-							description={appointmentsWithPrediction ? "Histórico + predicción (promedio últimos 12 meses)" : "Total de citas programadas/completadas/pendientes"}
+							description={
+								appointmentsWithPrediction
+									? "Histórico + predicción (promedio últimos 12 meses)"
+									: "Total de citas programadas/completadas/pendientes"
+							}
 							data={appointmentsData}
 							dataKey={appointmentsWithPrediction ? "historico" : "citas"}
-							dataKeyPrediccion={appointmentsWithPrediction ? "prediccion" : undefined}
+							dataKeyPrediccion={
+								appointmentsWithPrediction ? "prediccion" : undefined
+							}
 							valueLabel="Citas"
 						/>
 					)}
@@ -344,10 +392,16 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 						<BarChartCard
 							embedded
 							title="Cirugías por mes (demanda sala)"
-							description={surgeriesWithPrediction ? "Histórico + predicción (promedio últimos 12 meses)" : "Solicitudes de sala de cirugía por mes"}
+							description={
+								surgeriesWithPrediction
+									? "Histórico + predicción (promedio últimos 12 meses)"
+									: "Solicitudes de sala de cirugía por mes"
+							}
 							data={surgeriesData}
 							dataKey={surgeriesWithPrediction ? "historico" : "cirugias"}
-							dataKeyPrediccion={surgeriesWithPrediction ? "prediccion" : undefined}
+							dataKeyPrediccion={
+								surgeriesWithPrediction ? "prediccion" : undefined
+							}
 							valueLabel="Cirugías"
 						/>
 					)}
@@ -362,7 +416,10 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 							size="middle"
 							value={
 								ranges.newPatients.start && ranges.newPatients.end
-									? [dayjs(ranges.newPatients.start), dayjs(ranges.newPatients.end)]
+									? [
+											dayjs(ranges.newPatients.start),
+											dayjs(ranges.newPatients.end),
+										]
 									: null
 							}
 							onChange={(dates) => handleRangeChange("newPatients", dates)}
@@ -379,10 +436,16 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 						<BarChartCard
 							embedded
 							title="Nuevos pacientes por mes"
-							description={newPatientsWithPrediction ? "Histórico + predicción (promedio últimos 12 meses)" : "Pacientes registrados por mes"}
+							description={
+								newPatientsWithPrediction
+									? "Histórico + predicción (promedio últimos 12 meses)"
+									: "Pacientes registrados por mes"
+							}
 							data={newPatientsData}
 							dataKey={newPatientsWithPrediction ? "historico" : "pacientes"}
-							dataKeyPrediccion={newPatientsWithPrediction ? "prediccion" : undefined}
+							dataKeyPrediccion={
+								newPatientsWithPrediction ? "prediccion" : undefined
+							}
 							valueLabel="Pacientes"
 						/>
 					)}
@@ -414,10 +477,16 @@ const ChartsSection = ({ doctorId }: ChartsSectionProps) => {
 						<BarChartCard
 							embedded
 							title="Ingresos por mes (USD)"
-							description={revenueWithPrediction ? "Histórico + predicción (promedio últimos 12 meses)" : "Citas y cirugías con precio"}
+							description={
+								revenueWithPrediction
+									? "Histórico + predicción (promedio últimos 12 meses)"
+									: "Citas y cirugías con precio"
+							}
 							data={revenueData}
 							dataKey={revenueWithPrediction ? "historico" : "ingresos"}
-							dataKeyPrediccion={revenueWithPrediction ? "prediccion" : undefined}
+							dataKeyPrediccion={
+								revenueWithPrediction ? "prediccion" : undefined
+							}
 							valueLabel="Ingresos"
 							formatValue={formatCurrency}
 							yAxisWidth={64}

@@ -61,7 +61,9 @@ export async function getUnreadCount(): Promise<number> {
 /**
  * Mark a notification as read
  */
-export async function markAsRead(notificationId: number): Promise<Notification> {
+export async function markAsRead(
+	notificationId: number,
+): Promise<Notification> {
 	try {
 		const { data } = await api.patch<{ notification: Notification }>(
 			`/notifications/${notificationId}/read`,
@@ -88,9 +90,7 @@ export async function markAllAsRead(): Promise<{ count: number }> {
 		return data
 	} catch (error) {
 		if (isAxiosError(error) && error.response) {
-			throw new Error(
-				error.response.data.error || "Failed to mark all as read",
-			)
+			throw new Error(error.response.data.error || "Failed to mark all as read")
 		}
 		throw new Error("Failed to mark all as read")
 	}

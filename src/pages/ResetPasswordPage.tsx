@@ -1,9 +1,9 @@
 import { useState } from "react"
+import { FaLock } from "react-icons/fa"
 import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
-import { FaLock } from "react-icons/fa"
-import { Button } from "../shared"
 import { resetPasswordWithToken } from "../features/auth/services/authAPI"
+import { Button } from "../shared"
 
 const ResetPasswordPage = () => {
 	const [searchParams] = useSearchParams()
@@ -36,7 +36,9 @@ const ResetPasswordPage = () => {
 			toast.success("Contraseña actualizada. Ya puedes iniciar sesión.")
 		} catch (err) {
 			const message =
-				err instanceof Error ? err.message : "Error al restablecer la contraseña"
+				err instanceof Error
+					? err.message
+					: "Error al restablecer la contraseña"
 			toast.error(message)
 		} finally {
 			setLoading(false)
@@ -72,8 +74,8 @@ const ResetPasswordPage = () => {
 				<div className="w-full max-w-md text-center">
 					<div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6">
 						<p className="text-green-800">
-							Tu contraseña se actualizó correctamente. Ya puedes iniciar
-							sesión con tu nueva contraseña.
+							Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión
+							con tu nueva contraseña.
 						</p>
 					</div>
 					<Link to="/login">

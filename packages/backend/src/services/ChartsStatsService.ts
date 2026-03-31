@@ -17,8 +17,18 @@ export interface MonthRevenue {
 }
 
 const MONTH_NAMES_ES = [
-	"Ene", "Feb", "Mar", "Abr", "May", "Jun",
-	"Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+	"Ene",
+	"Feb",
+	"Mar",
+	"Abr",
+	"May",
+	"Jun",
+	"Jul",
+	"Ago",
+	"Sep",
+	"Oct",
+	"Nov",
+	"Dic",
 ]
 
 function toMonthLabel(year: number, month: number): string {
@@ -323,13 +333,17 @@ export async function getChartsStats(
 	startDate?: string,
 	endDate?: string,
 ): Promise<ChartsStatsResult> {
-	const [appointmentsByMonth, surgeriesByMonth, newPatientsByMonth, revenueByMonth] =
-		await Promise.all([
-			getAppointmentsByMonth(doctorId, startDate, endDate),
-			getSurgeriesByMonth(doctorId, startDate, endDate),
-			getNewPatientsByMonth(startDate, endDate),
-			getRevenueByMonth(doctorId, startDate, endDate),
-		])
+	const [
+		appointmentsByMonth,
+		surgeriesByMonth,
+		newPatientsByMonth,
+		revenueByMonth,
+	] = await Promise.all([
+		getAppointmentsByMonth(doctorId, startDate, endDate),
+		getSurgeriesByMonth(doctorId, startDate, endDate),
+		getNewPatientsByMonth(startDate, endDate),
+		getRevenueByMonth(doctorId, startDate, endDate),
+	])
 
 	const result: ChartsStatsResult = {
 		appointmentsByMonth,
@@ -341,7 +355,8 @@ export async function getChartsStats(
 	// When using default range (last 12 months), add predicted next N months (average per month).
 	if (!startDate || !endDate) {
 		const sum = (arr: MonthCount[]) => arr.reduce((s, m) => s + m.count, 0)
-		const sumRev = (arr: MonthRevenue[]) => arr.reduce((s, m) => s + m.revenue_usd, 0)
+		const sumRev = (arr: MonthRevenue[]) =>
+			arr.reduce((s, m) => s + m.revenue_usd, 0)
 		const n = Math.max(1, appointmentsByMonth.length)
 		const avgApp = Math.round((sum(appointmentsByMonth) / n) * 10) / 10
 		const avgSurg = Math.round((sum(surgeriesByMonth) / n) * 10) / 10

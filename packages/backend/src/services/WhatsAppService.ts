@@ -11,7 +11,8 @@ class WhatsAppService {
 	constructor() {
 		const accountSid = process.env.TWILIO_ACCOUNT_SID
 		const authToken = process.env.TWILIO_AUTH_TOKEN
-		this.whatsappNumber = process.env.TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886"
+		this.whatsappNumber =
+			process.env.TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886"
 
 		if (accountSid && authToken) {
 			this.client = twilio(accountSid, authToken)
@@ -108,7 +109,8 @@ class WhatsAppService {
 			minute: "2-digit",
 		})
 
-		const message = `🏥 *Unidad de Pleura*\n\n` +
+		const message =
+			`🏥 *Unidad de Pleura*\n\n` +
 			`Hola ${patientName},\n\n` +
 			`Le recordamos que tiene una cita programada:\n\n` +
 			`📅 *Fecha y Hora:* ${formattedDate}\n` +
@@ -129,7 +131,8 @@ class WhatsAppService {
 		currentStock: number,
 		minStock: number,
 	): Promise<boolean> {
-		const message = `⚠️ *Alerta de Inventario - Unidad de Pleura*\n\n` +
+		const message =
+			`⚠️ *Alerta de Inventario - Unidad de Pleura*\n\n` +
 			`*Stock Bajo Detectado*\n\n` +
 			`📦 *Insumo:* ${supplyName}\n` +
 			`📊 *Stock Actual:* ${currentStock}\n` +
@@ -148,7 +151,8 @@ class WhatsAppService {
 		title: string,
 		message: string,
 	): Promise<boolean> {
-		const fullMessage = `🏥 *Unidad de Pleura*\n\n` +
+		const fullMessage =
+			`🏥 *Unidad de Pleura*\n\n` +
 			`*${title}*\n\n` +
 			`${message}\n\n` +
 			`_Este es un mensaje automático._`

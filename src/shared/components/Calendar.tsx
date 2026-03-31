@@ -78,43 +78,52 @@ function DayCell({
 		</>
 	)
 
-	const tooltipContent = isHovered && hasSurgeries && tooltipRect && createPortal(
-		<div
-			className="fixed z-[9999] w-64 max-w-[90vw] p-3 bg-white text-left rounded-lg shadow-lg border border-gray-200 ring-1 ring-black/5"
-			role="tooltip"
-			style={{
-				left: Math.max(8, tooltipRect.left + tooltipRect.width / 2 - TOOLTIP_WIDTH / 2),
-				top: tooltipRect.top - 8,
-				transform: "translateY(-100%)",
-			}}
-			onMouseEnter={handleTooltipMouseEnter}
-			onMouseLeave={handleTooltipMouseLeave}
-		>
-			<p className="font-semibold text-xs text-gray-500 mb-2">
-				{day} {monthName} {year}
-			</p>
-			<ul className="space-y-2">
-				{surgeries.map((s) => (
-					<li
-						key={s.id ?? `${day}-${s.type}-${s.patientName ?? ""}`}
-						className="text-xs border-b border-gray-100 last:border-0 pb-2 last:pb-0"
-					>
-						<span className="font-medium text-primary">{s.type}</span>
-						{s.patientName && (
-							<p className="mt-0.5 text-gray-700">Paciente: {s.patientName}</p>
-						)}
-						{s.doctorName && (
-							<p className="text-gray-500">Médico: {s.doctorName}</p>
-						)}
-						{s.notes && (
-							<p className="mt-0.5 text-gray-500 line-clamp-2">{s.notes}</p>
-						)}
-					</li>
-				))}
-			</ul>
-		</div>,
-		document.body,
-	)
+	const tooltipContent =
+		isHovered &&
+		hasSurgeries &&
+		tooltipRect &&
+		createPortal(
+			<div
+				className="fixed z-[9999] w-64 max-w-[90vw] p-3 bg-white text-left rounded-lg shadow-lg border border-gray-200 ring-1 ring-black/5"
+				role="tooltip"
+				style={{
+					left: Math.max(
+						8,
+						tooltipRect.left + tooltipRect.width / 2 - TOOLTIP_WIDTH / 2,
+					),
+					top: tooltipRect.top - 8,
+					transform: "translateY(-100%)",
+				}}
+				onMouseEnter={handleTooltipMouseEnter}
+				onMouseLeave={handleTooltipMouseLeave}
+			>
+				<p className="font-semibold text-xs text-gray-500 mb-2">
+					{day} {monthName} {year}
+				</p>
+				<ul className="space-y-2">
+					{surgeries.map((s) => (
+						<li
+							key={s.id ?? `${day}-${s.type}-${s.patientName ?? ""}`}
+							className="text-xs border-b border-gray-100 last:border-0 pb-2 last:pb-0"
+						>
+							<span className="font-medium text-primary">{s.type}</span>
+							{s.patientName && (
+								<p className="mt-0.5 text-gray-700">
+									Paciente: {s.patientName}
+								</p>
+							)}
+							{s.doctorName && (
+								<p className="text-gray-500">Médico: {s.doctorName}</p>
+							)}
+							{s.notes && (
+								<p className="mt-0.5 text-gray-500 line-clamp-2">{s.notes}</p>
+							)}
+						</li>
+					))}
+				</ul>
+			</div>,
+			document.body,
+		)
 
 	return (
 		<>
@@ -129,7 +138,9 @@ function DayCell({
 					{content}
 				</button>
 			) : (
-				<div className={`${cellClass} relative flex items-center justify-center`}>
+				<div
+					className={`${cellClass} relative flex items-center justify-center`}
+				>
 					{content}
 				</div>
 			)}
@@ -158,9 +169,19 @@ interface CalendarProps {
 }
 
 const sizeClasses = {
-	sm: { cell: "h-6", dayLabel: "text-xs py-0.5", month: "text-base", gap: "gap-0.5" },
+	sm: {
+		cell: "h-6",
+		dayLabel: "text-xs py-0.5",
+		month: "text-base",
+		gap: "gap-0.5",
+	},
 	md: { cell: "h-8", dayLabel: "text-xs py-1", month: "text-lg", gap: "gap-1" },
-	lg: { cell: "h-10", dayLabel: "text-sm py-1.5", month: "text-xl", gap: "gap-2" },
+	lg: {
+		cell: "h-10",
+		dayLabel: "text-sm py-1.5",
+		month: "text-xl",
+		gap: "gap-2",
+	},
 }
 
 const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
@@ -171,7 +192,7 @@ const Calendar: React.FC<CalendarProps> = ({ surgeries = [], size = "md" }) => {
 	const surgeriesThisMonth = surgeries.filter(
 		(s) =>
 			s.month === currentDate.getMonth() &&
-			s.year === currentDate.getFullYear()
+			s.year === currentDate.getFullYear(),
 	)
 
 	const monthNames = [

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { getStoredToken } from "../../../config/axios"
 import logoUnidadPleura from "../../../assets/logo-unidad-de-pleura.png"
+import { getStoredToken } from "../../../config/axios"
 
 const NavBar = () => {
 	const [isUserLogged, setIsUserLogged] = useState(false)
@@ -38,7 +38,7 @@ const NavBar = () => {
 						<a
 							key={item.href}
 							href={item.href}
-							className="hidden md:inline-block ml-4 text-text font-semibold"
+							className="hidden md:inline-block ml-4 text-text font-semibold hover:text-primary transition-colors duration-300 ease-in-out"
 						>
 							{item.label}
 						</a>

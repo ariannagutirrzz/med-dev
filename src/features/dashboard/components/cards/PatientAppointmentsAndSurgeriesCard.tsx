@@ -1,7 +1,10 @@
 import { FaClock, FaStethoscope } from "react-icons/fa"
 import type { Appointment, Surgery } from "../../../../shared"
+import {
+	getAppointmentStatusBadge,
+	getUpcomingAppointments,
+} from "../../utils/appointmentUtils"
 import { formatAppointmentDate } from "../../utils/dateUtils"
-import { getUpcomingAppointments, getAppointmentStatusBadge } from "../../utils/appointmentUtils"
 
 interface PatientAppointmentsAndSurgeriesCardProps {
 	appointments: Appointment[]
@@ -13,8 +16,10 @@ interface PatientAppointmentsAndSurgeriesCardProps {
 
 const getSurgeryStatusBadge = (status?: string) => {
 	const s = status?.toLowerCase() || ""
-	if (s === "scheduled") return { className: "bg-green-100 text-green-700", label: "Programada" }
-	if (s === "pending") return { className: "bg-yellow-100 text-yellow-700", label: "Pendiente" }
+	if (s === "scheduled")
+		return { className: "bg-green-100 text-green-700", label: "Programada" }
+	if (s === "pending")
+		return { className: "bg-yellow-100 text-yellow-700", label: "Pendiente" }
 	return { className: "bg-gray-100 text-gray-600", label: status || "—" }
 }
 
@@ -26,7 +31,10 @@ const getUpcomingSurgeries = (surgeries: Surgery[], limit: number) => {
 			const status = s.status?.toLowerCase()
 			return date >= now && status !== "cancelled" && status !== "completed"
 		})
-		.sort((a, b) => new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime())
+		.sort(
+			(a, b) =>
+				new Date(a.surgery_date).getTime() - new Date(b.surgery_date).getTime(),
+		)
 		.slice(0, limit)
 }
 
@@ -40,14 +48,19 @@ export const PatientAppointmentsAndSurgeriesCard = ({
 	maxAppointments = 3,
 	maxSurgeries = 3,
 }: PatientAppointmentsAndSurgeriesCardProps) => {
-	const upcomingAppointments = getUpcomingAppointments(appointments, maxAppointments)
+	const upcomingAppointments = getUpcomingAppointments(
+		appointments,
+		maxAppointments,
+	)
 	const upcomingSurgeries = getUpcomingSurgeries(surgeries, maxSurgeries)
 
 	return (
 		<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 flex flex-col min-h-0 h-full">
 			{loading ? (
 				<div className="flex-1 flex items-center justify-center">
-					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">Cargando...</div>
+					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">
+						Cargando...
+					</div>
 				</div>
 			) : (
 				<div className="flex-1 min-h-0 flex flex-col gap-4 sm:gap-5">
@@ -112,7 +125,9 @@ export const PatientAppointmentsAndSurgeriesCard = ({
 													</p>
 													<p className="text-[11px] sm:text-xs text-gray-600 mt-0.5">
 														{formatAppointmentDate(surgery.surgery_date)}
-														{surgery.surgery_type ? ` · ${surgery.surgery_type}` : ""}
+														{surgery.surgery_type
+															? ` · ${surgery.surgery_type}`
+															: ""}
 													</p>
 												</div>
 												<span

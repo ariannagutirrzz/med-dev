@@ -19,7 +19,9 @@ export const SurgeryCalendarCard = ({
 			</h3>
 			{loading ? (
 				<div className="flex-1 flex items-center justify-center">
-					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">Cargando calendario...</div>
+					<div className="animate-pulse text-gray-400 text-xs sm:text-sm">
+						Cargando calendario...
+					</div>
 				</div>
 			) : (
 				<div className="flex-1 flex items-center justify-center overflow-visible min-h-0">

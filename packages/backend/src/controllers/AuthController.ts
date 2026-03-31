@@ -9,9 +9,7 @@ import { generateJWT } from "../utils/jwt.js"
 
 const RESET_TOKEN_EXPIRY_HOURS = 1
 
-function isPostgresError(
-	error: unknown,
-): error is {
+function isPostgresError(error: unknown): error is {
 	code?: string
 	constraint?: string
 	detail?: string
@@ -25,7 +23,10 @@ function isPostgresError(
 	)
 }
 
-function getSignupDuplicateMessage(detail?: string, constraint?: string): string {
+function getSignupDuplicateMessage(
+	detail?: string,
+	constraint?: string,
+): string {
 	const c = (constraint ?? "").toLowerCase()
 	const d = (detail ?? "").toLowerCase()
 	if (c.includes("email") || d.includes("(email)")) {
@@ -219,7 +220,9 @@ export const verifyEmail = async (req: Request, res: Response) => {
 		const raw = req.body?.token
 		const token = typeof raw === "string" ? raw.trim() : ""
 		if (!token) {
-			return res.status(400).json({ error: "El enlace de verificación no es válido." })
+			return res
+				.status(400)
+				.json({ error: "El enlace de verificación no es válido." })
 		}
 
 		const tokenResult = await query(
@@ -230,13 +233,18 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
 		if (tokenResult.rows.length === 0) {
 			return res.status(400).json({
-				error: "El enlace no es válido o ha caducado. Solicita uno nuevo desde el inicio de sesión.",
+				error:
+					"El enlace no es válido o ha caducado. Solicita uno nuevo desde el inicio de sesión.",
 			})
 		}
 
 		const { user_id: userId } = tokenResult.rows[0] as { user_id: number }
-		await query("UPDATE users SET email_verified = true WHERE id = $1", [userId])
-		await query("DELETE FROM email_verification_tokens WHERE token = $1", [token])
+		await query("UPDATE users SET email_verified = true WHERE id = $1", [
+			userId,
+		])
+		await query("DELETE FROM email_verification_tokens WHERE token = $1", [
+			token,
+		])
 
 		res.json({
 			success: true,
@@ -316,10 +324,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
 		const emailLower = email.toLowerCase().trim()
 
-		const userResult = await query(
-			"SELECT id FROM users WHERE email = $1",
-			[emailLower],
-		)
+		const userResult = await query("SELECT id FROM users WHERE email = $1", [
+			emailLower,
+		])
 		if (userResult.rows.length === 0) {
 			// Same response as success to avoid email enumeration
 			return res.json({
@@ -329,10 +336,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
 			})
 		}
 
-		await query(
-			"DELETE FROM password_reset_tokens WHERE email = $1",
-			[emailLower],
-		)
+		await query("DELETE FROM password_reset_tokens WHERE email = $1", [
+			emailLower,
+		])
 
 		const token = crypto.randomBytes(32).toString("hex")
 		const expiresAt = new Date()
@@ -382,7 +388,8 @@ export const resetPassword = async (req: Request, res: Response) => {
 		const { token, newPassword } = req.body
 		if (!token || !newPassword) {
 			return res.status(400).json({
-				error: "El enlace de restablecimiento y la nueva contraseña son requeridos.",
+				error:
+					"El enlace de restablecimiento y la nueva contraseña son requeridos.",
 			})
 		}
 

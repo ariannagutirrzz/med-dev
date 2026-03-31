@@ -17,7 +17,9 @@ const pool = new Pool({
 
 async function addDoctorAvailabilityAndBloodType() {
 	try {
-		console.log("Creating doctor_availability table and adding blood_type column...")
+		console.log(
+			"Creating doctor_availability table and adding blood_type column...",
+		)
 
 		// 1. Create doctor_availability table
 		const checkAvailabilityTable = await pool.query(`

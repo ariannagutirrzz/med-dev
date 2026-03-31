@@ -30,10 +30,14 @@ const DEFAULT_COUNTRY = COUNTRY_PHONE_OPTIONS[0]
  * From E.164 (e.g. +584241234567) returns { countryCode: "58", national: "4241234567" }.
  * Uses longest match so 593 is chosen before 59.
  */
-export function splitE164(e164: string): { countryCode: string; national: string } {
+export function splitE164(e164: string): {
+	countryCode: string
+	national: string
+} {
 	if (!e164?.trim()) return { countryCode: DEFAULT_COUNTRY.code, national: "" }
 	const digits = e164.replace(/\D/g, "").replace(/^\+/, "")
-	if (digits.length === 0) return { countryCode: DEFAULT_COUNTRY.code, national: "" }
+	if (digits.length === 0)
+		return { countryCode: DEFAULT_COUNTRY.code, national: "" }
 	// Longest match first
 	const sorted = [...COUNTRY_PHONE_OPTIONS].sort(
 		(a, b) => b.code.length - a.code.length,
@@ -55,10 +59,7 @@ export function getCountryByCode(code: string): CountryOption | undefined {
  * Normalizes a phone string to E.164.
  * If countryCode is provided, only national digits are expected; otherwise we detect country from digits.
  */
-export function parsePhoneToE164(
-	phone: string,
-	countryCode?: string,
-): string {
+export function parsePhoneToE164(phone: string, countryCode?: string): string {
 	if (!phone?.trim()) return ""
 	let digitsOnly = phone.replace(/\D/g, "")
 	if (digitsOnly.length === 0) return ""
@@ -100,7 +101,8 @@ export function formatPhoneDisplay(phone: string): string {
 	const country = getCountryByCode(countryCode)
 	const dial = country?.dial ?? `+${countryCode}`
 	if (national.length <= 3) return national.length ? `${dial} ${national}` : ""
-	if (national.length <= 6) return `${dial} ${national.slice(0, 3)} ${national.slice(3)}`
+	if (national.length <= 6)
+		return `${dial} ${national.slice(0, 3)} ${national.slice(3)}`
 	return `${dial} ${national.slice(0, 3)} ${national.slice(3, 6)} ${national.slice(6, 10)}`
 }
 

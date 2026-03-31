@@ -1,11 +1,11 @@
 import type { Request, Response } from "express"
 import {
 	createNotification,
+	deleteNotification,
 	getNotificationsByUserId,
 	getUnreadNotificationsCount,
 	markAllNotificationsAsRead,
 	markNotificationAsRead,
-	deleteNotification,
 } from "../services/NotificationService.js"
 
 /**
@@ -62,10 +62,7 @@ export const markAsRead = async (req: Request, res: Response) => {
 			return res.status(401).json({ error: "Unauthorized" })
 		}
 
-		const notification = await markNotificationAsRead(
-			parseInt(id, 10),
-			user_id,
-		)
+		const notification = await markNotificationAsRead(parseInt(id, 10), user_id)
 		res.json({ notification })
 	} catch (error) {
 		console.error("Error in markAsRead:", error)

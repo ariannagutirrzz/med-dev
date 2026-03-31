@@ -38,27 +38,34 @@ const PatientModalForm = ({
 
 	// Inicializar o limpiar el formulario
 	useEffect(() => {
-		if (patient) {
-			setFormData({
-				...patient,
-				birthdate: patient.birthdate.toISOString().split("T")[0],
-				allergies: patient.allergies,
-			})
+		if (isOpen) {
+			if (patient) {
+				setFormData({
+					...patient,
+					// Aseguramos formato string para el input date
+					birthdate: dayjs(patient.birthdate).format("YYYY-MM-DD"),
+					allergies: [...(patient.allergies || [])],
+				})
+			} else {
+				setFormData({
+					first_name: "",
+					last_name: "",
+					email: "",
+					phone: "",
+					birthdate: dayjs().format("YYYY-MM-DD"),
+					gender: "M",
+					address: "",
+					document_id: "V-",
+					blood_type: "",
+					allergies: [],
+				})
+			}
 		} else {
-			setFormData({
-				first_name: "",
-				last_name: "",
-				email: "",
-				phone: "",
-				birthdate: new Date().toISOString().split("T")[0],
-				gender: "M",
-				address: "",
-				document_id: "",
-				blood_type: "",
-				allergies: [],
-			})
+			// Limpieza total al cerrar
+			setFormData(null)
+			setAllergyInput("")
 		}
-	}, [patient])
+	}, [patient, isOpen])
 
 	// --- Lógica de Alergias ---
 	const addAllergy = (e: React.KeyboardEvent) => {
@@ -319,7 +326,6 @@ const PatientModalForm = ({
 										options={[
 											{ value: "M", label: "Masculino" },
 											{ value: "F", label: "Femenino" },
-											{ value: "Otro", label: "Otro" },
 										]}
 										onChange={(value) => {
 											handleInputChange({
@@ -358,7 +364,7 @@ const PatientModalForm = ({
 										onChange={handlePhoneChange}
 										placeholder="4XX XXX XXXX"
 										disabled={loading}
-										className={inputBaseClass}
+										className={`${inputBaseClass} h-10`}
 									/>
 								</div>
 							</div>
@@ -444,7 +450,7 @@ const PatientModalForm = ({
 											formData.allergies?.map((allergy, index) => (
 												<div
 													key={allergy}
-													className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 text-sm font-medium animate-in fade-in slide-in-from-left-2"
+													className="flex items-center mt-2 gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 text-sm font-medium animate-in fade-in slide-in-from-left-2"
 												>
 													{allergy}
 													<Button

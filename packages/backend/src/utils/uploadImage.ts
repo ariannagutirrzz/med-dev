@@ -5,7 +5,11 @@ export class ExternalServiceError extends Error {
 	status: number
 	publicMessage: string
 
-	constructor(params: { message: string; publicMessage: string; status?: number }) {
+	constructor(params: {
+		message: string
+		publicMessage: string
+		status?: number
+	}) {
 		super(params.message)
 		this.name = "ExternalServiceError"
 		this.status = params.status ?? 503
@@ -18,7 +22,9 @@ function inferUploadPublicMessage(error: unknown): string {
 	const message = error instanceof Error ? error.message : String(error)
 	const anyErr = error as { cause?: unknown }
 	const causeMsg =
-		anyErr?.cause instanceof Error ? anyErr.cause.message : String(anyErr?.cause ?? "")
+		anyErr?.cause instanceof Error
+			? anyErr.cause.message
+			: String(anyErr?.cause ?? "")
 
 	const combined = `${message} ${causeMsg}`.toLowerCase()
 
@@ -82,7 +88,9 @@ export const uploadToSupabase = async (
 		if (error instanceof ExternalServiceError) throw error
 		throw new ExternalServiceError({
 			message:
-				error instanceof Error ? error.message : `Supabase upload failed: ${String(error)}`,
+				error instanceof Error
+					? error.message
+					: `Supabase upload failed: ${String(error)}`,
 			publicMessage: inferUploadPublicMessage(error),
 			status: 503,
 		})
