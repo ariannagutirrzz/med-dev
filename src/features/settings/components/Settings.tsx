@@ -395,7 +395,7 @@ const Settings: React.FC<SettingsProps> = ({ userData, refreshUser }) => {
 												})
 											}
 											placeholder="4XX XXX XXXX"
-											className="w-full"
+											className="w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
 										/>
 									</div>
 									<div>
