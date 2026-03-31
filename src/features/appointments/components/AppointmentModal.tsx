@@ -17,7 +17,7 @@ import {
 	type CurrencyRates,
 	getCurrencyRates,
 } from "../../currency/services/CurrencyAPI"
-import { getDoctorPatients, getPatients } from "../../patients"
+import { getPatients } from "../../patients"
 import { getDoctors } from "../../patients/services/UsersAPI"
 import type { DoctorServiceWithType } from "../../services"
 import { getDoctorServices } from "../../services"
@@ -181,9 +181,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 		try {
 			// Cargar pacientes: Médico solo ve los asignados a él; Admin ve todos
 			if (isDoctor || isAdmin) {
-				const patientsData = isDoctor
-					? await getDoctorPatients()
-					: await getPatients()
+				const patientsData = await getPatients()
 				const list = patientsData?.patients ?? []
 				const formattedPatients = list.map((p: Patient) => ({
 					...p,
