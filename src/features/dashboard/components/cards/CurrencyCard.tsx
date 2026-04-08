@@ -1,3 +1,4 @@
+import bcvLogo from "../../../../assets/logo.png"
 import { Button, formatPrice } from "../../../../shared"
 import { useAuth } from "../../../auth"
 import { useCurrencyRates } from "../../hooks/useCurrencyRates"
@@ -21,7 +22,7 @@ export const CurrencyCard = () => {
 					Sistema Cambiario
 				</h3>
 				<img
-					src="/src/assets/logo.png"
+					src={bcvLogo}
 					alt="Logo del banco central de venezuela"
 					className="h-6 w-6 sm:h-7 sm:w-7 md:h-9 md:w-9"
 				/>
