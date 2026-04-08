@@ -50,11 +50,6 @@ const ServicesList: React.FC<ServicesListProps> = ({
 						<h3 className="text-base font-semibold text-gray-800">
 							{service.service_type.name}
 						</h3>
-						{service.service_type.description && (
-							<p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
-								{service.service_type.description}
-							</p>
-						)}
 					</div>
 					{!service.is_active && (
 						<span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded">
